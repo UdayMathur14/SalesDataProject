@@ -14,6 +14,17 @@
         </div>
     }
 </div>
+<div class="container mt-3">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="FailureAlert" class="alert alert-custom alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="card-title text-secondary">Sales Data Management</h4>
     <!-- View Customers Button -->
@@ -27,11 +38,11 @@
     <!-- Manual Entry Form -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <h4 class="card-title text-secondary">Manual Entry</h4>
+            <h4 class="card-title text-secondary"></h4>
             <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label for="CUSTOMER_CODE" class="font-weight-bold">CustCode</label>
+                        <label for="CUSTOMER_CODE" class="font-weight-bold">Customer Code</label>
                         <input asp-for="CUSTOMER_CODE" class="form-control form-control-sm" id="CUSTOMER_CODE" />
                         <span asp-validation-for="CUSTOMER_CODE" class="text-danger"></span>
                     </div>
@@ -85,12 +96,12 @@
             <h4 class="card-title text-secondary">Upload Excel File</h4>
             <form asp-action="UploadExcel" method="post" enctype="multipart/form-data">
                 <div class="form-row mb-2">
-                    <div class="col-md-8">
-                        <label for="fileUpload" class="font-weight-bold">Upload Excel File</label>
+                    <div class="col-md-8 m-4">
+                        <label for="fileUpload" class="font-weight-bold"></label>
                         <input type="file" id="fileUpload" name="file" class="form-control-file" required />
                     </div>
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-secondary">Upload</button>
+                    <div class="col-md-8 d-flex align-items-end m-4 ">
+                        <button type="submit" class="btn btn-secondary ml-4 mb-4">Upload</button>
                     </div>
                 </div>
             </form>
@@ -101,7 +112,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body text-center">
             <form asp-action="DownloadTemplate" method="get">
-                <button type="submit" class="btn btn-success">Download Customer Template</button>
+                <button type="submit" class="btn btn-success">Download Template</button>
             </form>
         </div>
     </div>
@@ -124,4 +135,13 @@
             }, 2000); // 3000 milliseconds = 3 seconds
         }
     });
+          $(document).ready(function () {
+            // Check if the success alert exists
+            if ($("#FailureAlert").length) {
+                // Set a timeout to hide the alert after 3 seconds
+                setTimeout(function () {
+                    $("#FailureAlert").alert('close');
+                }, 3000); // 3000 milliseconds = 3 seconds
+            }
+        });
 </script>

@@ -19,7 +19,8 @@ namespace SalesDataProject.Models
         [EmailAddress]
         public string CUSTOMER_EMAIL { get; set; }
 
-        [StringLength(15)]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string CUSTOMER_CONTACT_NUMBER { get; set; }
 
         [StringLength(50)]

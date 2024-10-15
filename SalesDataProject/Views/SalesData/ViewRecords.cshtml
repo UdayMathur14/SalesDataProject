@@ -2,21 +2,25 @@
 
 <h2>Filter Records</h2>
 
-<form asp-action="ViewRecord" method="post">
-    <div class="form-group">
-        <label for="SelectedDate">Select Date:</label>
-        <input asp-for="SelectedDate" class="form-control" type="date" />
-    </div>
-    <div class="form-group">
-        <label for="RecordType">Select Record Type:</label>
-        <select asp-for="RecordType" class="form-control">
-            <option value="">-- Select --</option>
-            <option value="Blocked">Blocked</option>
-            <option value="Clean">Clean</option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Filter</button>
-</form>
+<div class="form-row mb-4">
+    <form asp-action="ViewRecord" method="post" class="d-flex gap-3 align-items-end">
+        <div class="form-group mb-0">
+            <label for="SelectedDate" class="font-weight-bold">Select Date:</label>
+            <input asp-for="SelectedDate" class="form-control form-control-sm" type="date" />
+        </div>
+        <div class="form-group mb-0">
+            <label for="RecordType" class="font-weight-bold">Select Record Type:</label>
+            <select asp-for="RecordType" class="form-control form-control-sm">
+                <option value="">-- Select --</option>
+                <option value="Blocked">Blocked</option>
+                <option value="Clean">Clean</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    </form>
+</div>
+
+
 
 <h3>Results</h3>
 @if (Model.RecordType == "Blocked" && Model.blockCustomer.Any())

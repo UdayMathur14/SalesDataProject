@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SalesDataProject.Models;
+using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
 {
@@ -51,29 +52,67 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
-                            var customer = new Customer
+                            var customerEmail = worksheet.Cell(row, 3).GetString();
+
+                            var existingCustomer = _context.Customers
+    .FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.Trim().ToLower());
+
+                            // Validate email format
+                            if (!IsValidEmail(customerEmail))
                             {
-                                CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
-                                CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
-                                COUNTRY = worksheet.Cell(row, 5).GetString(),
-                                CITY = worksheet.Cell(row, 6).GetString(),
-                                STATE = worksheet.Cell(row, 7).GetString(),
-                                CREATED_BY = "Admin", // Set this based on your logic
-                                CREATED_ON = DateTime.Now,
-                                MODIFIED_BY = "Admin", // Set this based on your logic
-                                MODIFIED_ON = DateTime.Now
-                            };
-                            _context.Customers.Add(customer);
+                                TempData["ErrorMessage"] = $"Invalid email format in row {row}. Please correct the email and try again.";
+                                return RedirectToAction(nameof(Index)); // Redirect with an error message
+                            }
+
+                            if (existingCustomer == null)
+                            {
+                                var customer = new Customer
+                                {
+                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                                    CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
+                                    CUSTOMER_EMAIL = customerEmail,
+                                    CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
+                                    COUNTRY = worksheet.Cell(row, 5).GetString(),
+                                    CITY = worksheet.Cell(row, 6).GetString(),
+                                    STATE = worksheet.Cell(row, 7).GetString(),
+                                    CREATED_BY = "Admin", // Set this based on your logic
+                                    CREATED_ON = DateTime.Now,
+                                    MODIFIED_BY = "Admin", // Set this based on your logic
+                                    MODIFIED_ON = DateTime.Now
+                                };
+
+                                _context.Customers.Add(customer);
+                            }
+                           
                         }
                         await _context.SaveChangesAsync();
                     }
                 }
-                TempData["SuccessMessage"] = "Succefully Uploaded";
+
+                TempData["SuccessMessage"] = "Successfully Uploaded";
                 return RedirectToAction(nameof(Index));
             }
-            return View(); // Handle error or return to the form if upload fails
+
+            TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Helper method to validate email format
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                // Use Regex to validate the email pattern
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                return emailRegex.IsMatch(email);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         [HttpGet]
