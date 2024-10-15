@@ -1,0 +1,46 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<SalesDataProject.Models.Customer>
+
+@{
+    ViewData["Title"] = "Customer Records";
+}
+
+<div class="container mt-3">
+    <h2>Customer Records</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Customer Code</th>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Contact Number</th>
+                <th>Country</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Created By</th>
+                <th>Created On</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model)
+            {
+                <tr>
+                    <td>@customer.CUSTOMER_CODE</td>
+                    <td>@customer.CUSTOMER_NAME</td>
+                    <td>@customer.CUSTOMER_EMAIL</td>
+                    <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                    <td>@customer.COUNTRY</td>
+                    <td>@customer.CITY</td>
+                    <td>@customer.STATE</td>
+                    <td>@customer.CREATED_BY</td>
+                    <td>@customer.CREATED_ON.ToString("g")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

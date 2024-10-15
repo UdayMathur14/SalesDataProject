@@ -1,0 +1,55 @@
+﻿@model IEnumerable<SalesDataProject.Models.ProspectCustomer>
+
+<h2>Clear Records</h2>
+<div class="container mt-3">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-custom alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
+<form asp-action="UpdateBlockedEmails" method="post">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Customer Code</th>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Contact Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="selectedCustomers" value="@customer.ID" />
+                    </td>
+                    <td>@customer.CUSTOMER_CODE</td>
+                    <td>@customer.CUSTOMER_NAME</td>
+                    <td>@customer.CUSTOMER_EMAIL</td>
+                    <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Mark as Blocked</button>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Check if the success alert exists
+        if ($("#successAlert").length) {
+            // Set a timeout to hide the alert after 3 seconds
+            setTimeout(function () {
+                $("#successAlert").alert('close');
+            }, 2000); // 3000 milliseconds = 3 seconds
+        }
+    });
+</script>

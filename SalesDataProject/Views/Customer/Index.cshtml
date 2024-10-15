@@ -1,0 +1,127 @@
+﻿@model SalesDataProject.Models.Customer // Adjust to your actual namespace
+
+@{
+    ViewData["Title"] = "Create Customer";
+}
+<div class="container mt-3">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-custom alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="card-title text-secondary">Sales Data Management</h4>
+    <!-- View Customers Button -->
+    <form asp-action="ViewCustomers" method="post" class="mb-0">
+        <button type="submit" class="btn btn-info">View Customers</button>
+    </form>
+</div>
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">Create Customer</h2>
+
+    <!-- Manual Entry Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="card-title text-secondary">Manual Entry</h4>
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div class="form-row mb-2 d-flex gap-4">
+                    <div class="col-md-3">
+                        <label for="CUSTOMER_CODE" class="font-weight-bold">CustCode</label>
+                        <input asp-for="CUSTOMER_CODE" class="form-control form-control-sm" id="CUSTOMER_CODE" />
+                        <span asp-validation-for="CUSTOMER_CODE" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="CUSTOMER_NAME" class="font-weight-bold">Customer Name</label>
+                        <input asp-for="CUSTOMER_NAME" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_NAME" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="CUSTOMER_EMAIL" class="font-weight-bold">Email</label>
+                        <input asp-for="CUSTOMER_EMAIL" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_EMAIL" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-row mb-2 d-flex gap-4">
+                    <div class="col-md-3">
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER" class="font-weight-bold">Contact Number</label>
+                        <input asp-for="CUSTOMER_CONTACT_NUMBER" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_CONTACT_NUMBER" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="COUNTRY" class="font-weight-bold">Country</label>
+                        <input asp-for="COUNTRY" class="form-control form-control-sm" />
+                        <span asp-validation-for="COUNTRY" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="CITY" class="font-weight-bold">City</label>
+                        <input asp-for="CITY" class="form-control form-control-sm" />
+                        <span asp-validation-for="CITY" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-row mb-2 d-flex gap-4">
+                    <div class="col-md-3">
+                        <label asp-for="STATE" class="font-weight-bold">State</label>
+                        <input asp-for="STATE" class="form-control form-control-sm" />
+                        <span asp-validation-for="STATE" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Excel Upload Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="card-title text-secondary">Upload Excel File</h4>
+            <form asp-action="UploadExcel" method="post" enctype="multipart/form-data">
+                <div class="form-row mb-2">
+                    <div class="col-md-8">
+                        <label for="fileUpload" class="font-weight-bold">Upload Excel File</label>
+                        <input type="file" id="fileUpload" name="file" class="form-control-file" required />
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-secondary">Upload</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Download Template Button -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+            <form asp-action="DownloadTemplate" method="get">
+                <button type="submit" class="btn btn-success">Download Customer Template</button>
+            </form>
+        </div>
+    </div>
+</div>
+    
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Check if the success alert exists
+        if ($("#successAlert").length) {
+            // Set a timeout to hide the alert after 3 seconds
+            setTimeout(function () {
+                $("#successAlert").alert('close');
+            }, 2000); // 3000 milliseconds = 3 seconds
+        }
+    });
+</script>

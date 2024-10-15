@@ -1,0 +1,76 @@
+﻿
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@* <div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div> *@
+
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">User Dashboard</h2>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Customer Module</h5>
+                    <p class="card-text">Upload customer data, view customer details, and more.</p>
+                    <a href="@Url.Action("Index", "Customer")" class="btn btn-primary">Customer Module</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Sales Data</h5>
+                    <p class="card-text">Upload Sales Data and view blocked and clear records.</p>
+                    <a href="@Url.Action("Index", "SalesData")" class="btn btn-primary">Sales Module</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Email Management</h5>
+                    <p class="card-text">Manage email sending permissions and view blocked email addresses.</p>
+                    <a href="@Url.Action("BlockedEmail", "SalesData")" class="btn btn-primary">Manage Emails</a>
+                </div>
+            </div>
+        </div>
+
+       @*  <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Blocked Customers</h5>
+                    <p class="card-text">View and manage blocked customers records.</p>
+                    <a href="@Url.Action("BlockedList", "Customer")" class="btn btn-primary">View Blocked Customers</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Prospect Customers</h5>
+                    <p class="card-text">View clear records and manage prospects for future communication.</p>
+                    <a href="@Url.Action("Index", "Prospect")" class="btn btn-primary">View Clear Records</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Reports</h5>
+                    <p class="card-text">Generate and download various reports related to customers and sales.</p>
+                    <a href="@Url.Action("Index", "Reports")" class="btn btn-primary">Generate Reports</a>
+                </div>
+            </div>
+        </div> *@
+    </div>
+</div>
+

@@ -1,0 +1,80 @@
+﻿@model SalesDataProject.Models.UploadResultViewModel
+
+<h2>Filter Records</h2>
+
+<form asp-action="ViewRecord" method="post">
+    <div class="form-group">
+        <label for="SelectedDate">Select Date:</label>
+        <input asp-for="SelectedDate" class="form-control" type="date" />
+    </div>
+    <div class="form-group">
+        <label for="RecordType">Select Record Type:</label>
+        <select asp-for="RecordType" class="form-control">
+            <option value="">-- Select --</option>
+            <option value="Blocked">Blocked</option>
+            <option value="Clean">Clean</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<h3>Results</h3>
+@if (Model.RecordType == "Blocked" && Model.blockCustomer.Any())
+{
+    <h4>Blocked Customers</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer Code</th>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Contact Number</th>
+                <th>Blocked Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model.blockCustomer)
+            {
+                <tr>
+                    <td>@customer.CUSTOMER_CODE</td>
+                    <td>@customer.CUSTOMER_NAME</td>
+                    <td>@customer.CUSTOMER_EMAIL</td>
+                    <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                    <td>@customer.BlockedDate.ToShortDateString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (Model.RecordType == "Clean" && Model.CleanCustomers.Any())
+{
+    <h4>Clean Customers</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer Code</th>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Contact Number</th>
+                <th>Creation Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var customer in Model.CleanCustomers)
+            {
+                <tr>
+                    <td>@customer.CUSTOMER_CODE</td>
+                    <td>@customer.CUSTOMER_NAME</td>
+                    <td>@customer.CUSTOMER_EMAIL</td>
+                    <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                    <td>@customer.CREATED_ON.ToShortDateString()</td>
+                </tr>
+            }
+            
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No records found for the selected date and type.</p>
+}

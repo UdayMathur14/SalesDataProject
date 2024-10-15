@@ -1,0 +1,88 @@
+﻿@{
+}
+@using System.Text.Json
+
+@model SalesDataProject.Models.UploadResultViewModel
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Results</h2>
+
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <h3 class="text-secondary">Blocked Customers</h3>
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Customer Code</th>
+                        <th>Customer Name</th>
+                        <th>Email</th>
+                        <th>Contact Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model.BlockedCustomers)
+                    {
+                        <tr>
+                            <td>@customer.CUSTOMER_CODE</td>
+                            <td>@customer.CUSTOMER_NAME</td>
+                            <td>@customer.CUSTOMER_EMAIL</td>
+                            <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <h3 class="text-secondary">Clean Customers</h3>
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Customer Code</th>
+                        <th>Customer Name</th>
+                        <th>Email</th>
+                        <th>Contact Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model.CleanCustomers)
+                    {
+                        <tr>
+                            <td>@customer.CUSTOMER_CODE</td>
+                            <td>@customer.CUSTOMER_NAME</td>
+                            <td>@customer.CUSTOMER_EMAIL</td>
+                            <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <form asp-action="ExportToExcel" method="post">
+            <input type="hidden" name="BlockedCustomersJson" value="@JsonSerializer.Serialize(Model.BlockedCustomers)" />
+            <input type="hidden" name="CleanCustomersJson" value="@JsonSerializer.Serialize(Model.CleanCustomers)" />
+            <button type="submit" class="btn btn-primary">Export to Excel</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add some custom CSS if needed -->
+<style>
+    .card {
+        border-radius: 10px;
+    }
+
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .thead-light th {
+        background-color: #f8f9fa;
+        color: #495057;
+    }
+</style>

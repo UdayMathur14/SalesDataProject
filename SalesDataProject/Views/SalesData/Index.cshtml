@@ -1,0 +1,31 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="card-title text-secondary">Sales Data Management</h4>
+            <!-- View Customers Button -->
+            <form asp-action="ViewRecord" method="post" class="mb-0">
+                <button type="submit" class="btn btn-info">View Records</button>
+            </form>
+        </div>
+
+        <!-- Upload Sales Data Form -->
+        <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" class="mb-4">
+            <div class="form-group">
+                <label for="fileUpload" class="font-weight-bold"></label>
+                <input type="file" id="fileUpload" name="file" class="form-control" required />
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Upload</button>
+        </form>
+
+        <!-- Download Template Form -->
+        <form asp-action="DownloadTemplate" method="get">
+            <button type="submit" class="btn btn-success">Download Customer Template</button>
+        </form>
+    </div>
+</div>
+
