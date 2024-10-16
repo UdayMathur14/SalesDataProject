@@ -32,7 +32,7 @@ namespace SalesDataProject.Controllers
                 _context.Customers.Add(customer);
                 await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Customer has been successfully created.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(ViewCustomers));
         }
 
         [HttpPost]

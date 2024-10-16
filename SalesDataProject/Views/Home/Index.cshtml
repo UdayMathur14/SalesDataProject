@@ -9,68 +9,164 @@
 </div> *@
 
 
-<div class="container mt-5">
+@* <div class="container mt-5">
     <h2 class="mb-4 text-center">User Dashboard</h2>
     <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Customer Module</h5>
-                    <p class="card-text">Upload customer data, view customer details, and more.</p>
-                    <a href="@Url.Action("Index", "Customer")" class="btn btn-primary">Customer Module</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 rounded">
+                <div class="card-body d-flex align-items-center">
+                    <div class="gradient-bg p-3 text-center">
+                        <i class="fas fa-users fa-3x text-white"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h5 class="card-title">Customer Module</h5>
+                        <p class="card-text">Upload customer data, view customer details, and more.</p>
+                        <a href="@Url.Action("ViewCustomers", "Customer")" class="btn btn-primary">Customer Module</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Sales Data</h5>
-                    <p class="card-text">Upload Sales Data and view blocked and clear records.</p>
-                    <a href="@Url.Action("Index", "SalesData")" class="btn btn-primary">Sales Module</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 rounded">
+                <div class="card-body d-flex align-items-center">
+                    <div class="gradient-bg p-3 text-center">
+                        <i class="fas fa-chart-line fa-3x text-white"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h5 class="card-title">Sales Data</h5>
+                        <p class="card-text">Upload Sales Data and view blocked and clear records.</p>
+                        <a href="@Url.Action("Index", "SalesData")" class="btn btn-primary">Sales Module</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Email Management</h5>
-                    <p class="card-text">Manage email sending permissions and view blocked email addresses.</p>
-                    <a href="@Url.Action("BlockedEmail", "SalesData")" class="btn btn-primary">Manage Emails</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 rounded">
+                <div class="card-body d-flex align-items-center">
+                    <div class="gradient-bg p-3 text-center">
+                        <i class="fas fa-envelope fa-3x text-white"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h5 class="card-title">Email Management</h5>
+                        <p class="card-text">Manage email sending permissions and view blocked email addresses.</p>
+                        <a href="@Url.Action("BlockedEmail", "SalesData")" class="btn btn-primary">Manage Emails</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Dashboard</h2>
+    <div class="row" style="text-align:center">
+        <div class="col-md-6 col-lg-4 mb-4" >
+            <div class="card shadow-lg border-0 rounded-1" style="background-color:beige">
+                <div class="card-body d-flex align-items-center">
+                    @* <div class="gradient-bg p-3 text-center">
+                        <i class="fas fa-users fa-3x text-white"></i>
+                    </div> *@
+                    <div class="ml-3" style="text-align:center">
+                        <h5 class="card-title ">Customer Module</h5>
+                        <p class="card-text">Upload customer data, view customer details, and more.</p>
+                        <a href="@Url.Action("ViewCustomers", "Customer")" class="btn btn-primary">Customer Module</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-       @*  <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Blocked Customers</h5>
-                    <p class="card-text">View and manage blocked customers records.</p>
-                    <a href="@Url.Action("BlockedList", "Customer")" class="btn btn-primary">View Blocked Customers</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 rounded" style="background-color:beige">
+                <div class="card-body d-flex align-items-center">
+                    @* <div class="gradient-bg p-3 text-center">
+                        <i class="fas fa-chart-line fa-3x text-white"></i>
+                    </div> *@
+                    <div class="ml-3">
+                        <h5 class="card-title">Sales Data</h5>
+                        <p class="card-text">Upload Sales Data and view blocked and clear records.</p>
+                        <a href="@Url.Action("Index", "SalesData")" class="btn btn-primary">Sales Module</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Prospect Customers</h5>
-                    <p class="card-text">View clear records and manage prospects for future communication.</p>
-                    <a href="@Url.Action("Index", "Prospect")" class="btn btn-primary">View Clear Records</a>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 rounded" style="background-color:beige">
+                <div class="card-body d-flex align-items-center">
+                    @* <div class="gradient-bg p-3 text-center">
+                        <i class="fas fa-envelope fa-3x text-white"></i>
+                    </div> *@
+                    <div class="ml-3">
+                        <h5 class="card-title">Email Management</h5>
+                        <p class="card-text">Manage email sending permissions and view blocked email addresses.</p>
+                        <a href="@Url.Action("BlockedEmail", "SalesData")" class="btn btn-primary">Manage Emails</a>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Reports</h5>
-                    <p class="card-text">Generate and download various reports related to customers and sales.</p>
-                    <a href="@Url.Action("Index", "Reports")" class="btn btn-primary">Generate Reports</a>
-                </div>
-            </div>
-        </div> *@
     </div>
 </div>
+
+<style>
+    .custom-card {
+    display: flex;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+}
+
+.gradient-bg {
+    background: linear-gradient(45deg, #ff5722, #e91e63);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    flex-shrink: 0;
+    color: white;
+}
+
+.card-content {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.card-text {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    background-color: #e91e63;
+    border: none;
+    color: white;
+    text-transform: uppercase;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #d81b60;
+}
+
+
+}
+
+</style>
 

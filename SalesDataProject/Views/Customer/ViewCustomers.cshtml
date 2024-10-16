@@ -9,11 +9,37 @@
     ViewData["Title"] = "Customer Records";
 }
 
+<style>
+    .table-header{
+        background-color: darkslateblue;
+        color: white;
+        }
+    }
+</style>
+
 <div class="container mt-3">
-    <h2>Customer Records</h2>
+
+    <div class="header d-flex justify-content-between">
+        <h2>Customer Records</h2>
+        <div class="buttons d-flex gap-2">
+
+            <a href="@Url.Action("Index", "Customer")" class="">
+                <button type="submit" class="btn btn-success">Create</button>
+            </a>
+            <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
+                <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
+                <button type="button" id="uploadButton" class="btn btn-success ml-4 mb-4">Create With Excel</button>
+            </form>
+           
+
+            <form asp-action="DownloadTemplate" method="get">
+                <button type="submit" class="btn btn-success">Download Template</button>
+            </form>
+        </div>
+    </div>
 
     <table class="table table-striped">
-        <thead>
+        <thead class="table-header">
             <tr>
                 <th>Customer Code</th>
                 <th>Customer Name</th>
@@ -44,3 +70,28 @@
         </tbody>
     </table>
 </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get the button and input elements
+        const uploadButton = document.getElementById('uploadButton');
+        const fileUpload = document.getElementById('fileUpload');
+        const uploadForm = document.getElementById('uploadForm');
+
+        // Check if the elements exist to avoid null errors
+        if (uploadButton && fileUpload && uploadForm) {
+            // Trigger the file input when the button is clicked
+            uploadButton.addEventListener('click', function () {
+                fileUpload.click();
+            });
+
+            // Automatically submit the form when a file is selected
+            fileUpload.addEventListener('change', function () {
+                if (fileUpload.files.length > 0) {
+                    uploadForm.submit();
+                }
+            });
+        }
+    });
+</script>
