@@ -25,6 +25,19 @@ namespace SalesDataProject.Controllers
             return View(Customers);
 
         }
+        public IActionResult ShowInvalidRecords()
+        {
+            if (TempData["InvalidRecords"] != null)
+            {
+                var recordsJson = TempData["InvalidRecords"].ToString();
+                var invalidRecords = JsonConvert.DeserializeObject<List<Customer>>(recordsJson);
+                return View("InvalidRecords", invalidRecords); // Specify the view name if it's not the default
+            }
+
+            return RedirectToAction("Index"); // Redirect to a fallback if no data is available
+        }
+
+
 
         [HttpPost]
         public async Task<IActionResult> Create(Customer customer)
@@ -70,10 +83,10 @@ namespace SalesDataProject.Controllers
 
 
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> UploadExcel(IFormFile file)
         {
             var invalidRecords = new List<InvalidCustomerRecord>(); // List to store invalid records
+            var existingDuplicateRecords = new List<InvalidCustomerRecord>(); // List to store records that are duplicates in the database
 
             if (file != null && file.Length > 0)
             {
@@ -94,6 +107,7 @@ namespace SalesDataProject.Controllers
                         {
                             var customerEmail = worksheet.Cell(row, 3).GetString();
                             var customerCode = worksheet.Cell(row, 1).GetString();
+                            var customerNumber = worksheet.Cell(row, 4).GetString();
 
                             // Validate email format
                             if (!IsValidEmail(customerEmail))
@@ -104,7 +118,23 @@ namespace SalesDataProject.Controllers
                                     RowNumber = row,
                                     CustomerCode = customerCode,
                                     CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
                                     ErrorMessage = "Invalid email format."
+                                });
+                                continue; // Skip to the next row
+                            }
+
+                            // Check for duplicates in the list of customers
+                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim()))
+                            {
+                                // Store duplicate record
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CustomerCode = customerCode,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Duplicate email in the uploaded file."
                                 });
                                 continue; // Skip to the next row
                             }
@@ -125,30 +155,29 @@ namespace SalesDataProject.Controllers
                                 MODIFIED_ON = DateTime.Now
                             };
 
-                            // Check for duplicates in the list of customers
-                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim()))
-                            {
-                                // Store duplicate record
-                                invalidRecords.Add(new InvalidCustomerRecord
-                                {
-                                    RowNumber = row,
-                                    CustomerCode = customerCode,
-                                    CustomerEmail = customerEmail,
-                                    ErrorMessage = "Duplicate email in the uploaded file."
-                                });
-                                continue; // Skip to the next row
-                            }
-
                             customersFromExcel.Add(customer); // Add to the list of valid customers
                         }
 
                         // Check against the database for existing emails
                         var existingEmails = _context.Customers
-                            .Where(c => customersFromExcel.Select(d => d.CUSTOMER_EMAIL).Contains(c.CUSTOMER_EMAIL))
+                            .Where(c => customersFromExcel.Select(d => d.CUSTOMER_EMAIL.ToLower().Trim()).Contains(c.CUSTOMER_EMAIL.ToLower()))
                             .Select(c => c.CUSTOMER_EMAIL.ToLower())
                             .ToList();
 
-                        // Filter the distinct customers to only include those not present in the database
+                        // Store records that already exist in the database
+                        existingDuplicateRecords = customersFromExcel
+                            .Where(c => existingEmails.Contains(c.CUSTOMER_EMAIL.ToLower()))
+                            .Select(c => new InvalidCustomerRecord
+                            {
+                                RowNumber = customersFromExcel.IndexOf(c) + 2, // Adding 2 to adjust for zero-based index and skipping header
+                                CustomerCode = c.CUSTOMER_CODE,
+                                CustomerEmail = c.CUSTOMER_EMAIL,
+                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER,
+                                ErrorMessage = "Email Already Exists in the database."
+                            })
+                            .ToList();
+
+                        // Filter the customers to only include those not present in the database
                         var newCustomers = customersFromExcel
                             .Where(c => !existingEmails.Contains(c.CUSTOMER_EMAIL.ToLower()))
                             .ToList();
@@ -160,10 +189,14 @@ namespace SalesDataProject.Controllers
                             await _context.SaveChangesAsync();
                         }
 
-                        // If there are invalid records, set them to TempData for the view
-                        if (invalidRecords.Any())
+                        // Combine invalid records and database duplicates
+                        var allInvalidRecords = invalidRecords.Concat(existingDuplicateRecords).ToList();
+
+                        // If there are any invalid or duplicate records, pass them to the view
+                        if (allInvalidRecords.Any())
                         {
-                            TempData["InvalidRecords"] = JsonConvert.SerializeObject(invalidRecords);
+                            TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
+                            return View("InvalidRecords", allInvalidRecords);
                         }
                     }
 
@@ -176,7 +209,7 @@ namespace SalesDataProject.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-      
+
 
 
         // Helper method to validate email format
@@ -231,19 +264,30 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult ExportInvalidRecords(string invalidRecordsJson)
+        [HttpGet]
+        public IActionResult ExportInvalidRecords()
         {
+            // Retrieve the invalid records from TempData
+            var invalidRecordsJson = TempData["InvalidRecords"] as string;
+            if (string.IsNullOrEmpty(invalidRecordsJson))
+            {
+                TempData["ErrorMessage"] = "No data available for export.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var invalidRecords = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(invalidRecordsJson);
 
             using (var workbook = new XLWorkbook())
             {
-                var worksheet = workbook.Worksheets.Add("Invalid Records");
-                worksheet.Cell(1, 1).Value = "Row Number";
+                var worksheet = workbook.Worksheets.Add("InvalidRecords");
+
+                // Adding headers
+                worksheet.Cell(1, 1).Value = "Excel Row";
                 worksheet.Cell(1, 2).Value = "Customer Code";
-                worksheet.Cell(1, 3).Value = "Email";
+                worksheet.Cell(1, 3).Value = "Customer Email";
                 worksheet.Cell(1, 4).Value = "Error Message";
 
+                // Populating data
                 for (int i = 0; i < invalidRecords.Count; i++)
                 {
                     var record = invalidRecords[i];
@@ -256,11 +300,14 @@ namespace SalesDataProject.Controllers
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
-                    var fileName = "InvalidRecords.xlsx";
-                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                    stream.Position = 0;
+
+                    // Return the Excel file as a downloadable file
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
                 }
             }
         }
+
 
 
     }

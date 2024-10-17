@@ -346,7 +346,7 @@ namespace SalesDataProject.Controllers
                     .ToListAsync();
             }
 
-            return View("BlockedCustomer", model);
+            return View("ViewEmailRecords", model);
         }
 
 

@@ -1,0 +1,50 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<SalesDataProject.Models.InvalidCustomerRecord>
+
+<h2>Invalid or Duplicate Records</h2>
+<div>
+    <a id="exportLink" asp-action="ExportInvalidRecords" class="btn btn-primary">Export to Excel</a>
+</div>
+@if (Model == null || !Model.Any())
+{
+    <p>No invalid or duplicate records found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Excel Row</th>
+                <th>Customer Code</th>
+                <th>Customer Name</th>
+                <th>Email</th>
+                <th>Contact Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in Model)
+            {
+                <tr>
+                    <td>@record.RowNumber</td>
+                    <td>@record.CustomerEmail</td>
+                    <td>@record.RowNumber</td>
+                    <td>@record.CustomerCode</td>
+                    <td>@record.CustomerNumber</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@section Scripts {
+    <script type="text/javascript">
+        document.getElementById('exportLink').addEventListener('click', function () {
+            setTimeout(function () {
+                window.location.href = '@Url.Action("ViewCustomers")';
+            }, 2000); // Wait for 2 seconds to allow the download to start
+        });
+    </script>
+}
