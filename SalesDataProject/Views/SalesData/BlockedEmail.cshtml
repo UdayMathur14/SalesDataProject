@@ -1,10 +1,10 @@
 ﻿@model IEnumerable<SalesDataProject.Models.ProspectCustomer>
 
-<h2>Clear Records</h2>
+<h2>Manage Customer Records</h2>
 <div class="container mt-3">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div id="successAlert" class="alert alert-custom alert-dismissible fade show" role="alert">
+        <div id="successAlert" class="alert alert-success alert-dismissible fade show" role="alert">
             @TempData["SuccessMessage"]
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
@@ -12,7 +12,22 @@
         </div>
     }
 </div>
-<form asp-action="UpdateBlockedEmails" method="post">
+
+<form asp-action="ViewEmailRecords" method="post">
+    <div class="form-row mb-4">
+        <div class="form-group">
+            <label for="recordType" class="font-weight-bold">Select Record Type:</label>
+            <select id="recordType" name="RecordType" class="form-control form-control-sm">
+                <option value="">--Select--</option>
+                <option value="Blocked">Blocked</option>
+                <option value="Clean">Clean</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm mt-2">Filter</button>
+    </div>
+</form>
+
+
     <table class="table">
         <thead>
             <tr>
@@ -21,6 +36,7 @@
                 <th>Customer Name</th>
                 <th>Email</th>
                 <th>Contact Number</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -34,22 +50,24 @@
                     <td>@customer.CUSTOMER_NAME</td>
                     <td>@customer.CUSTOMER_EMAIL</td>
                     <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                    <td>@(customer.IsEmailBlocked ? "Blocked" : "Clean")</td>
                 </tr>
             }
         </tbody>
     </table>
-    <button type="submit" class="btn btn-primary">Mark as Blocked</button>
-</form>
+    <button type="submit" name="action" value="block" class="btn btn-primary">Mark as Blocked</button>
+    <button type="submit" name="action" value="unblock" class="btn btn-secondary">Mark as Clean</button>
+
+
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script>
     $(document).ready(function () {
-        // Check if the success alert exists
         if ($("#successAlert").length) {
-            // Set a timeout to hide the alert after 3 seconds
             setTimeout(function () {
                 $("#successAlert").alert('close');
-            }, 2000); // 3000 milliseconds = 3 seconds
+            }, 2000);
         }
     });
 </script>

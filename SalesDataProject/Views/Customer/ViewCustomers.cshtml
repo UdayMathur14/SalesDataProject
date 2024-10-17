@@ -8,6 +8,28 @@
 @{
     ViewData["Title"] = "Customer Records";
 }
+<div class="container mt-3">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div id="successAlert" class="alert alert-custom alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
+<div class="container mt-3">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="FailureAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+</div>
 
 <style>
     .table-header{
@@ -94,4 +116,25 @@
             });
         }
     });
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Check if the success alert exists
+        if ($("#successAlert").length) {
+            // Set a timeout to hide the alert after 3 seconds
+            setTimeout(function () {
+                $("#successAlert").alert('close');
+            }, 2000); // 3000 milliseconds = 3 seconds
+        }
+    });
+          $(document).ready(function () {
+            // Check if the success alert exists
+            if ($("#FailureAlert").length) {
+                // Set a timeout to hide the alert after 3 seconds
+                setTimeout(function () {
+                    $("#FailureAlert").alert('close');
+                }, 3000); // 3000 milliseconds = 3 seconds
+            }
+        });
 </script>

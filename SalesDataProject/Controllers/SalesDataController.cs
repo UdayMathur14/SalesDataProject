@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+﻿    using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -25,6 +25,11 @@ namespace SalesDataProject.Controllers
 
         }
         public IActionResult ViewRecords(UploadResultViewModel model)
+        {
+            return View(model);
+
+        }
+        public IActionResult BlockedCustomer(ProspectCustomer model)
         {
             return View(model);
 
@@ -262,6 +267,18 @@ namespace SalesDataProject.Controllers
                     .Where(c => model.SelectedDate == null || c.CREATED_ON.Date == model.SelectedDate.Value.Date)
                     .ToListAsync();
             }
+            else
+            {
+                // Fetch blocked customers for the given date
+                filteredBlockedCustomers = await _context.BlockedCustomers
+                    .Where(c => model.SelectedDate == null || c.BlockedDate.Date == model.SelectedDate.Value.Date)
+                    .ToListAsync();
+
+                // Fetch prospect (clean) customers for the given date
+                filteredProspectCustomers = await _context.Prospects
+                    .Where(c => model.SelectedDate == null || c.CREATED_ON.Date == model.SelectedDate.Value.Date)
+                    .ToListAsync();
+            }
 
             // Populate the view model with the filtered data
             model.blockCustomer = filteredBlockedCustomers;
@@ -271,21 +288,28 @@ namespace SalesDataProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateBlockedEmails(int[] selectedCustomers)
+        public async Task<IActionResult> UpdateBlockedEmails(int[] selectedCustomers, string action)
         {
             if (selectedCustomers != null && selectedCustomers.Length > 0)
             {
+                // Get the customers that need to be updated
                 var customersToUpdate = await _context.Prospects
                     .Where(c => selectedCustomers.Contains(c.ID))
                     .ToListAsync();
 
+                // Update the IsEmailBlocked status based on the action
+                bool blockStatus = action == "block";
                 foreach (var customer in customersToUpdate)
                 {
-                    customer.IsEmailBlocked = true; // Mark as blocked
+                    customer.IsEmailBlocked = blockStatus;
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Selected emails have been marked as blocked.";
+
+                // Set a success message based on the action performed
+                TempData["SuccessMessage"] = blockStatus
+                    ? "Selected emails have been marked as blocked."
+                    : "Selected emails have been marked as clean.";
             }
             else
             {
@@ -294,6 +318,38 @@ namespace SalesDataProject.Controllers
 
             return RedirectToAction("BlockedEmail");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate)
+        {
+            var model = new List<ProspectCustomer>();
+
+            if (RecordType == "Blocked")
+            {
+                model = await _context.Prospects
+                    .Where(c => c.IsEmailBlocked &&
+                                (!SelectedDate.HasValue || c.CREATED_ON.Date == SelectedDate.Value.Date))
+                    .ToListAsync();
+            }
+            else if (RecordType == "Clean")
+            {
+                model = await _context.Prospects
+                    .Where(c => !c.IsEmailBlocked &&
+                                (!SelectedDate.HasValue || c.CREATED_ON.Date == SelectedDate.Value.Date))
+                    .ToListAsync();
+            }
+            else if (string.IsNullOrEmpty(RecordType))
+            {
+                // Show both blocked and clean if no specific record type is selected but date is provided
+                model = await _context.Prospects
+                    .Where(c => !SelectedDate.HasValue || c.CREATED_ON.Date == SelectedDate.Value.Date)
+                    .ToListAsync();
+            }
+
+            return View("BlockedCustomer", model);
+        }
+
+
 
     }
 }

@@ -17,7 +17,7 @@
 <div class="container mt-3">
     @if (TempData["ErrorMessage"] != null)
     {
-        <div id="FailureAlert" class="alert alert-custom alert-dismissible fade show" role="alert">
+        <div id="FailureAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
             @TempData["ErrorMessage"]
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>

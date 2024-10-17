@@ -15,6 +15,7 @@ namespace SalesDataProject.Models
         [StringLength(100)]
         public string CUSTOMER_NAME { get; set; }
 
+        [Required]
         [StringLength(100)]
         [EmailAddress]
         public string CUSTOMER_EMAIL { get; set; }
@@ -35,7 +36,7 @@ namespace SalesDataProject.Models
         public string CREATED_BY { get; set; } // Created by information
         public DateTime CREATED_ON { get; set; } = DateTime.UtcNow;// Creation timestamp
 
-        public string MODIFIED_BY { get; set; } // Modified by information
+        public string? MODIFIED_BY { get; set; } // Modified by information
         public DateTime? MODIFIED_ON { get; set; } =DateTime.UtcNow; // Nullable in case it hasn't been modified yet
     }
 }
