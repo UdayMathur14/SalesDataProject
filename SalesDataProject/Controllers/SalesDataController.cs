@@ -34,10 +34,9 @@ namespace SalesDataProject.Controllers
             return View(model);
 
         }
-        public async Task<IActionResult> BlockedEmail(ProspectCustomer model)
+        public IActionResult BlockedEmail(ProspectCustomer? model)
         {
-            var prospectCustomers = await _context.Prospects.Where(c => !c.IsEmailBlocked).ToListAsync();
-            return View(prospectCustomers);
+            return View();
 
         }
 
@@ -250,6 +249,10 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> ViewRecord(UploadResultViewModel model)
         {
+            if (model.RecordType == null)
+            {
+                return View("ViewRecords", model);
+            }
             var filteredBlockedCustomers = new List<BlockedCustomer>();
             var filteredProspectCustomers = new List<ProspectCustomer>();
 
@@ -270,14 +273,14 @@ namespace SalesDataProject.Controllers
             else
             {
                 // Fetch blocked customers for the given date
-                filteredBlockedCustomers = await _context.BlockedCustomers
-                    .Where(c => model.SelectedDate == null || c.BlockedDate.Date == model.SelectedDate.Value.Date)
-                    .ToListAsync();
+                //filteredBlockedCustomers = await _context.BlockedCustomers
+                //    .Where(c => model.SelectedDate == null || c.BlockedDate.Date == model.SelectedDate.Value.Date)
+                //    .ToListAsync();
 
-                // Fetch prospect (clean) customers for the given date
-                filteredProspectCustomers = await _context.Prospects
-                    .Where(c => model.SelectedDate == null || c.CREATED_ON.Date == model.SelectedDate.Value.Date)
-                    .ToListAsync();
+                //// Fetch prospect (clean) customers for the given date
+                //filteredProspectCustomers = await _context.Prospects
+                //    .Where(c => model.SelectedDate == null || c.CREATED_ON.Date == model.SelectedDate.Value.Date)
+                //    .ToListAsync();
             }
 
             // Populate the view model with the filtered data
@@ -323,6 +326,10 @@ namespace SalesDataProject.Controllers
         public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate)
         {
             var model = new List<ProspectCustomer>();
+            if(RecordType==null && SelectedDate == null)
+            {
+                return View("BlockedEmail", model);
+            }
 
             if (RecordType == "Blocked")
             {
@@ -346,7 +353,7 @@ namespace SalesDataProject.Controllers
                     .ToListAsync();
             }
 
-            return View("ViewEmailRecords", model);
+            return View("BlockedEmail" , model);
         }
 
 

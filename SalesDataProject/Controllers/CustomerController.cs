@@ -185,9 +185,21 @@ namespace SalesDataProject.Controllers
                         // Add new customers to the database
                         if (newCustomers.Count > 0)
                         {
-                            _context.Customers.AddRange(newCustomers);
-                            await _context.SaveChangesAsync();
+                            try
+                            {
+                                _context.Customers.AddRange(newCustomers);
+                                await _context.SaveChangesAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                // Log the exception message if needed, e.g., using a logging library
+                                TempData["ErrorMessage"] = $" {ex.Message}";
+
+                                // Optionally, you could re-throw the exception if you want to handle it further up the chain
+                                // throw;
+                            }
                         }
+
 
                         // Combine invalid records and database duplicates
                         var allInvalidRecords = invalidRecords.Concat(existingDuplicateRecords).ToList();
@@ -201,12 +213,12 @@ namespace SalesDataProject.Controllers
                     }
 
                     TempData["SuccessMessage"] = "Successfully Uploaded";
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(ViewCustomers));
                 }
             }
 
             TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(ViewCustomers));
         }
 
 
