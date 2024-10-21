@@ -10,7 +10,7 @@ namespace SalesDataProject.Models
         public string CUSTOMER_CODE { get; set; }
         public string CUSTOMER_NAME { get; set; }
         public string CUSTOMER_EMAIL { get; set; }
-        public string CUSTOMER_CONTACT_NUMBER { get; set; }
+        public string CUSTOMER_CONTACT_NUMBER1 { get; set; }
         public string COUNTRY { get; set; }
         public string CITY { get; set; }
         public string STATE { get; set; }

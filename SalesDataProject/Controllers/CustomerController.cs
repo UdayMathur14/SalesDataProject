@@ -105,8 +105,8 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
-                            var customerEmail = worksheet.Cell(row, 3).GetString();
-                            var customerCode = worksheet.Cell(row, 1).GetString();
+                            var customerEmail = worksheet.Cell(row, 7).GetString();
+                            var customerName = worksheet.Cell(row, 2).GetString();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
 
                             // Validate email format
@@ -116,7 +116,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerCode = customerCode,
+                                    CustomerName = customerName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
                                     ErrorMessage = "Invalid email format."
@@ -131,7 +131,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerCode = customerCode,
+                                    CustomerName = customerName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
                                     ErrorMessage = "Duplicate email in the uploaded file."
@@ -142,13 +142,16 @@ namespace SalesDataProject.Controllers
                             // Create a customer object
                             var customer = new Customer
                             {
-                                CUSTOMER_CODE = customerCode,
-                                CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
+                                CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                                CUSTOMER_NAME = customerName,
                                 CUSTOMER_EMAIL = customerEmail,
-                                CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
-                                COUNTRY = worksheet.Cell(row, 5).GetString(),
-                                CITY = worksheet.Cell(row, 6).GetString(),
-                                STATE = worksheet.Cell(row, 7).GetString(),
+                                CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
+                                CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
+                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
+                                COUNTRY = worksheet.Cell(row, 8).GetString(),
+                                CITY = worksheet.Cell(row,10 ).GetString(),
+                                STATE = worksheet.Cell(row, 9).GetString(),
                                 CREATED_BY = "Admin", // Set this based on your logic
                                 CREATED_ON = DateTime.Now,
                                 MODIFIED_BY = "Admin", // Set this based on your logic
@@ -170,9 +173,9 @@ namespace SalesDataProject.Controllers
                             .Select(c => new InvalidCustomerRecord
                             {
                                 RowNumber = customersFromExcel.IndexOf(c) + 2, // Adding 2 to adjust for zero-based index and skipping header
-                                CustomerCode = c.CUSTOMER_CODE,
+                                CustomerName = c.CUSTOMER_NAME,
                                 CustomerEmail = c.CUSTOMER_EMAIL,
-                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER,
+                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
                                 ErrorMessage = "Email Already Exists in the database."
                             })
                             .ToList();
@@ -252,11 +255,14 @@ namespace SalesDataProject.Controllers
                 // Define the headers in the template.
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
                 worksheet.Cell(1, 2).Value = "CUSTOMER_NAME";
-                worksheet.Cell(1, 3).Value = "CUSTOMER_EMAIL";
-                worksheet.Cell(1, 4).Value = "CUSTOMER_CONTACT_NUMBER";
-                worksheet.Cell(1, 5).Value = "COUNTRY";
-                worksheet.Cell(1, 6).Value = "CITY";
-                worksheet.Cell(1, 7).Value = "STATE";
+                worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
+                worksheet.Cell(1, 4).Value = "CUSTOMER_CONTACT_NUMBER1";
+                worksheet.Cell(1, 5).Value = "CUSTOMER_CONTACT_NUMBER2";
+                worksheet.Cell(1, 6).Value = "CUSTOMER_CONTACT_NUMBER3";
+                worksheet.Cell(1, 7).Value = "EMAIL";
+                worksheet.Cell(1, 8).Value = "COUNTRY";
+                worksheet.Cell(1, 9).Value = "STATE";
+                worksheet.Cell(1, 10).Value = "CITY";
 
                 // Optionally, add some example data for user reference (commented out).
                 // worksheet.Cell(2, 1).Value = "1001";
@@ -304,7 +310,7 @@ namespace SalesDataProject.Controllers
                 {
                     var record = invalidRecords[i];
                     worksheet.Cell(i + 2, 1).Value = record.RowNumber;
-                    worksheet.Cell(i + 2, 2).Value = record.CustomerCode;
+                    worksheet.Cell(i + 2, 2).Value = record.CustomerName;
                     worksheet.Cell(i + 2, 3).Value = record.CustomerEmail;
                     worksheet.Cell(i + 2, 4).Value = record.ErrorMessage;
                 }

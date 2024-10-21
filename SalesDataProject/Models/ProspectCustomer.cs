@@ -21,7 +21,7 @@ namespace SalesDataProject.Models
         public string CUSTOMER_EMAIL { get; set; }
 
         [StringLength(15)]
-        public string CUSTOMER_CONTACT_NUMBER { get; set; }
+        public string CUSTOMER_CONTACT_NUMBER1 { get; set; }
 
         [StringLength(50)]
         public string COUNTRY { get; set; }

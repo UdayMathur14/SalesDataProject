@@ -74,7 +74,7 @@ namespace SalesDataProject.Controllers
                                     CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
                                     CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
                                     CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
+                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
                                     COUNTRY = worksheet.Cell(row, 5).GetString(),
                                     CITY = worksheet.Cell(row, 6).GetString(),
                                     STATE = worksheet.Cell(row, 7).GetString(),
@@ -93,7 +93,7 @@ namespace SalesDataProject.Controllers
                                     CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
                                     CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
                                     CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
+                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
                                     COUNTRY = worksheet.Cell(row, 5).GetString(),
                                     CITY = worksheet.Cell(row, 6).GetString(),
                                     STATE = worksheet.Cell(row, 7).GetString(),
@@ -110,7 +110,7 @@ namespace SalesDataProject.Controllers
                                     CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
                                     CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
                                     CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
+                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
                                     COUNTRY = worksheet.Cell(row, 5).GetString(),
                                     CITY = worksheet.Cell(row, 6).GetString(),
                                     STATE = worksheet.Cell(row, 7).GetString(),
@@ -130,7 +130,7 @@ namespace SalesDataProject.Controllers
                                     CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
                                     CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
                                     CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER = worksheet.Cell(row, 4).GetString(),
+                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
                                     COUNTRY = worksheet.Cell(row, 5).GetString(),
                                     CITY = worksheet.Cell(row, 6).GetString(),
                                     STATE = worksheet.Cell(row, 7).GetString(),
@@ -183,7 +183,7 @@ namespace SalesDataProject.Controllers
                     blockedSheet.Cell(i + 2, 1).Value = blockedCustomers[i].CUSTOMER_CODE;
                     blockedSheet.Cell(i + 2, 2).Value = blockedCustomers[i].CUSTOMER_NAME;
                     blockedSheet.Cell(i + 2, 3).Value = blockedCustomers[i].CUSTOMER_EMAIL;
-                    blockedSheet.Cell(i + 2, 4).Value = blockedCustomers[i].CUSTOMER_CONTACT_NUMBER;
+                    blockedSheet.Cell(i + 2, 4).Value = blockedCustomers[i].CUSTOMER_CONTACT_NUMBER1;
                 }
 
                 // Add headers for clean customers
@@ -198,7 +198,7 @@ namespace SalesDataProject.Controllers
                     cleanSheet.Cell(i + 2, 1).Value = cleanCustomers[i].CUSTOMER_CODE;
                     cleanSheet.Cell(i + 2, 2).Value = cleanCustomers[i].CUSTOMER_NAME;
                     cleanSheet.Cell(i + 2, 3).Value = cleanCustomers[i].CUSTOMER_EMAIL;
-                    cleanSheet.Cell(i + 2, 4).Value = cleanCustomers[i].CUSTOMER_CONTACT_NUMBER;
+                    cleanSheet.Cell(i + 2, 4).Value = cleanCustomers[i].CUSTOMER_CONTACT_NUMBER1;
                 }
 
                 // Prepare the memory stream to send the Excel file
@@ -221,11 +221,14 @@ namespace SalesDataProject.Controllers
                 // Define the headers in the template.
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
                 worksheet.Cell(1, 2).Value = "CUSTOMER_NAME";
-                worksheet.Cell(1, 3).Value = "CUSTOMER_EMAIL";
-                worksheet.Cell(1, 4).Value = "CUSTOMER_CONTACT_NUMBER";
-                worksheet.Cell(1, 5).Value = "COUNTRY";
-                worksheet.Cell(1, 6).Value = "CITY";
-                worksheet.Cell(1, 7).Value = "STATE";
+                worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
+                worksheet.Cell(1, 4).Value = "CUSTOMER_CONTACT_NUMBER1";
+                worksheet.Cell(1, 5).Value = "CUSTOMER_CONTACT_NUMBER2";
+                worksheet.Cell(1, 6).Value = "CUSTOMER_CONTACT_NUMBER3";
+                worksheet.Cell(1, 7).Value = "EMAIL";
+                worksheet.Cell(1, 8).Value = "COUNTRY";
+                worksheet.Cell(1, 9).Value = "STATE";
+                worksheet.Cell(1, 10).Value = "CITY";
 
                 // Optionally, add some example data for user reference (commented out).
                 // worksheet.Cell(2, 1).Value = "1001";

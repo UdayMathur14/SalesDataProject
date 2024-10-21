@@ -40,40 +40,58 @@
                         <span asp-validation-for="CUSTOMER_CODE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_NAME" class="font-weight-bold">Customer Name</label>
+                        <label asp-for="CUSTOMER_NAME" class="font-weight-bold">Customer Name <span class="text-danger">*</span></label>
                         <input asp-for="CUSTOMER_NAME" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_NAME" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_EMAIL" class="font-weight-bold">Email</label>
-                        <input asp-for="CUSTOMER_EMAIL" class="form-control form-control-sm" />
-                        <span asp-validation-for="CUSTOMER_EMAIL" class="text-danger"></span>
+                        <label asp-for="CONTACT_PERSON" class="font-weight-bold">Contact Person</label>
+                        <input asp-for="CONTACT_PERSON" class="form-control form-control-sm" />
+                        <span asp-validation-for="CONTACT_PERSON" class="text-danger"></span>
                     </div>
                 </div>
 
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_CONTACT_NUMBER" class="font-weight-bold">Contact Number</label>
-                        <input asp-for="CUSTOMER_CONTACT_NUMBER" class="form-control form-control-sm" />
-                        <span asp-validation-for="CUSTOMER_CONTACT_NUMBER" class="text-danger"></span>
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER1" class="font-weight-bold">Contact Number 1  <span class="text-danger">*</span> </label>
+                        <input asp-for="CUSTOMER_CONTACT_NUMBER1" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_CONTACT_NUMBER1" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="COUNTRY" class="font-weight-bold">Country</label>
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER2" class="font-weight-bold">Contact Number 2</label>
+                        <input asp-for="CUSTOMER_CONTACT_NUMBER2" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_CONTACT_NUMBER2" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER3" class="font-weight-bold">Contact Number 3</label>
+                        <input asp-for="CUSTOMER_CONTACT_NUMBER3" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_CONTACT_NUMBER3" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="form-row mb-2 d-flex gap-4">
+                    <div class="col-md-3">
+                        <label asp-for="CUSTOMER_EMAIL" class="font-weight-bold">Email <span class="text-danger">*</span></label>
+                        <input asp-for="CUSTOMER_EMAIL" class="form-control form-control-sm" />
+                        <span asp-validation-for="CUSTOMER_EMAIL" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="COUNTRY" class="font-weight-bold">Country <span class="text-danger">*</span></label>
                         <input asp-for="COUNTRY" class="form-control form-control-sm" />
                         <span asp-validation-for="COUNTRY" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CITY" class="font-weight-bold">City</label>
-                        <input asp-for="CITY" class="form-control form-control-sm" />
-                        <span asp-validation-for="CITY" class="text-danger"></span>
-                    </div>
-                </div>
-
-                <div class="form-row mb-2 d-flex gap-4">
-                    <div class="col-md-3">
-                        <label asp-for="STATE" class="font-weight-bold">State</label>
+                        <label asp-for="STATE" class="font-weight-bold">State <span class="text-danger">*</span></label>
                         <input asp-for="STATE" class="form-control form-control-sm" />
                         <span asp-validation-for="STATE" class="text-danger"></span>
+                    </div>
+                    
+                </div>
+                <div class="form-row mb-2 d-flex gap-4">
+                    <div class="col-md-3">
+                        <label asp-for="CITY" class="font-weight-bold">City <span class="text-danger">*</span></label>
+                        <input asp-for="CITY" class="form-control form-control-sm" />
+                        <span asp-validation-for="CITY" class="text-danger"></span>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary ">Submit</button>

@@ -9,24 +9,35 @@ namespace SalesDataProject.Models
     {
         public int ID { get; set; } // Primary Key, auto-incremented
 
-        [Required]
         [StringLength(50)]
         [JsonProperty("customer_code")]
-        public string CUSTOMER_CODE { get; set; } // Unique, not null
+        public string? CUSTOMER_CODE { get; set; } // Unique, not null
 
+        [Required]
         [StringLength(100)]
         [JsonProperty("customer_name")]
         public string CUSTOMER_NAME { get; set; }
+
+        [StringLength(100)]
+        public string? CONTACT_PERSON { get; set; }
+
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
+        public string CUSTOMER_CONTACT_NUMBER1 { get; set; }
+
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
+        public string? CUSTOMER_CONTACT_NUMBER2 { get; set; }
+
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
+        public string? CUSTOMER_CONTACT_NUMBER3 { get; set; }
 
         [Required]
         [StringLength(100)]
         [EmailAddress]
         [JsonProperty("email")]
         public string CUSTOMER_EMAIL { get; set; }
-
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
-        public string CUSTOMER_CONTACT_NUMBER { get; set; }
 
         [StringLength(50)]
         public string COUNTRY { get; set; }

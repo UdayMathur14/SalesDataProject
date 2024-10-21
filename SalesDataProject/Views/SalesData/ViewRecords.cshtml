@@ -2,7 +2,7 @@
 
 <div class="container mt-4">
     <div class="header d-flex justify-content-between align-items-center mb-3">
-        <h2 class="text-primary">Upload Sales Data</h2>
+        <h2 class="text-primary">Upload Mailing Data</h2>
         <div class="buttons d-flex gap-3">
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
@@ -15,7 +15,7 @@
     </div>
 
     <div class="card shadow-sm p-4 mb-5">
-        <h4 class="mb-3 text-center text-secondary">Search Records</h4>
+        <h4 class="mb-3 text-center text-secondary">View Mailing Data</h4>
         <form asp-action="ViewRecord" method="post">
             <div class="row g-3">
                 <div class="col-md-5">
@@ -64,7 +64,7 @@
                                     <td>@customer.CUSTOMER_CODE</td>
                                     <td>@customer.CUSTOMER_NAME</td>
                                     <td>@customer.CUSTOMER_EMAIL</td>
-                                    <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                                    <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
                                     <td>@customer.BlockedDate.ToShortDateString()</td>
                                 </tr>
                     }
@@ -91,7 +91,7 @@
                                     <td>@customer.CUSTOMER_CODE</td>
                                     <td>@customer.CUSTOMER_NAME</td>
                                     <td>@customer.CUSTOMER_EMAIL</td>
-                                    <td>@customer.CUSTOMER_CONTACT_NUMBER</td>
+                                    <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
                                     <td>@customer.CREATED_ON.ToShortDateString()</td>
                                 </tr>
                     }
