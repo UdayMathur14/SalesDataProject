@@ -65,8 +65,8 @@
                                     <td>@customer.CUSTOMER_EMAIL</td>
                                     <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
                                     <td>
-                                        <span class="badge badge-@(customer.IsEmailBlocked ? "danger" : "success")">
-                                            @(customer.IsEmailBlocked ? "Blocked" : "Clean")
+                                        <span class="badge badge-@(customer.IS_EMAIL_BLOCKED ? "danger" : "success")">
+                                            @(customer.IS_EMAIL_BLOCKED ? "Blocked" : "Clean")
                                         </span>
                                     </td>
                                 </tr>

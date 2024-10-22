@@ -46,7 +46,7 @@ namespace SalesDataProject.Controllers
         {
             if (file != null && file.Length > 0)
             {
-                var blockedCustomers = new List<Customer>();
+                var blockedCustomers = new List<ProspectCustomer>();
                 var cleanCustomers = new List<ProspectCustomer>();
 
                 using (var stream = new MemoryStream())
@@ -59,89 +59,45 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
-                            var country = worksheet.Cell(row, 3).GetString();
+                            var email = worksheet.Cell(row, 7).GetString();
 
                             // Check if the customer exists
-                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == country.Trim().ToLower());
-                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == country.Trim().ToLower());
+                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower());
+                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower());
 
-                            
-                            if (existingCustomer != null)
+                            var customerData = new ProspectCustomer
                             {
-                                blockedCustomers.Add(existingCustomer);
-                                var blockedCustomer = new BlockedCustomer
-                                {
-                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                    CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
-                                    CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
-                                    COUNTRY = worksheet.Cell(row, 5).GetString(),
-                                    CITY = worksheet.Cell(row, 6).GetString(),
-                                    STATE = worksheet.Cell(row, 7).GetString(),
-                                    CREATED_ON = DateTime.Now,
-                                    BlockedDate = DateTime.Now,
-                                    CREATED_BY = "Admin" , 
-                                    MODIFIED_BY = "Admin",
-                                    MODIFIED_ON = DateTime.Now
-                                };
-                                _context.BlockedCustomers.Add(blockedCustomer);
-                            }
-                            else if (prospectCustomer != null)
+                                CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                                CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
+                                CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
+                                CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
+                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
+                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
+                                CUSTOMER_EMAIL = worksheet.Cell(row, 7).GetString(),
+                                COUNTRY = worksheet.Cell(row, 8).GetString(),
+                                STATE = worksheet.Cell(row, 9).GetString(),
+                                CITY = worksheet.Cell(row, 10).GetString(),
+                                CREATED_ON = DateTime.Now,
+                                CREATED_BY = "Admin",
+                                MODIFIED_BY = "Admin",
+                                MODIFIED_ON = DateTime.Now
+                            };
+
+                            // If existing customer is found, mark as blocked (RECORD_TYPE = true)
+                            if (existingCustomer != null || prospectCustomer != null)
                             {
-                                var blockedCust = new BlockedCustomer
-                                {
-                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                    CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
-                                    CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
-                                    COUNTRY = worksheet.Cell(row, 5).GetString(),
-                                    CITY = worksheet.Cell(row, 6).GetString(),
-                                    STATE = worksheet.Cell(row, 7).GetString(),
-                                    CREATED_ON = DateTime.Now,
-                                    BlockedDate = DateTime.Now,
-                                    CREATED_BY = "Admin",
-                                    MODIFIED_BY = "Admin",
-                                    MODIFIED_ON = DateTime.Now
-                                };
-                                _context.BlockedCustomers.Add(blockedCust);
-
-                                var blockedCustomerDetails = new Customer
-                                {
-                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                    CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
-                                    CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
-                                    COUNTRY = worksheet.Cell(row, 5).GetString(),
-                                    CITY = worksheet.Cell(row, 6).GetString(),
-                                    STATE = worksheet.Cell(row, 7).GetString(),
-                                    CREATED_ON = DateTime.Now,
-                                    CREATED_BY = "Admin",
-                                    MODIFIED_BY = "Admin",
-                                    MODIFIED_ON = DateTime.Now
-                                };
-
-                                blockedCustomers.Add(blockedCustomerDetails);
-
+                                customerData.RECORD_TYPE = true; // Blocked
+                                customerData.IS_EMAIL_BLOCKED = true;
+                                blockedCustomers.Add(customerData);
                             }
                             else
                             {
-                                var newCustomer = new ProspectCustomer
-                                {
-                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                    CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
-                                    CUSTOMER_EMAIL = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
-                                    COUNTRY = worksheet.Cell(row, 5).GetString(),
-                                    CITY = worksheet.Cell(row, 6).GetString(),
-                                    STATE = worksheet.Cell(row, 7).GetString(),
-                                    CREATED_ON = DateTime.Now,
-                                    CREATED_BY = "Admin",
-                                    MODIFIED_BY = "Admin",
-                                    MODIFIED_ON = DateTime.Now
-                                };
-                                cleanCustomers.Add(newCustomer);
-                                _context.Prospects.Add(newCustomer);
+                                customerData.RECORD_TYPE = false; // Clean
+                                customerData.IS_EMAIL_BLOCKED = false;
+                                cleanCustomers.Add(customerData);
                             }
+
+                            _context.Prospects.Add(customerData);
                         }
 
                         await _context.SaveChangesAsync();
@@ -160,6 +116,7 @@ namespace SalesDataProject.Controllers
 
             return View();
         }
+
         [HttpPost]
         public IActionResult ExportToExcel(string BlockedCustomersJson, string CleanCustomersJson)
         {
@@ -250,48 +207,50 @@ namespace SalesDataProject.Controllers
 
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> ViewRecord(UploadResultViewModel model)
         {
             if (model.RecordType == null)
             {
                 return View("ViewRecords", model);
             }
-            var filteredBlockedCustomers = new List<BlockedCustomer>();
-            var filteredProspectCustomers = new List<ProspectCustomer>();
+
+            var filteredCustomers = new List<ProspectCustomer>();
 
             if (model.RecordType == "Blocked")
             {
-                // Fetch blocked customers based on the selected date
-                filteredBlockedCustomers = await _context.BlockedCustomers
-                    .Where(c => model.SelectedDate == null || c.BlockedDate.Date == model.SelectedDate.Value.Date)
+                // Fetch blocked customers (RECORD_TYPE = 1) based on the selected date
+                filteredCustomers = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == true &&
+                                (model.SelectedDate == null || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date))
                     .ToListAsync();
+                model.BlockedCustomers = filteredCustomers;
             }
             else if (model.RecordType == "Clean")
             {
-                // Fetch prospect (clean) customers based on the selected date
-                filteredProspectCustomers = await _context.Prospects
-                    .Where(c => model.SelectedDate == null || c.CREATED_ON.Date == model.SelectedDate.Value.Date)
+                // Fetch clean customers (RECORD_TYPE = 0) based on the selected date
+                filteredCustomers = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == false &&
+                                (model.SelectedDate == null || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date))
                     .ToListAsync();
+                model.CleanCustomers = filteredCustomers;
             }
             else
             {
-                // Fetch blocked customers for the given date
-                //filteredBlockedCustomers = await _context.BlockedCustomers
-                //    .Where(c => model.SelectedDate == null || c.BlockedDate.Date == model.SelectedDate.Value.Date)
-                //    .ToListAsync();
-
-                //// Fetch prospect (clean) customers for the given date
-                //filteredProspectCustomers = await _context.Prospects
-                //    .Where(c => model.SelectedDate == null || c.CREATED_ON.Date == model.SelectedDate.Value.Date)
-                //    .ToListAsync();
+                // Fetch both blocked and clean customers based on the selected date
+                filteredCustomers = await _context.Prospects
+                    .Where(c => model.SelectedDate == null || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)
+                    .ToListAsync();
+                //model.BlockedCustomers = filteredCustomers;
             }
 
             // Populate the view model with the filtered data
-            model.blockCustomer = filteredBlockedCustomers;
-            model.CleanCustomers = filteredProspectCustomers;
+            
 
             return View("ViewRecords", model);
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> UpdateBlockedEmails(int[] selectedCustomers, string action)
@@ -307,7 +266,7 @@ namespace SalesDataProject.Controllers
                 bool blockStatus = action == "block";
                 foreach (var customer in customersToUpdate)
                 {
-                    customer.IsEmailBlocked = blockStatus;
+                    customer.IS_EMAIL_BLOCKED = blockStatus;
                 }
 
                 await _context.SaveChangesAsync();
@@ -329,35 +288,42 @@ namespace SalesDataProject.Controllers
         public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate)
         {
             var model = new List<ProspectCustomer>();
-            if(RecordType==null && SelectedDate == null)
+
+            // If both record type and selected date are not provided
+            if (string.IsNullOrEmpty(RecordType) && !SelectedDate.HasValue)
             {
                 return View("BlockedEmail", model);
             }
 
+            // Blocked records
             if (RecordType == "Blocked")
             {
                 model = await _context.Prospects
-                    .Where(c => c.IsEmailBlocked &&
-                                (!SelectedDate.HasValue || c.CREATED_ON.Date == SelectedDate.Value.Date))
+                    .Where(c => c.IS_EMAIL_BLOCKED &&
+                                (c.CREATED_ON.HasValue ))
                     .ToListAsync();
             }
+            // Clean records
             else if (RecordType == "Clean")
             {
                 model = await _context.Prospects
-                    .Where(c => !c.IsEmailBlocked &&
-                                (!SelectedDate.HasValue || c.CREATED_ON.Date == SelectedDate.Value.Date))
+                    .Where(c => !c.IS_EMAIL_BLOCKED &&
+                                (!SelectedDate.HasValue ))
                     .ToListAsync();
             }
+            // If no specific record type is selected, show both Blocked and Clean records for the given date
             else if (string.IsNullOrEmpty(RecordType))
             {
-                // Show both blocked and clean if no specific record type is selected but date is provided
                 model = await _context.Prospects
-                    .Where(c => !SelectedDate.HasValue || c.CREATED_ON.Date == SelectedDate.Value.Date)
+                    .Where(c => !SelectedDate.HasValue )
                     .ToListAsync();
             }
 
-            return View("BlockedEmail" , model);
+            return View("BlockedEmail", model);
         }
+
+
+
 
 
 
