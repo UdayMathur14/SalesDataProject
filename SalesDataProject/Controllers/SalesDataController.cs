@@ -245,6 +245,10 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateCustomerStatus(List<int> BlockedCustomerIds, List<int> CleanCustomerIds)
         {
+            if (BlockedCustomerIds.Count==0 && CleanCustomerIds.Count==0)
+            {
+                return RedirectToAction("ViewRecords");
+            }
             // Change blocked customers to clean
             if (BlockedCustomerIds != null && BlockedCustomerIds.Any())
             {
@@ -276,7 +280,7 @@ namespace SalesDataProject.Controllers
             }
 
             // Redirect back to the ViewEmailRecords action with the selected RecordType and SelectedDate
-            return RedirectToAction("ViewEmailRecords", new { RecordType = "Blocked", SelectedDate = DateTime.Now }); // Adjust as needed
+            return RedirectToAction("ViewRecords", new { RecordType = "Blocked", SelectedDate = DateTime.Now }); // Adjust as needed
         }
 
         [HttpPost]
