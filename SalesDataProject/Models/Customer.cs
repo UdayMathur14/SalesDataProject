@@ -36,7 +36,6 @@ namespace SalesDataProject.Models
         [Required]
         [StringLength(100)]
         [EmailAddress]
-        [JsonProperty("email")]
         public string CUSTOMER_EMAIL { get; set; }
 
         [StringLength(50)]

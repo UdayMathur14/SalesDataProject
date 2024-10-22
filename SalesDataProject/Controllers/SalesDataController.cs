@@ -29,16 +29,6 @@ namespace SalesDataProject.Controllers
             return View(model);
 
         }
-        public IActionResult BlockedCustomer(ProspectCustomer model)
-        {
-            return View(model);
-
-        }
-        public IActionResult BlockedEmail(ProspectCustomer? model)
-        {
-            return View();
-
-        }
 
 
         [HttpPost]
@@ -253,74 +243,103 @@ namespace SalesDataProject.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> UpdateBlockedEmails(int[] selectedCustomers, string action)
+        public async Task<IActionResult> UpdateCustomerStatus(List<int> BlockedCustomerIds, List<int> CleanCustomerIds)
         {
-            if (selectedCustomers != null && selectedCustomers.Length > 0)
+            // Change blocked customers to clean
+            if (BlockedCustomerIds != null && BlockedCustomerIds.Any())
             {
-                // Get the customers that need to be updated
-                var customersToUpdate = await _context.Prospects
-                    .Where(c => selectedCustomers.Contains(c.ID))
+                var blockedCustomers = await _context.Prospects
+                    .Where(c => BlockedCustomerIds.Contains(c.ID))
                     .ToListAsync();
 
-                // Update the IsEmailBlocked status based on the action
-                bool blockStatus = action == "block";
-                foreach (var customer in customersToUpdate)
+                foreach (var customer in blockedCustomers)
                 {
-                    customer.IS_EMAIL_BLOCKED = blockStatus;
+                    customer.IS_EMAIL_BLOCKED = false; // Change to clean
                 }
 
                 await _context.SaveChangesAsync();
-
-                // Set a success message based on the action performed
-                TempData["SuccessMessage"] = blockStatus
-                    ? "Selected emails have been marked as blocked."
-                    : "Selected emails have been marked as clean.";
             }
-            else
+
+            // Change clean customers to blocked
+            if (CleanCustomerIds != null && CleanCustomerIds.Any())
             {
-                TempData["ErrorMessage"] = "No records selected.";
+                var cleanCustomers = await _context.Prospects
+                    .Where(c => CleanCustomerIds.Contains(c.ID))
+                    .ToListAsync();
+
+                foreach (var customer in cleanCustomers)
+                {
+                    customer.IS_EMAIL_BLOCKED = true; // Change to blocked
+                }
+
+                await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("BlockedEmail");
+            // Redirect back to the ViewEmailRecords action with the selected RecordType and SelectedDate
+            return RedirectToAction("ViewEmailRecords", new { RecordType = "Blocked", SelectedDate = DateTime.Now }); // Adjust as needed
         }
 
         [HttpPost]
         public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate)
         {
-            var model = new List<ProspectCustomer>();
+            var model = new UploadResultViewModel
+            {
+                BlockCustomersEmailList = new List<ProspectCustomer>(),
+                CleanCustomersEmailList = new List<ProspectCustomer>(),
+                SelectedDate = SelectedDate,
+                RecordType = RecordType,
+                BlockedCustomers = new List<ProspectCustomer>(),
+                CleanCustomers = new List<ProspectCustomer>()
+            };
+
+            // Parse the RecordType to determine if it's clean or blocked
+            bool isClean = RecordType == "Clean";
+            bool isBlocked = RecordType == "Blocked";
 
             // If both record type and selected date are not provided
             if (string.IsNullOrEmpty(RecordType) && !SelectedDate.HasValue)
             {
-                return View("BlockedEmail", model);
+                return View("ViewRecords", model); // Pass the empty model to the view
             }
 
-            // Blocked records
-            if (RecordType == "Blocked")
+            // Blocked records: RecordType == 0 and IS_EMAIL_BLOCKED == true
+            if (isBlocked)
             {
-                model = await _context.Prospects
-                    .Where(c => c.IS_EMAIL_BLOCKED &&
-                                (c.CREATED_ON.HasValue ))
+                model.BlockCustomersEmailList = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true &&
+                                (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
-            // Clean records
-            else if (RecordType == "Clean")
+            // Clean records: RecordType == 0 and IS_EMAIL_BLOCKED == false
+            else if (isClean)
             {
-                model = await _context.Prospects
-                    .Where(c => !c.IS_EMAIL_BLOCKED &&
-                                (!SelectedDate.HasValue ))
+                model.CleanCustomersEmailList = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false &&
+                                (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
             // If no specific record type is selected, show both Blocked and Clean records for the given date
-            else if (string.IsNullOrEmpty(RecordType))
+            else
             {
-                model = await _context.Prospects
-                    .Where(c => !SelectedDate.HasValue )
+                model.BlockCustomersEmailList = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true &&
+                                (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
+                    .ToListAsync();
+
+                model.CleanCustomersEmailList = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false &&
+                                (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
 
-            return View("BlockedEmail", model);
+            return View("ViewRecords", model); // Return the view with the populated UploadResultViewModel
         }
+
+
+
+
+
+
 
 
 

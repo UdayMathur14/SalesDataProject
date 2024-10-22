@@ -33,7 +33,7 @@ namespace SalesDataProject.Models
 
         [StringLength(100)]
         [EmailAddress]
-        public string CUSTOMER_EMAIL { get; set; }
+        public string? CUSTOMER_EMAIL { get; set; }
 
         [StringLength(50)]
         public string COUNTRY { get; set; }
