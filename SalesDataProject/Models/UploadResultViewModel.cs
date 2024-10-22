@@ -8,6 +8,7 @@
         public string? RecordType { get; set; } // Can be "Blocked" or "Clean"
         public List<ProspectCustomer>? CleanCustomersEmailList { get; set; }
         public List<ProspectCustomer>? BlockCustomersEmailList { get; set; }//to block and for unblock
+        public List<InvalidCustomerRecord>? invalidCustomerRecords { get; set; }
 
     }
 }

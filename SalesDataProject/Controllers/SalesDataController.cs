@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
+using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
 {
@@ -38,7 +39,7 @@ namespace SalesDataProject.Controllers
             {
                 var blockedCustomers = new List<ProspectCustomer>();
                 var cleanCustomers = new List<ProspectCustomer>();
-
+                var invalidRecords = new List<InvalidCustomerRecord>();
                 using (var stream = new MemoryStream())
                 {
                     await file.CopyToAsync(stream);
@@ -50,7 +51,31 @@ namespace SalesDataProject.Controllers
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
                             var email = worksheet.Cell(row, 7).GetString();
-
+                            if (!IsValidEmail(email))
+                            {
+                                // Store invalid record
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CustomerEmail = email,
+                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
+                                    ErrorMessage = "Invalid email format."
+                                });
+                                continue; // Skip to the next row
+                            }
+                            else if(worksheet.Cell(row, 2).GetString()=="" || worksheet.Cell(row, 4).GetString() == "")
+                            {
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CustomerEmail = email,
+                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
+                                    ErrorMessage = "Empty CustomerName or CustomerNumber"
+                                });
+                                continue;
+                            }
                             // Check if the customer exists
                             var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower());
                             var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower());
@@ -97,7 +122,8 @@ namespace SalesDataProject.Controllers
                 var model = new UploadResultViewModel
                 {
                     BlockedCustomers = blockedCustomers,
-                    CleanCustomers = cleanCustomers
+                    CleanCustomers = cleanCustomers,
+                    invalidCustomerRecords = invalidRecords
                 };
 
                 // Return view with blocked and clean customers
@@ -106,17 +132,35 @@ namespace SalesDataProject.Controllers
 
             return View();
         }
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                // Use Regex to validate the email pattern
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                return emailRegex.IsMatch(email);
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         [HttpPost]
-        public IActionResult ExportToExcel(string BlockedCustomersJson, string CleanCustomersJson)
+        public IActionResult ExportToExcel(string BlockedCustomersJson, string CleanCustomersJson ,string InvalidCustomersJson)
         {
             var blockedCustomers = JsonConvert.DeserializeObject<List<Customer>>(BlockedCustomersJson);
             var cleanCustomers = JsonConvert.DeserializeObject<List<Customer>>(CleanCustomersJson);
+            var invalidCustomers = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(InvalidCustomersJson);
 
             using (var workbook = new XLWorkbook())
             {
                 var blockedSheet = workbook.Worksheets.Add("Blocked Customers");
                 var cleanSheet = workbook.Worksheets.Add("Clean Customers");
+                var invalidSheet = workbook.Worksheets.Add("Invalid Customers");
 
                 // Add headers for blocked customers
                 blockedSheet.Cell(1, 1).Value = "Customer Code";
@@ -147,6 +191,22 @@ namespace SalesDataProject.Controllers
                     cleanSheet.Cell(i + 2, 3).Value = cleanCustomers[i].CUSTOMER_EMAIL;
                     cleanSheet.Cell(i + 2, 4).Value = cleanCustomers[i].CUSTOMER_CONTACT_NUMBER1;
                 }
+
+                invalidSheet.Cell(1, 1).Value = "Row";
+                invalidSheet.Cell(1, 2).Value = "Customer Name";
+                invalidSheet.Cell(1, 3).Value = "Email";
+                invalidSheet.Cell(1, 4).Value = "Contact Number";
+                invalidSheet.Cell(1, 5).Value = "Error Message";
+
+                for (int i = 0; i < invalidCustomers.Count; i++)
+                {
+                    invalidSheet.Cell(i + 2, 1).Value = invalidCustomers[i].RowNumber;
+                    invalidSheet.Cell(i + 2, 2).Value = invalidCustomers[i].CustomerName;
+                    invalidSheet.Cell(i + 2, 3).Value = invalidCustomers[i].CustomerEmail;
+                    invalidSheet.Cell(i + 2, 4).Value = invalidCustomers[i].CustomerNumber;
+                    invalidSheet.Cell(i + 2, 5).Value = invalidCustomers[i].ErrorMessage;
+                }
+
 
                 // Prepare the memory stream to send the Excel file
                 using (var stream = new MemoryStream())
@@ -260,8 +320,9 @@ namespace SalesDataProject.Controllers
                 {
                     customer.IS_EMAIL_BLOCKED = false; // Change to clean
                 }
-
+                
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Successfully cleaned selected customers.";
             }
 
             // Change clean customers to blocked
@@ -275,12 +336,13 @@ namespace SalesDataProject.Controllers
                 {
                     customer.IS_EMAIL_BLOCKED = true; // Change to blocked
                 }
-
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Successfully blocked selected customers.";
+
             }
 
             // Redirect back to the ViewEmailRecords action with the selected RecordType and SelectedDate
-            return RedirectToAction("ViewRecords", new { RecordType = "Blocked", SelectedDate = DateTime.Now }); // Adjust as needed
+            return RedirectToAction("ViewRecords"); // Adjust as needed
         }
 
         [HttpPost]

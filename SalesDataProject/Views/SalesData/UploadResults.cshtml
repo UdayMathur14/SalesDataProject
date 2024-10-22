@@ -60,11 +60,37 @@
             </table>
         </div>
     </div>
-
+    <div class="card mb-4 shadow">
+        <div class="card-body">
+            <h3 class="text-secondary">Invalid Customers Details</h3>
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Customer Code</th>
+                        <th>Customer Name</th>
+                        <th>Email</th>
+                        <th>Contact Number</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model.invalidCustomerRecords)
+                    {
+                        <tr>
+                            <td>@customer.RowNumber</td>
+                            <td>@customer.CustomerNumber</td>
+                            <td>@customer.CustomerName</td>
+                            <td>@customer.CustomerEmail</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class="text-center">
         <form asp-action="ExportToExcel" method="post">
             <input type="hidden" name="BlockedCustomersJson" value="@JsonSerializer.Serialize(Model.BlockedCustomers)" />
             <input type="hidden" name="CleanCustomersJson" value="@JsonSerializer.Serialize(Model.CleanCustomers)" />
+            <input type="hidden" name="InvalidCustomersJson" value="@JsonSerializer.Serialize(Model.invalidCustomerRecords)" />
             <button type="submit" class="btn btn-primary">Export to Excel</button>
         </form>
     </div>

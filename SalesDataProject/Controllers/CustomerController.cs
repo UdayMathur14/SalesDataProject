@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -122,6 +123,18 @@ namespace SalesDataProject.Controllers
                                     ErrorMessage = "Invalid email format."
                                 });
                                 continue; // Skip to the next row
+                            }
+                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "")
+                            {
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
+                                    ErrorMessage = "Empty CustomerName or CustomerNumber"
+                                });
+                                continue;
                             }
 
                             // Check for duplicates in the list of customers
