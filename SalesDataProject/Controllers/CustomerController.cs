@@ -18,6 +18,11 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult Index()
         {
+            if (HttpContext.Session.GetString("CanAccessCustomer") != "true")
+            {
+                // If not authorized, redirect to home or another page
+                return RedirectToAction("Login", "Auth");
+            }
             return View();
         }
         public async Task<IActionResult> ViewCustomers(Customer model)

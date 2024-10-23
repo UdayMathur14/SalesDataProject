@@ -1,37 +1,62 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var canAccessCustomer = Context.Session.GetString("CanAccessCustomer") == "True";
+    var canAccessSales = Context.Session.GetString("CanAccessSales") == "True";
+    var canAccessUserManagement = Context.Session.GetString("CanAccessUserManagement") == "True";
 }
 
+
 <div class="container mt-5">
-    <h2 class="mb-5 text-center display-5  text-dark" style="font-weight: bold; font-style: italic; font-size: 2.0rem">Explore Our Modules</h2>
+    <h2 class="mb-5 text-center display-5 text-dark" style="font-weight: bold; font-style: italic; font-size: 2.0rem">Explore Our Modules</h2>
     <div class="row justify-content-center">
         <!-- Customer Module Card -->
-        <div class="col-md-6 col-lg-5 mb-5">
-            <div class="card custom-card shadow-lg border-0 rounded-3">
-                <div class="gradient-bg">
-                    <i class="fas fa-users fa-3x"></i>
-                </div>
-                <div class="card-content">
-                    <h5 class="card-title">Customer Module</h5>
-                    <p class="card-text">Upload customer data, view customer details, and more.</p>
-                    <a href="@Url.Action("ViewCustomers", "Customer")" class="btn btn-primary">Customer Module</a>
+        @if (canAccessCustomer)
+        {
+            <div class="col-md-6 col-lg-5 mb-5">
+                <div class="card custom-card shadow-lg border-0 rounded-3">
+                    <div class="gradient-bg">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5 class="card-title">Customer Module</h5>
+                        <p class="card-text">Upload customer data, view customer details, and more.</p>
+                        <a href="@Url.Action("ViewCustomers", "Customer")" class="btn btn-primary">Customer Module</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
         <!-- Sales Data Card -->
-        <div class="col-md-6 col-lg-5 mb-5">
-            <div class="card custom-card shadow-lg border-0 rounded-3">
-                <div class="gradient-bg">
-                    <i class="fas fa-chart-line fa-3x"></i>
-                </div>
-                <div class="card-content">
-                    <h5 class="card-title">Sales Data</h5>
-                    <p class="card-text">Upload Sales Data and view blocked and clean records.</p>
-                    <a href="@Url.Action("ViewRecords", "SalesData")" class="btn btn-primary">Sales Module</a>
+        @if (canAccessSales)
+        {
+            <div class="col-md-6 col-lg-5 mb-5">
+                <div class="card custom-card shadow-lg border-0 rounded-3">
+                    <div class="gradient-bg">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5 class="card-title">Sales Data</h5>
+                        <p class="card-text">Upload Sales Data and view blocked and clean records.</p>
+                        <a href="@Url.Action("ViewRecords", "SalesData")" class="btn btn-primary">Sales Module</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
+        @if (canAccessUserManagement)
+        {
+            <div class="col-md-6 col-lg-5 mb-5">
+                <div class="card custom-card shadow-lg border-0 rounded-3">
+                    <div class="gradient-bg">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5 class="card-title">User Management</h5>
+                        <p class="card-text">User Management Add/Delete and Permissions</p>
+                        <a href="@Url.Action("CreateUser", "Auth")" class="btn btn-primary">User Module</a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 

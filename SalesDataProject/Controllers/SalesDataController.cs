@@ -1,4 +1,4 @@
-﻿    using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -18,15 +18,30 @@ namespace SalesDataProject.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            if (HttpContext.Session.GetString("CanAccessSales") != "true")
+            {
+                // If not authorized, redirect to home or another page
+                return RedirectToAction("AccessDenied", "Auth");
+            }
             return View();
         }
         public IActionResult UploadResults(UploadResultViewModel model)
         {
+            if (HttpContext.Session.GetString("CanAccessSales") != "true")
+            {
+                // If not authorized, redirect to home or another page
+                return RedirectToAction("AccessDenied", "Auth");
+            }
             return View(model);
 
         }
         public IActionResult ViewRecords(UploadResultViewModel model)
         {
+            if (HttpContext.Session.GetString("CanAccessSales") != "true")
+            {
+                // If not authorized, redirect to home or another page
+                return RedirectToAction("AccessDenied", "Auth");
+            }
             return View(model);
 
         }
