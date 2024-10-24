@@ -27,12 +27,12 @@ namespace SalesDataProject.Controllers
             if (user != null)
             {
                 HttpContext.Session.SetInt32("UserId", user.Id);
-                //HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer.ToString());
-                //HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales.ToString());
-                //HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement.ToString());
-                HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer ? "true" : "false");
-                HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales ? "true" : "false");
-                HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement ? "true" : "false");
+                HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer.ToString());
+                HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales.ToString());
+                HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement.ToString());
+                //HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer ? "true" : "false");
+                //HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales ? "true" : "false");
+                //HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement ? "true" : "false");
                 return RedirectToAction("Index", "Home");
 
             }
