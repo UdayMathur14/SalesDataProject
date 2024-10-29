@@ -18,7 +18,8 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("CanAccessCustomer") != "true")
+            var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
+            if (canAccessCustomer!="True")
             {
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("Login", "Auth");

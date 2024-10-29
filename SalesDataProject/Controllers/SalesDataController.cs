@@ -18,7 +18,7 @@ namespace SalesDataProject.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            if (HttpContext.Session.GetString("CanAccessSales") != "true")
+            if (HttpContext.Session.GetString("CanAccessSales") != "True")
             {
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("AccessDenied", "Auth");
@@ -27,7 +27,7 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult UploadResults(UploadResultViewModel model)
         {
-            if (HttpContext.Session.GetString("CanAccessSales") != "true")
+            if (HttpContext.Session.GetString("CanAccessSales") != "True")
             {
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("AccessDenied", "Auth");
@@ -37,7 +37,7 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult ViewRecords(UploadResultViewModel model)
         {
-            if (HttpContext.Session.GetString("CanAccessSales") != "true")
+            if (HttpContext.Session.GetString("CanAccessSales") != "True")
             {
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("AccessDenied", "Auth");

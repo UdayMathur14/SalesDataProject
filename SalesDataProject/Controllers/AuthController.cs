@@ -30,9 +30,6 @@ namespace SalesDataProject.Controllers
                 HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer.ToString());
                 HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales.ToString());
                 HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement.ToString());
-                //HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer ? "true" : "false");
-                //HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales ? "true" : "false");
-                //HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement ? "true" : "false");
                 return RedirectToAction("Index", "Home");
 
             }
@@ -44,7 +41,7 @@ namespace SalesDataProject.Controllers
         // User Management GET
         public IActionResult ManageUsers()
         {
-            if (HttpContext.Session.GetString("CanAccessUserManagement") != "true")
+            if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
             {
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("Login", "Auth");
@@ -56,7 +53,7 @@ namespace SalesDataProject.Controllers
         // Create User GET
         public IActionResult CreateUser()
         {
-            if (HttpContext.Session.GetString("CanAccessUserManagement") != "true")
+            if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
             {
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("Login", "Auth");
