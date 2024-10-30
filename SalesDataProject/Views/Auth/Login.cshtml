@@ -2,18 +2,35 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    Layout=null;
 }
 <!-- Views/Auth/Login.cshtml -->
 @model SalesDataProject.Models.AuthenticationModels.User
 
-<form asp-action="Login" method="post">
-    <div>
-        <label>Username</label>
-        <input type="text" asp-for="Username" />
+<div style="display: flex; height: 100vh; margin: 0; padding: 0;">
+    <!-- First Div for Image or Background -->
+    <div style="width: 50vw; background-color: black; display: flex;">
+        <!-- You can add an image or content here if needed -->
     </div>
-    <div>
-        <label>Password</label>
-        <input type="password" asp-for="Password" />
+
+    <!-- Second Div for the Form -->
+    <div style="width: 50vw; display: flex; align-items: center; justify-content: center; ">
+        <form asp-action="Login" method="post" class="form-group">
+            <h1>Login</h1>
+            <p>
+                Welcome back, Please login to your
+                account!
+            </p>
+            <div style="margin-bottom: 15px;" class="form-group">
+                <label>Username</label>
+                <input type="text" asp-for="Username" placeholder="Enter User Id " class="input-field" />
+            </div>
+            <div style="margin-bottom: 15px;" class="form-group">
+                <label>Password<span></span></label>
+                <input type="password" asp-for="Password" placeholder="Enter Password " class="input-field" />
+            </div>
+            <button type="submit">Sign In</button>
+        </form>
     </div>
-    <button type="submit">Login</button>
-</form>
+</div>
+
