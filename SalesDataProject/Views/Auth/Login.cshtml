@@ -1,8 +1,11 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-    Layout=null;
+﻿@{
+    Layout = null;
+}
+@if (TempData["Error"] != null)
+{
+    <div class="error-message" id="errorMessage">
+        <p>@TempData["Error"]</p>
+    </div>
 }
 <!-- Views/Auth/Login.cshtml -->
 @model SalesDataProject.Models.AuthenticationModels.User
@@ -14,24 +17,48 @@
     </div>
 
     <!-- Second Div for the Form -->
-    <div style="width: 50vw; display: flex; align-items: center; justify-content: center; ">
+    <div style="width: 50vw; display: flex; align-items: center; justify-content: center;">
         <form asp-action="Login" method="post" class="form-group">
             <h1>Login</h1>
-            <p>
-                Welcome back, Please login to your
-                account!
-            </p>
-            <img src="Images/Billlogo.png" style="height:200px ;width:300px"       />
+            <p>Welcome back, Please login to your account!</p>
+            <img src="Images/Billlogo.png" style="height:200px; width:300px;" />
             <div style="margin-bottom: 15px;" class="form-group">
                 <label>Username</label>
-                <input type="text" asp-for="Username" placeholder="Enter User Id " class="input-field" />
+                <input type="text" asp-for="Username" placeholder="Enter User Id" class="input-field" />
             </div>
             <div style="margin-bottom: 15px;" class="form-group">
-                <label>Password<span></span></label>
-                <input type="password" asp-for="Password" placeholder="Enter Password " class="input-field" />
+                <label>Password</label>
+                <input type="password" asp-for="Password" placeholder="Enter Password" class="input-field" />
             </div>
             <button type="submit">Sign In</button>
         </form>
     </div>
 </div>
 
+<style>
+    .error-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #f44336; /* Softer red for a less intense tone */
+        color: #ffffff;
+        padding: 15px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        transition: opacity 0.4s ease-out;
+        opacity: 0.95;
+    }
+</style>
+
+<script>
+    // Automatically hide the error message after 5 seconds
+    setTimeout(() => {
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+    }, 2000);
+</script>

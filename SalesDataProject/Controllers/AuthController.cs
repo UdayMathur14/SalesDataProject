@@ -34,7 +34,7 @@ namespace SalesDataProject.Controllers
 
             }
 
-            ModelState.AddModelError("", "Invalid login attempt.");
+            TempData["Error"] = "Incorrect password. Please try again.";
             return View(model);
         }
 

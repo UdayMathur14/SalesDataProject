@@ -2,30 +2,34 @@
 
 <h2 class="text-center my-4">Create User</h2>
 
-<form asp-action="CreateUser" method="post" class="container p-4 border rounded shadow-sm" style="max-width: 500px;">
-    <div class="form-group">
-        <label asp-for="Username" class="font-weight-bold">Username</label>
-        <input type="text" asp-for="Username" class="form-control" placeholder="Enter username" />
-        <span asp-validation-for="Username" class="text-danger"></span>
+<form asp-action="CreateUser" method="post" class="container p-4 border rounded shadow-sm">
+    <div class="form-row align-items-center">
+        <div class="col-md-3 mb-3">
+            <label asp-for="Username" class="font-weight-bold">Username</label>
+            <input type="text" asp-for="Username" class="form-control" placeholder="Enter username" />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label asp-for="Password" class="font-weight-bold">Password</label>
+            <input type="password" asp-for="Password" class="form-control" placeholder="Enter password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-3 mb-3 form-check">
+            <input type="checkbox" asp-for="CanAccessCustomer" class="form-check-input" />
+            <label asp-for="CanAccessCustomer" class="form-check-label font-weight-bold">Can Access Customer</label>
+        </div>
+
+        <div class="col-md-3 mb-3 form-check">
+            <input type="checkbox" asp-for="CanAccessSales" class="form-check-input" />
+            <label asp-for="CanAccessSales" class="form-check-label font-weight-bold">Can Access Sales</label>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label asp-for="Password" class="font-weight-bold">Password</label>
-        <input type="password" asp-for="Password" class="form-control" placeholder="Enter password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Create User</button>
     </div>
-
-    <div class="form-group form-check">
-        <input type="checkbox" asp-for="CanAccessCustomer" class="form-check-input" />
-        <label asp-for="CanAccessCustomer" class="form-check-label font-weight-bold">Can Access Customer</label>
-    </div>
-
-    <div class="form-group form-check">
-        <input type="checkbox" asp-for="CanAccessSales" class="form-check-input" />
-        <label asp-for="CanAccessSales" class="form-check-label font-weight-bold">Can Access Sales</label>
-    </div>
-
-    <button type="submit" class="btn btn-primary btn-block font-weight-bold">Create User</button>
 </form>
 
 <style>
@@ -42,7 +46,6 @@
     }
 
     .btn-primary {
-        padding: 10px;
         font-size: 1.1rem;
     }
 </style>
