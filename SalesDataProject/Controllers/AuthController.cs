@@ -74,5 +74,30 @@ namespace SalesDataProject.Controllers
 
             return View(model);
         }
+        [HttpPost]
+        public IActionResult UpdateUserAccess(List<User> Users)
+        {
+            foreach (var user in Users)
+            {
+                // Fetch the existing user from the database (replace with your data context)
+                var existingUser = _context.Users.FirstOrDefault(u => u.Username == user.Username);
+                if (existingUser != null)
+                {
+                    // Update the access permissions based on form data
+                    existingUser.CanAccessCustomer = user.CanAccessCustomer;
+                    existingUser.CanAccessSales = user.CanAccessSales;
+
+                    // Save changes to the database
+                    _context.Update(existingUser);
+                }
+            }
+
+            // Commit all changes at once
+            _context.SaveChanges();
+
+            // Redirect or return a view after updating
+            return RedirectToAction("ManageUsers");
+        }
+
     }
 }
