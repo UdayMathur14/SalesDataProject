@@ -10,7 +10,7 @@ namespace SalesDataProject.Models.AuthenticationModels
         public string Username { get; set; }
 
         [Required]
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "Passport must be of 6 characters")]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "Password must be of 6 characters")]
         public string Password { get; set; }
 
         public bool CanAccessCustomer { get; set; } = false;

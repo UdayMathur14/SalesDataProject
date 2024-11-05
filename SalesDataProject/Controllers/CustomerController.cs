@@ -55,6 +55,7 @@ namespace SalesDataProject.Controllers
             var username = HttpContext.Session.GetString("Username");
             customer.CREATED_BY = username;
             customer.MODIFIED_BY = username;
+            customer.CUSTOMER_EMAIL.ToLower();
 
             try
             {
@@ -117,7 +118,7 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
-                            var customerEmail = worksheet.Cell(row, 7).GetString();
+                            var customerEmail = worksheet.Cell(row, 7).GetString().ToLower();
                             var customerName = worksheet.Cell(row, 2).GetString();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
 

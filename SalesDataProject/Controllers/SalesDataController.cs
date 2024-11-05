@@ -66,7 +66,7 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
-                            var email = worksheet.Cell(row, 7).GetString();
+                            var email = worksheet.Cell(row, 7).GetString().ToLower();
                             if (!IsValidEmail(email))
                             {
                                 // Store invalid record
@@ -104,7 +104,7 @@ namespace SalesDataProject.Controllers
                                 CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
                                 CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
                                 CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
-                                CUSTOMER_EMAIL = worksheet.Cell(row, 7).GetString(),
+                                CUSTOMER_EMAIL = worksheet.Cell(row, 7).GetString().ToLower(),
                                 COUNTRY = worksheet.Cell(row, 8).GetString(),
                                 STATE = worksheet.Cell(row, 9).GetString(),
                                 CITY = worksheet.Cell(row, 10).GetString(),
@@ -375,7 +375,7 @@ namespace SalesDataProject.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Successfully cleaned selected customers.";
+                TempData["message"] = "Successfully cleaned selected customers.";
             }
 
             // Change clean customers to blocked
@@ -390,7 +390,7 @@ namespace SalesDataProject.Controllers
                     customer.IS_EMAIL_BLOCKED = true; // Change to blocked
                 }
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Successfully blocked selected customers.";
+                TempData["message"] = "Successfully blocked selected customers.";
 
             }
 
