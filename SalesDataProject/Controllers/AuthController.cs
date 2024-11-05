@@ -30,6 +30,7 @@ namespace SalesDataProject.Controllers
                 HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer.ToString());
                 HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales.ToString());
                 HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement.ToString());
+                TempData["Success"] = "Successfully Login";
                 return RedirectToAction("Index", "Home");
 
             }
