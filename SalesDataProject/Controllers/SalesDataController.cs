@@ -340,13 +340,14 @@ namespace SalesDataProject.Controllers
                                 (model.SelectedDate == null ||
                                  (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
+                if (!filteredBlockedCustomers.Any() && !filteredCleanCustomers.Any())
+                {
+                    TempData["message"] = "No Record Found";
+                }
+                model.CleanCustomers = filteredCleanCustomers;
+                model.BlockedCustomers = filteredBlockedCustomers;
             }
-            if (!filteredBlockedCustomers.Any() && !filteredCleanCustomers.Any())
-            {
-                TempData["message"] = "No Record Found";
-            }
-            model.CleanCustomers = filteredCleanCustomers;
-            model.BlockedCustomers = filteredBlockedCustomers;
+          
 
             // Populate the view model with the filtered data
             return View("ViewRecords", model);
