@@ -50,6 +50,7 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadSalesData(IFormFile file)
         {
+            var username = HttpContext.Session.GetString("Username");
             if (file != null && file.Length > 0)
             {
                 var blockedCustomers = new List<ProspectCustomer>();
@@ -108,8 +109,8 @@ namespace SalesDataProject.Controllers
                                 STATE = worksheet.Cell(row, 9).GetString(),
                                 CITY = worksheet.Cell(row, 10).GetString(),
                                 CREATED_ON = DateTime.Now,
-                                CREATED_BY = "Admin",
-                                MODIFIED_BY = "Admin",
+                                CREATED_BY = username,
+                                MODIFIED_BY = username,
                                 MODIFIED_ON = DateTime.Now
                             };
 

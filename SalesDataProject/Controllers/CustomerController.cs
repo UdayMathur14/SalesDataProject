@@ -12,10 +12,13 @@ namespace SalesDataProject.Controllers
     public class CustomerController : Controller
     {
         private readonly AppDbContext _context;
+        
         public CustomerController(AppDbContext context)
         {
             _context = context;
         }
+        
+
         public IActionResult Index()
         {
             var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
@@ -49,8 +52,9 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Customer customer)
         {
-            customer.CREATED_BY = "Admin";
-            customer.MODIFIED_BY = "Admin";
+            var username = HttpContext.Session.GetString("Username");
+            customer.CREATED_BY = "username";
+            customer.MODIFIED_BY = "username";
 
             try
             {
@@ -92,6 +96,7 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadExcel(IFormFile file)
         {
+            var username = HttpContext.Session.GetString("Username");
             var invalidRecords = new List<InvalidCustomerRecord>(); // List to store invalid records
             var existingDuplicateRecords = new List<InvalidCustomerRecord>(); // List to store records that are duplicates in the database
 
@@ -171,9 +176,9 @@ namespace SalesDataProject.Controllers
                                 COUNTRY = worksheet.Cell(row, 8).GetString(),
                                 CITY = worksheet.Cell(row,10 ).GetString(),
                                 STATE = worksheet.Cell(row, 9).GetString(),
-                                CREATED_BY = "Admin", // Set this based on your logic
+                                CREATED_BY = username, // Set this based on your logic
                                 CREATED_ON = DateTime.Now,
-                                MODIFIED_BY = "Admin", // Set this based on your logic
+                                MODIFIED_BY = username, // Set this based on your logic
                                 MODIFIED_ON = DateTime.Now
                             };
 

@@ -27,6 +27,7 @@ namespace SalesDataProject.Controllers
             if (user != null)
             {
                 HttpContext.Session.SetInt32("UserId", user.Id);
+                HttpContext.Session.SetString("Username", user.Username.ToString());
                 HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer.ToString());
                 HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales.ToString());
                 HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement.ToString());

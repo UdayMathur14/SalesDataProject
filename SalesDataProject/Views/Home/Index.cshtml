@@ -7,7 +7,7 @@
 
 @if (TempData["Success"] != null)
 {
-    <div class="error-message" id="errorMessage">
+    <div class="error-message" id="errorMessage" >
         <p>@TempData["Success"]</p>
     </div>
 }
@@ -40,8 +40,8 @@
                         <i class="fas fa-chart-line fa-3x"></i>
                     </div>
                     <div class="card-content">
-                        <h5 class="card-title">Sales Data</h5>
-                        <p class="card-text">Upload Sales Data and view blocked and clean records.</p>
+                        <h5 class="card-title">Mailing Module</h5>
+                        <p class="card-text">Upload Sales Data and view Blocked/Clean records.</p>
                         <a href="@Url.Action("ViewRecords", "SalesData")" class="btn btn-primary">Sales Module</a>
                     </div>
                 </div>
@@ -154,8 +154,8 @@
         top: 20px;
         right: 20px;
         background-color: lightgreen; /* Softer red for a less intense tone */
-        color: #ffffff;
-        padding: 15px 20px;
+        color: black;
+        padding: 10px 10px;
         border-radius: 8px;
         font-size: 16px;
         font-weight: 500;
@@ -163,6 +163,8 @@
         z-index: 1000;
         transition: opacity 0.4s ease-out;
         opacity: 0.95;
+        display:flex;
+        align-items:center;
     }
 </style>
 <script>
@@ -172,5 +174,5 @@
         if (errorMessage) {
             errorMessage.style.display = 'none';
         }
-    }, 1000);
+    }, 1500);
 </script>
