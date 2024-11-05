@@ -80,7 +80,7 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue; // Skip to the next row
                             }
-                            else if(worksheet.Cell(row, 2).GetString()=="" || worksheet.Cell(row, 4).GetString() == "")
+                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "")
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -141,7 +141,7 @@ namespace SalesDataProject.Controllers
                     CleanCustomers = cleanCustomers,
                     invalidCustomerRecords = invalidRecords
                 };
-
+                TempData["Success"] = "Successfully Uploaded";
                 // Return view with blocked and clean customers
                 return View("UploadResults", model);
             }
@@ -166,7 +166,7 @@ namespace SalesDataProject.Controllers
         }
 
         [HttpPost]
-        public IActionResult ExportToExcel(string BlockedCustomersJson, string CleanCustomersJson ,string InvalidCustomersJson)
+        public IActionResult ExportToExcel(string BlockedCustomersJson, string CleanCustomersJson, string InvalidCustomersJson)
         {
             var blockedCustomers = JsonConvert.DeserializeObject<List<Customer>>(BlockedCustomersJson);
             var cleanCustomers = JsonConvert.DeserializeObject<List<Customer>>(CleanCustomersJson);
@@ -273,46 +273,82 @@ namespace SalesDataProject.Controllers
 
 
         [HttpPost]
-        [HttpPost]
         public async Task<IActionResult> ViewRecord(UploadResultViewModel model)
         {
-            if (model.RecordType == null)
-            {
-                return View("ViewRecords", model);
-            }
+            var filteredBlockedCustomers = new List<ProspectCustomer>();
+            var filteredCleanCustomers = new List<ProspectCustomer>();
+            var username = HttpContext.Session.GetString("Username");
+            //if (model.RecordType == null)
+            //{
+            //    return View("ViewRecords", model);
+            //}
 
             var filteredCustomers = new List<ProspectCustomer>();
 
             if (model.RecordType == "Blocked")
             {
-                // Fetch blocked customers (RECORD_TYPE = 1) based on the selected date
+                // Fetch blocked customers (RECORD_TYPE = 1) created by the current user, based on the selected date
                 filteredCustomers = await _context.Prospects
                     .Where(c => c.RECORD_TYPE == true &&
-                                (model.SelectedDate == null || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date))
+                                c.CREATED_BY == username &&
+                                (model.SelectedDate == null ||
+                                 (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
+                if (!filteredCustomers.Any())
+                {
+                    TempData["message"] = "No Record Found";
+                }
+
                 model.BlockedCustomers = filteredCustomers;
             }
             else if (model.RecordType == "Clean")
             {
-                // Fetch clean customers (RECORD_TYPE = 0) based on the selected date
+                // Fetch clean customers (RECORD_TYPE = 0) created by the current user, based on the selected date
                 filteredCustomers = await _context.Prospects
                     .Where(c => c.RECORD_TYPE == false &&
-                                (model.SelectedDate == null || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date))
+                                c.CREATED_BY == username &&
+                                (model.SelectedDate == null ||
+                                 (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
+                if (!filteredCustomers.Any())
+                {
+                    TempData["message"] = "No Record Found";
+                }
                 model.CleanCustomers = filteredCustomers;
             }
             else
             {
-                // Fetch both blocked and clean customers based on the selected date
-                filteredCustomers = await _context.Prospects
-                    .Where(c => model.SelectedDate == null || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)
+                // Fetch both blocked and clean customers created by the current user, based on the selected date
+                
+                //filteredCustomers = await _context.Prospects
+                //    .Where(c => c.CREATED_BY == username &&
+                //                (model.SelectedDate == null ||
+                //                 (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
+                //    .ToListAsync();
+                // model.BlockedCustomers = filteredCustomers; // Uncomment if you want to use this list for both
+
+                //for blocked one 
+                filteredBlockedCustomers = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == true &&
+                                c.CREATED_BY == username &&
+                                (model.SelectedDate == null ||
+                                 (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
-                //model.BlockedCustomers = filteredCustomers;
+                filteredCleanCustomers = await _context.Prospects
+                    .Where(c => c.RECORD_TYPE == false &&
+                                c.CREATED_BY == username &&
+                                (model.SelectedDate == null ||
+                                 (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
+                    .ToListAsync();
             }
+            if (!filteredBlockedCustomers.Any() && !filteredCleanCustomers.Any())
+            {
+                TempData["message"] = "No Record Found";
+            }
+            model.CleanCustomers = filteredCleanCustomers;
+            model.BlockedCustomers = filteredBlockedCustomers;
 
             // Populate the view model with the filtered data
-            
-
             return View("ViewRecords", model);
         }
 
@@ -321,7 +357,7 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateCustomerStatus(List<int> BlockedCustomerIds, List<int> CleanCustomerIds)
         {
-            if (BlockedCustomerIds.Count==0 && CleanCustomerIds.Count==0)
+            if (BlockedCustomerIds.Count == 0 && CleanCustomerIds.Count == 0)
             {
                 return RedirectToAction("ViewRecords");
             }
@@ -336,7 +372,7 @@ namespace SalesDataProject.Controllers
                 {
                     customer.IS_EMAIL_BLOCKED = false; // Change to clean
                 }
-                
+
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Successfully cleaned selected customers.";
             }
@@ -364,6 +400,8 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate)
         {
+            var username = HttpContext.Session.GetString("Username");
+
             var model = new UploadResultViewModel
             {
                 BlockCustomersEmailList = new List<ProspectCustomer>(),
@@ -388,7 +426,7 @@ namespace SalesDataProject.Controllers
             if (isBlocked)
             {
                 model.BlockCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true &&
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
@@ -396,7 +434,7 @@ namespace SalesDataProject.Controllers
             else if (isClean)
             {
                 model.CleanCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false &&
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
@@ -404,29 +442,18 @@ namespace SalesDataProject.Controllers
             else
             {
                 model.BlockCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true &&
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
 
                 model.CleanCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false &&
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
 
             return View("ViewRecords", model); // Return the view with the populated UploadResultViewModel
         }
-
-
-
-
-
-
-
-
-
-
-
 
     }
 }

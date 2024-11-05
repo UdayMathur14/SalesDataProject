@@ -3,7 +3,12 @@
 @using System.Text.Json
 
 @model SalesDataProject.Models.UploadResultViewModel
-
+@if (TempData["Success"] != null)
+{
+    <div class="error-message" id="errorMessage">
+        <p>@TempData["Success"]</p>
+    </div>
+}
 <div class="container mt-4">
     <h2 class="text-center mb-4">Results</h2>
 
@@ -91,7 +96,7 @@
             <input type="hidden" name="BlockedCustomersJson" value="@JsonSerializer.Serialize(Model.BlockedCustomers)" />
             <input type="hidden" name="CleanCustomersJson" value="@JsonSerializer.Serialize(Model.CleanCustomers)" />
             <input type="hidden" name="InvalidCustomersJson" value="@JsonSerializer.Serialize(Model.invalidCustomerRecords)" />
-            <button type="submit" class="btn btn-primary">Export to Excel</button>
+            <button type="submit" class="btn btn-success">Export to Excel</button>
         </form>
     </div>
 </div>
@@ -112,3 +117,30 @@
         color: #495057;
     }
 </style>
+<style>
+    .error-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: lightgreen; /* Softer red for a less intense tone */
+        color: black;
+        padding: 10px 10px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        transition: opacity 0.4s ease-out;
+        opacity: 0.95;
+    }
+</style>
+
+<script>
+    // Automatically hide the error message after 5 seconds
+    setTimeout(() => {
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+    }, 2000);
+</script>

@@ -53,8 +53,8 @@ namespace SalesDataProject.Controllers
         public async Task<IActionResult> Create(Customer customer)
         {
             var username = HttpContext.Session.GetString("Username");
-            customer.CREATED_BY = "username";
-            customer.MODIFIED_BY = "username";
+            customer.CREATED_BY = username;
+            customer.MODIFIED_BY = username;
 
             try
             {
