@@ -63,7 +63,7 @@ namespace SalesDataProject.Controllers
             {
                 // Attempt to add the new customer to the context
                 _context.Customers.Add(customer);
-                var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || c.EmailDomain == customer.EmailDomain);
+                var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY==customer.COUNTRY));
                 if (existingCustomer != null)
                 {
                     ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Emial already exists.");
@@ -125,9 +125,10 @@ namespace SalesDataProject.Controllers
                             var emailDomain = customerEmail.Split('@').Last();
                             var customerName = worksheet.Cell(row, 2).GetString();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
+                            var country = worksheet.Cell(row, 8).GetString();
 
 
-                            if (IsValidPhoneNumber(customerNumber))
+                            if (!IsValidPhoneNumber(customerNumber))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -153,7 +154,7 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue; // Skip to the next row
                             }
-                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "")
+                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "" || customerEmail=="")
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -167,7 +168,7 @@ namespace SalesDataProject.Controllers
                             }
 
                             // Check for duplicates in the list of customers
-                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber))
+                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber  ))
                             {
                                 // Store duplicate record
                                 invalidRecords.Add(new InvalidCustomerRecord
@@ -227,19 +228,27 @@ namespace SalesDataProject.Controllers
                         //var newCustomers = customersFromExcel.Where(c => !existingEmails.Contains(c.CUSTOMER_EMAIL.ToLower())).ToList();
                         // Extract existing emails, phone numbers, and email domains from the database
                         var existingRecords = _context.Customers
-                            .Where(c => customersFromExcel
-                                .Select(d => d.CUSTOMER_EMAIL.ToLower().Trim())
-                                .Contains(c.CUSTOMER_EMAIL.ToLower()) &&
-                                customersFromExcel
-                                .Select(d => d.CUSTOMER_CONTACT_NUMBER1.Trim())
-                                .Contains(c.CUSTOMER_CONTACT_NUMBER1))
-                            .Select(c => new
-                            {
-                                Email = c.CUSTOMER_EMAIL.ToLower(),
-                                PhoneNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                EmailDomain = c.CUSTOMER_EMAIL // Extract the domain part
-                            })
-                            .ToList();
+    .Where(c => customersFromExcel
+        .Select(d => d.CUSTOMER_EMAIL.ToLower().Trim())
+        .Contains(c.CUSTOMER_EMAIL.ToLower()) &&
+        customersFromExcel
+        .Select(d => d.CUSTOMER_CONTACT_NUMBER1.Trim())
+        .Contains(c.CUSTOMER_CONTACT_NUMBER1))
+    .Select(c => new
+    {
+        Email = c.CUSTOMER_EMAIL.ToLower(),
+        PhoneNumber = c.CUSTOMER_CONTACT_NUMBER1
+        // Do not attempt to extract the domain here
+    })
+    .ToList() // Move domain extraction outside of the query
+    .Select(c => new
+    {
+        c.Email,
+        c.PhoneNumber,
+        EmailDomain = c.Email.Split('@').Last() // Extract the domain in-memory
+    })
+    .ToList();
+
 
                         // Store records that already exist in the database based on email, phone number, and email domain
                         existingDuplicateRecords = customersFromExcel
@@ -253,7 +262,7 @@ namespace SalesDataProject.Controllers
                                 CustomerName = c.CUSTOMER_NAME,
                                 CustomerEmail = c.CUSTOMER_EMAIL,
                                 CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                ErrorMessage = "Customer with this email, phone number, or domain already exists in the database."
+                                ErrorMessage = "Customer Already Exists in the DataBase"
                             })
                             .ToList();
 

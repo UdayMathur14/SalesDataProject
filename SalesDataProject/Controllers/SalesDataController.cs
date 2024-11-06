@@ -45,7 +45,22 @@ namespace SalesDataProject.Controllers
             return View(model);
 
         }
+        public string? GetEmailDomain(string email)
+        {
+            // List of common email domains to ignore
+            var commonEmailDomains = new HashSet<string> { "gmail.com", "yahoo.com", "yahoo.co.in", "outlook.com", "hotmail.com" };
 
+            // Extract the domain from the email
+            var emailDomain = email.Split('@').LastOrDefault()?.ToLower();
+
+            // Check if the domain is in the common list, if so return null
+            if (!string.IsNullOrEmpty(emailDomain) && commonEmailDomains.Contains(emailDomain))
+            {
+                return null; // Ignore this domain
+            }
+
+            return emailDomain; // Return the domain if it's not a common one
+        }
 
         [HttpPost]
         public async Task<IActionResult> UploadSalesData(IFormFile file)
@@ -70,9 +85,13 @@ namespace SalesDataProject.Controllers
                             var customerNumber = worksheet.Cell(row, 4).GetString();
                             var customerNumber2 = worksheet.Cell(row, 5).GetString();
                             var customerNumber3 = worksheet.Cell(row, 6).GetString();
-                            var emailDomain = email.Split('@').Last();
+                            var country = worksheet.Cell(row, 8).GetString();
+                            var emailDomain = GetEmailDomain(email);
 
-                            if (IsValidPhoneNumber(customerNumber))
+
+
+
+                            if (!IsValidPhoneNumber(customerNumber))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -110,8 +129,8 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
                             // Check if the customer exists
-                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1== customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || c.EmailDomain==emailDomain);
-                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || c.EmailDomain==emailDomain);
+                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1== customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || (c.EmailDomain==emailDomain && c.COUNTRY== country) );
+                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || (c.EmailDomain==emailDomain && c.COUNTRY == country));
 
                             var customerData = new ProspectCustomer
                             {
