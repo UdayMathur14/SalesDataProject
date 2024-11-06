@@ -4,9 +4,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SalesDataProject.Models
 {
+
     [Table("TBL_EXISTING_CUSTOMER")]
     public class Customer
     {
+        private static readonly HashSet<string> CommonDomains = new HashSet<string>
+        {
+            "gmail.com", "yahoo.com", "yahoo.co.in", "outlook.com", "hotmail.com"
+        };
+
         public int ID { get; set; } // Primary Key, auto-incremented
 
         [StringLength(50)]
@@ -51,6 +57,19 @@ namespace SalesDataProject.Models
         public DateTime? CREATED_ON { get; set; } = DateTime.UtcNow;// Creation timestamp
 
         public string? MODIFIED_BY { get; set; } // Modified by information
-        public DateTime? MODIFIED_ON { get; set; } =DateTime.UtcNow; // Nullable in case it hasn't been modified yet
+
+        public DateTime? MODIFIED_ON { get; set; } = DateTime.UtcNow; // Nullable in case it hasn't been modified yet
+
+        private string? _emailDomain;
+
+        public string? EmailDomain
+        {
+            get => _emailDomain;
+            set
+            {
+                var domain = value?.Split('@').Last().ToLower();
+                _emailDomain = CommonDomains.Contains(domain) ? null : domain;
+            }
+        }
     }
 }

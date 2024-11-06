@@ -52,5 +52,6 @@ namespace SalesDataProject.Models
 
         public bool RECORD_TYPE { get; set; } = false;
         public bool IS_EMAIL_BLOCKED { get; set; } = false;
+        public string? EmailDomain { get; set; } = null;
     }
 }

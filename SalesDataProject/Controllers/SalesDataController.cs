@@ -67,6 +67,23 @@ namespace SalesDataProject.Controllers
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
                             var email = worksheet.Cell(row, 7).GetString().ToLower();
+                            var customerNumber = worksheet.Cell(row, 4).GetString();
+                            var customerNumber2 = worksheet.Cell(row, 5).GetString();
+                            var customerNumber3 = worksheet.Cell(row, 6).GetString();
+                            var emailDomain = email.Split('@').Last();
+
+                            if (IsValidPhoneNumber(customerNumber))
+                            {
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CustomerEmail = email,
+                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
+                                    ErrorMessage = "Invalid Phone Number"
+                                });
+                                continue;
+                            }
                             if (!IsValidEmail(email))
                             {
                                 // Store invalid record
@@ -93,8 +110,8 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
                             // Check if the customer exists
-                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower());
-                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower());
+                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1== customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || c.EmailDomain==emailDomain);
+                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || c.EmailDomain==emailDomain);
 
                             var customerData = new ProspectCustomer
                             {
@@ -111,7 +128,8 @@ namespace SalesDataProject.Controllers
                                 CREATED_ON = DateTime.Now,
                                 CREATED_BY = username,
                                 MODIFIED_BY = username,
-                                MODIFIED_ON = DateTime.Now
+                                MODIFIED_ON = DateTime.Now,
+                                EmailDomain = emailDomain
                             };
 
                             // If existing customer is found, mark as blocked (RECORD_TYPE = true)
@@ -163,6 +181,15 @@ namespace SalesDataProject.Controllers
             {
                 return false;
             }
+        }
+        public bool IsValidPhoneNumber(string customerNumber)
+        {
+            // Regular expression to match exactly 10 digits
+            string pattern = @"^\d{10}$";
+            Regex regex = new Regex(pattern);
+
+            // Check if the customer number matches the regex pattern
+            return regex.IsMatch(customerNumber);
         }
 
         [HttpPost]
