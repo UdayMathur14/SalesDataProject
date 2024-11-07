@@ -289,13 +289,13 @@ namespace SalesDataProject.Controllers
 
                 // Define the headers in the template.
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "CUSTOMER_NAME";
+                worksheet.Cell(1, 2).Value = "CUSTOMER_NAME *";
                 worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
-                worksheet.Cell(1, 4).Value = "CUSTOMER_CONTACT_NUMBER1";
-                worksheet.Cell(1, 5).Value = "CUSTOMER_CONTACT_NUMBER2";
-                worksheet.Cell(1, 6).Value = "CUSTOMER_CONTACT_NUMBER3";
-                worksheet.Cell(1, 7).Value = "EMAIL";
-                worksheet.Cell(1, 8).Value = "COUNTRY";
+                worksheet.Cell(1, 4).Value = "CONTACT_NO1 *";
+                worksheet.Cell(1, 5).Value = "CONTACT_NO2";
+                worksheet.Cell(1, 6).Value = "CONTACT_NO3";
+                worksheet.Cell(1, 7).Value = "EMAIL *";
+                worksheet.Cell(1, 8).Value = "COUNTRY *";
                 worksheet.Cell(1, 9).Value = "STATE";
                 worksheet.Cell(1, 10).Value = "CITY";
 

@@ -169,7 +169,7 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue; // Skip to the next row
                             }
-                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "" || customerEmail == "")
+                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "" || customerEmail == "" || country=="")
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -177,7 +177,7 @@ namespace SalesDataProject.Controllers
                                     CustomerName = customername,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = worksheet.Cell(row, 4).GetString(),
-                                    ErrorMessage = "Empty CustomerName or CustomerNumber"
+                                    ErrorMessage = "Empty CustomerName or CustomerNumber or Country"
                                 });
                                 continue;
                             }
@@ -198,26 +198,31 @@ namespace SalesDataProject.Controllers
                             }
 
                             // Create a customer object
-                            var customer = new Customer
+                            if (ModelState.IsValid)
                             {
-                                CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                CUSTOMER_NAME = customername,
-                                CUSTOMER_EMAIL = customerEmail,
-                                CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
-                                CUSTOMER_CONTACT_NUMBER1 = customerNumber,
-                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
-                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
-                                COUNTRY = worksheet.Cell(row, 8).GetString(),
-                                CITY = worksheet.Cell(row, 10).GetString(),
-                                STATE = worksheet.Cell(row, 9).GetString(),
-                                CREATED_BY = username, // Set this based on your logic
-                                CREATED_ON = DateTime.Now,
-                                MODIFIED_BY = username, // Set this based on your logic
-                                MODIFIED_ON = DateTime.Now,
-                                EmailDomain = customerEmail.Split('@').Last(),
-                            };
+                                var customer = new Customer
+                                {
+                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                                    CUSTOMER_NAME = customername,
+                                    CUSTOMER_EMAIL = customerEmail,
+                                    CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
+                                    CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                                    CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
+                                    CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
+                                    COUNTRY = worksheet.Cell(row, 8).GetString(),
+                                    CITY = worksheet.Cell(row, 10).GetString(),
+                                    STATE = worksheet.Cell(row, 9).GetString(),
+                                    CREATED_BY = username, // Set this based on your logic
+                                    CREATED_ON = DateTime.Now,
+                                    MODIFIED_BY = username, // Set this based on your logic
+                                    MODIFIED_ON = DateTime.Now,
+                                    EmailDomain = customerEmail.Split('@').Last(),
+                                };
+                                customersFromExcel.Add(customer);// Add to the list of valid customers
+                            }
+                            
 
-                            customersFromExcel.Add(customer); // Add to the list of valid customers
+                             
                         }
 
                         //Old version code
@@ -365,13 +370,13 @@ namespace SalesDataProject.Controllers
 
                 // Define the headers in the template.
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "CUSTOMER_NAME";
+                worksheet.Cell(1, 2).Value = "CUSTOMER_NAME *";
                 worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
-                worksheet.Cell(1, 4).Value = "CUSTOMER_CONTACT_NUMBER1";
-                worksheet.Cell(1, 5).Value = "CUSTOMER_CONTACT_NUMBER2";
-                worksheet.Cell(1, 6).Value = "CUSTOMER_CONTACT_NUMBER3";
-                worksheet.Cell(1, 7).Value = "EMAIL";
-                worksheet.Cell(1, 8).Value = "COUNTRY";
+                worksheet.Cell(1, 4).Value = "CONTACT_NO1 *";
+                worksheet.Cell(1, 5).Value = "CONTACT_NO2";
+                worksheet.Cell(1, 6).Value = "CONTACT_NO3";
+                worksheet.Cell(1, 7).Value = "EMAIL *";
+                worksheet.Cell(1, 8).Value = "COUNTRY *";
                 worksheet.Cell(1, 9).Value = "STATE";
                 worksheet.Cell(1, 10).Value = "CITY";
 
