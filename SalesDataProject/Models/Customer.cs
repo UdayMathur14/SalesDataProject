@@ -27,6 +27,8 @@ namespace SalesDataProject.Models
         [StringLength(100)]
         public string? CONTACT_PERSON { get; set; }
 
+        public string? PhoneCode { get; set; }
+
         [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string CUSTOMER_CONTACT_NUMBER1 { get; set; }

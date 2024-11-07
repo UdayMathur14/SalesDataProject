@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<ProspectCustomer> Prospects { get; set; }
     public DbSet<BlockedCustomer> BlockedCustomers { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Country> Countries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

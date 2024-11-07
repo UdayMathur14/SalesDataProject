@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace SalesDataProject.Controllers
         }
 
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
             if (canAccessCustomer != "True")
@@ -28,6 +29,13 @@ namespace SalesDataProject.Controllers
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("Login", "Auth");
             }
+
+            var countries = await _context.Countries.ToListAsync();
+            var phoneCodes = await _context.Countries.Select(c => c.PhoneCode).Distinct().ToListAsync();
+
+            // Pass countries and phone codes separately to the view
+            ViewBag.Countries = new SelectList(countries, "CountryName", "CountryName");
+            ViewBag.PhoneCodes = new SelectList(phoneCodes);
             return View();
         }
         public async Task<IActionResult> ViewCustomers(Customer model)
@@ -63,7 +71,14 @@ namespace SalesDataProject.Controllers
             {
                 // Attempt to add the new customer to the context
                 _context.Customers.Add(customer);
-                var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY==customer.COUNTRY));
+                var existingCustomer = _context.Customers.FirstOrDefault(c =>
+     c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() ||
+     c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 ||
+     (customer.CUSTOMER_CONTACT_NUMBER2 != null && c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2) ||
+     (customer.CUSTOMER_CONTACT_NUMBER3 != null && c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3) ||
+     (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY == customer.COUNTRY)
+ );
+                //var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY==customer.COUNTRY));
                 if (existingCustomer != null)
                 {
                     ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Emial already exists.");
@@ -154,7 +169,7 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue; // Skip to the next row
                             }
-                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "" || customerEmail=="")
+                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "" || customerEmail == "")
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -168,7 +183,7 @@ namespace SalesDataProject.Controllers
                             }
 
                             // Check for duplicates in the list of customers
-                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber  ))
+                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber))
                             {
                                 // Store duplicate record
                                 invalidRecords.Add(new InvalidCustomerRecord
@@ -420,6 +435,27 @@ namespace SalesDataProject.Controllers
                     return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
                 }
             }
+        }
+        public async Task<IActionResult> Countryget()
+        {
+            var countries = await _context.Countries
+                .Select(c => new
+                {
+                    CountryId = c.CountryId.ToString(),
+                    CountryName = c.CountryName,
+                    PhoneCode = c.PhoneCode
+                })
+                .ToListAsync();
+
+            // Check if the countries list is null or empty
+            if (countries == null || !countries.Any())
+            {
+                // Handle the case when no countries are returned, maybe log an error
+                // or set a default message.
+            }
+
+            ViewData["CountryList"] = countries;  // Set the countries to ViewData
+            return View();
         }
 
 
