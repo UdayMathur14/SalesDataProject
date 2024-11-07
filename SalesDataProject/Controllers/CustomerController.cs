@@ -138,7 +138,7 @@ namespace SalesDataProject.Controllers
                         {
                             var customerEmail = worksheet.Cell(row, 7).GetString().ToLower();
                             var emailDomain = customerEmail.Split('@').Last();
-                            var customerName = worksheet.Cell(row, 2).GetString();
+                            var customername = worksheet.Cell(row, 2).GetString();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
                             var country = worksheet.Cell(row, 8).GetString();
 
@@ -148,7 +148,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = customerName,
+                                    CustomerName = customername,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
                                     ErrorMessage = "Invalid phone Number"
@@ -162,7 +162,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = customerName,
+                                    CustomerName = customername,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
                                     ErrorMessage = "Invalid email format."
@@ -174,7 +174,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CustomerName = customername,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = worksheet.Cell(row, 4).GetString(),
                                     ErrorMessage = "Empty CustomerName or CustomerNumber"
@@ -189,7 +189,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = customerName,
+                                    CustomerName = customername,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
                                     ErrorMessage = "Duplicate Email or PhoneNumber in the uploaded file."
@@ -201,7 +201,7 @@ namespace SalesDataProject.Controllers
                             var customer = new Customer
                             {
                                 CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                CUSTOMER_NAME = customerName,
+                                CUSTOMER_NAME = customername,
                                 CUSTOMER_EMAIL = customerEmail,
                                 CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
                                 CUSTOMER_CONTACT_NUMBER1 = customerNumber,
