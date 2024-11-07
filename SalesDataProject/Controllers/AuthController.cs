@@ -71,6 +71,7 @@ namespace SalesDataProject.Controllers
             {
                 _context.Users.Add(model);
                 _context.SaveChanges();
+                TempData["success"] = "Succesfully Created";
                 return RedirectToAction("ManageUsers");
             }
 
@@ -98,6 +99,7 @@ namespace SalesDataProject.Controllers
             _context.SaveChanges();
 
             // Redirect or return a view after updating
+            TempData["success"] = "Updated Succesfully";
             return RedirectToAction("ManageUsers");
         }
 

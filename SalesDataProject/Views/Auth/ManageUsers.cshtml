@@ -3,7 +3,12 @@
 @{
     var userList = Model.ToList();
 }
-
+@if (TempData["Success"] != null)
+{
+    <div class="error-message" id="errorMessage">
+        <p>@TempData["Success"]</p>
+    </div>
+}
 <h2 class="text-center my-4">Manage Users Permissions</h2>
 
 <div class="d-flex justify-content-end mb-3">
@@ -93,3 +98,31 @@
         vertical-align: middle;
     }
 </style>
+<style>
+    .error-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: lightgreen; /* Softer red for a less intense tone */
+        color: black;
+        padding: 10px 10px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        transition: opacity 0.4s ease-out;
+        opacity: 0.95;
+        display: flex;
+        align-items: center;
+    }
+</style>
+<script>
+    // Automatically hide the error message after 5 seconds
+    setTimeout(() => {
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+    }, 2000);
+</script>
