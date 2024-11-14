@@ -247,51 +247,57 @@ namespace SalesDataProject.Controllers
 
                         //var newCustomers = customersFromExcel.Where(c => !existingEmails.Contains(c.CUSTOMER_EMAIL.ToLower())).ToList();
                         // Extract existing emails, phone numbers, and email domains from the database
+                        // Step 1: Load existing records with domain and country in-memory
                         var existingRecords = _context.Customers
-    .Where(c => customersFromExcel
-        .Select(d => d.CUSTOMER_EMAIL.ToLower().Trim())
-        .Contains(c.CUSTOMER_EMAIL.ToLower()) &&
-        customersFromExcel
-        .Select(d => d.CUSTOMER_CONTACT_NUMBER1.Trim())
-        .Contains(c.CUSTOMER_CONTACT_NUMBER1))
-    .Select(c => new
-    {
-        Email = c.CUSTOMER_EMAIL.ToLower(),
-        PhoneNumber = c.CUSTOMER_CONTACT_NUMBER1
-        // Do not attempt to extract the domain here
-    })
-    .ToList() // Move domain extraction outside of the query
-    .Select(c => new
-    {
-        c.Email,
-        c.PhoneNumber,
-        EmailDomain = c.Email.Split('@').Last() // Extract the domain in-memory
-    })
-    .ToList();
+                            .Where(c => customersFromExcel
+                                .Select(d => d.CUSTOMER_EMAIL.ToLower().Trim())
+                                .Contains(c.CUSTOMER_EMAIL.ToLower()) &&
+                                customersFromExcel
+                                .Select(d => d.CUSTOMER_CONTACT_NUMBER1.Trim())
+                                .Contains(c.CUSTOMER_CONTACT_NUMBER1) &&
+                                customersFromExcel
+                                .Select(d => d.COUNTRY.ToLower().Trim())
+                                .Contains(c.COUNTRY.ToLower()))
+                            .Select(c => new
+                            {
+                                Email = c.CUSTOMER_EMAIL.ToLower(),
+                                PhoneNumber = c.CUSTOMER_CONTACT_NUMBER1,
+                                Country = c.COUNTRY.ToLower()
+                            })
+                            .ToList()
+                            .Select(c => new
+                            {
+                                c.Email,
+                                c.PhoneNumber,
+                                c.Country,
+                                EmailDomain = c.Email.Split('@').Last() // Extract the domain in-memory
+                            })
+                            .ToList();
 
-
-                        // Store records that already exist in the database based on email, phone number, and email domain
+                        // Step 2: Find duplicates with both domain and country match
                         existingDuplicateRecords = customersFromExcel
                             .Where(c => existingRecords
                                 .Any(e => e.Email == c.CUSTOMER_EMAIL.ToLower()
                                           && e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
-                                          && e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()))
+                                          || e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
+                                          && e.Country == c.COUNTRY.ToLower()))
                             .Select(c => new InvalidCustomerRecord
                             {
                                 RowNumber = customersFromExcel.IndexOf(c) + 2, // Adjusting for zero-based index and header
                                 CustomerName = c.CUSTOMER_NAME,
                                 CustomerEmail = c.CUSTOMER_EMAIL,
-                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                ErrorMessage = "Customer Already Exists in the DataBase"
+                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1
+                                ErrorMessage = "Customer Already Exists in the DataBase with matching domain and country"
                             })
                             .ToList();
 
-                        // Filter the customers to only include those not present in the database
+                        // Step 3: Filter new customers who do not exist based on email, domain, phone, and country
                         var newCustomers = customersFromExcel
                             .Where(c => !existingRecords
                                 .Any(e => e.Email == c.CUSTOMER_EMAIL.ToLower()
                                           && e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
-                                          && e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()))
+                                          || e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
+                                          && e.Country == c.COUNTRY.ToLower()))
                             .ToList();
 
 
