@@ -339,6 +339,10 @@ namespace SalesDataProject.Controllers
                         // If there are any invalid or duplicate records, pass them to the view
                         if (allInvalidRecords.Any())
                         {
+                            if(newCustomers.Count > 0)
+                            {
+                                TempData["error"] = "Correct Data Uploaded Succesfully , Please View Invalid Data";
+                            }
                             TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
                             return View("InvalidRecords", allInvalidRecords);
                         }
