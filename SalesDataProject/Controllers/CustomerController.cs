@@ -196,6 +196,19 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue; // Skip to the next row
                             }
+                            if (customersFromExcel.Any(c => c.EmailDomain == emailDomain && c.COUNTRY == country))
+                            {
+                                // Store duplicate record
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CustomerName = customername,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Same domain and country Name Already Exist in the database"
+                                });
+                                continue; // Skip to the next row
+                            }
 
                             // Create a customer object
                             if (ModelState.IsValid)
@@ -286,7 +299,7 @@ namespace SalesDataProject.Controllers
                                 RowNumber = customersFromExcel.IndexOf(c) + 2, // Adjusting for zero-based index and header
                                 CustomerName = c.CUSTOMER_NAME,
                                 CustomerEmail = c.CUSTOMER_EMAIL,
-                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1
+                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
                                 ErrorMessage = "Customer Already Exists in the DataBase with matching domain and country"
                             })
                             .ToList();
