@@ -129,8 +129,21 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
                             // Check if the customer exists
-                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1== customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || (c.EmailDomain==emailDomain && c.COUNTRY== country) );
-                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c => c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber || c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2 || c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3 || (c.EmailDomain==emailDomain && c.COUNTRY == country));
+                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c =>
+                         c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() ||
+                         c.CUSTOMER_CONTACT_NUMBER1 == customerNumber ||
+                         (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER2) && c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2) ||
+                         (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER3) && c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3) ||
+                         (c.EmailDomain == emailDomain && c.COUNTRY == country)
+                     );
+
+                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c =>
+                                c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() ||
+                                c.CUSTOMER_CONTACT_NUMBER1 == customerNumber ||
+                                (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER2) && c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2) ||
+                                (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER3) && c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3) ||
+                                (c.EmailDomain == emailDomain && c.COUNTRY == country)
+                            );
 
                             var customerData = new ProspectCustomer
                             {
