@@ -440,10 +440,10 @@ namespace SalesDataProject.Controllers
 
                 // Adding headers
                 worksheet.Cell(1, 1).Value = "Excel Row";
-                worksheet.Cell(1, 2).Value = "Customer Code";
+                worksheet.Cell(1, 2).Value = "Customer Name";
                 worksheet.Cell(1, 3).Value = "Customer Email";
-                worksheet.Cell(1, 3).Value = "Customer Number";
-                worksheet.Cell(1, 4).Value = "Error Message";
+                worksheet.Cell(1, 4).Value = "Customer Number";
+                worksheet.Cell(1, 5).Value = "Error Message";
 
                 // Populating data
                 for (int i = 0; i < invalidRecords.Count; i++)
