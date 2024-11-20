@@ -357,6 +357,10 @@ namespace SalesDataProject.Controllers
                 {
                     TempData["message"] = "No Record Found";
                 }
+                else
+                {
+                    TempData["messagesuccess"] = "Successfully Record Found";
+                }
 
                 model.BlockedCustomers = filteredCustomers;
             }
@@ -372,6 +376,10 @@ namespace SalesDataProject.Controllers
                 if (!filteredCustomers.Any())
                 {
                     TempData["message"] = "No Record Found";
+                }
+                else
+                {
+                    TempData["messagesuccess"] = "Successfully Record Found";
                 }
                 model.CleanCustomers = filteredCustomers;
             }
@@ -402,6 +410,10 @@ namespace SalesDataProject.Controllers
                 if (!filteredBlockedCustomers.Any() && !filteredCleanCustomers.Any())
                 {
                     TempData["message"] = "No Record Found";
+                }
+                else
+                {
+                    TempData["messagesuccess"] = "Successfully Record Found";
                 }
                 model.CleanCustomers = filteredCleanCustomers;
                 model.BlockedCustomers = filteredBlockedCustomers;
@@ -435,7 +447,7 @@ namespace SalesDataProject.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["message"] = "Successfully cleaned selected customers.";
+                TempData["messagesuccess"] = "Successfully cleaned selected customers.";
             }
 
             // Change clean customers to blocked
@@ -451,7 +463,7 @@ namespace SalesDataProject.Controllers
                     customer.RECORD_TYPE = true;
                 }
                 await _context.SaveChangesAsync();
-                TempData["message"] = "Successfully blocked selected customers.";
+                TempData["messagesuccess"] = "Successfully blocked selected customers.";
 
             }
 
@@ -491,6 +503,14 @@ namespace SalesDataProject.Controllers
                     .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
+                if (model.BlockCustomersEmailList.Any())
+                {
+                    TempData["messagesuccess"] = "Record Found Succesfully";
+                }
+                else
+                {
+                    TempData["message"] = "No record Found";
+                }
             }
             // Clean records: RecordType == 0 and IS_EMAIL_BLOCKED == false
             else if (isClean)
@@ -499,6 +519,15 @@ namespace SalesDataProject.Controllers
                     .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
+                if (model.CleanCustomersEmailList.Any())
+                {
+                    TempData["messagesuccess"] = "Record Found Successfully";
+                }
+                else
+                {
+                    TempData["message"] = "No Record Found";
+                }
+
             }
             // If no specific record type is selected, show both Blocked and Clean records for the given date
             else
@@ -512,6 +541,16 @@ namespace SalesDataProject.Controllers
                     .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
+
+                if(model.BlockCustomersEmailList.Any() || model.CleanCustomersEmailList.Any())
+                {
+                    TempData["messagesuccess"] = "Records found Successfully";
+                }
+                else
+                {
+                    TempData["message"] = "No Record found";
+                }
+
             }
 
             return View("ViewRecords", model); // Return the view with the populated UploadResultViewModel
