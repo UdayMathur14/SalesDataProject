@@ -96,7 +96,7 @@
             <input type="hidden" name="BlockedCustomersJson" value="@JsonSerializer.Serialize(Model.BlockedCustomers)" />
             <input type="hidden" name="CleanCustomersJson" value="@JsonSerializer.Serialize(Model.CleanCustomers)" />
             <input type="hidden" name="InvalidCustomersJson" value="@JsonSerializer.Serialize(Model.invalidCustomerRecords)" />
-            <button type="submit" class="btn btn-success">Export to Excel</button>
+            <button id="exportLink"  type="submit" class="btn btn-success">Export to Excel</button>
         </form>
     </div>
 </div>
@@ -144,3 +144,13 @@
         }
     }, 2000);
 </script>
+
+@section Scripts {
+    <script type="text/javascript">
+        document.getElementById('exportLink').addEventListener('click', function () {
+            setTimeout(function () {
+                window.location.href = '@Url.Action("ViewRecords")';
+            }, 2000); // Wait for 2 seconds to allow the download to start
+        });
+    </script>
+}

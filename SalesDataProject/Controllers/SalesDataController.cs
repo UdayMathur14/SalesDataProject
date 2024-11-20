@@ -431,6 +431,7 @@ namespace SalesDataProject.Controllers
                 foreach (var customer in blockedCustomers)
                 {
                     customer.IS_EMAIL_BLOCKED = false; // Change to clean
+                    customer.RECORD_TYPE = false;
                 }
 
                 await _context.SaveChangesAsync();
@@ -447,6 +448,7 @@ namespace SalesDataProject.Controllers
                 foreach (var customer in cleanCustomers)
                 {
                     customer.IS_EMAIL_BLOCKED = true; // Change to blocked
+                    customer.RECORD_TYPE = true;
                 }
                 await _context.SaveChangesAsync();
                 TempData["message"] = "Successfully blocked selected customers.";
@@ -486,7 +488,7 @@ namespace SalesDataProject.Controllers
             if (isBlocked)
             {
                 model.BlockCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
+                    .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
             }
@@ -502,7 +504,7 @@ namespace SalesDataProject.Controllers
             else
             {
                 model.BlockCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
+                    .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
 
