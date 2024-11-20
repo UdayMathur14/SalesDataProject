@@ -169,15 +169,15 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue; // Skip to the next row
                             }
-                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "" || customerEmail == "" || country=="")
+                            else if (customername== "" || customerNumber == "" || customerEmail == "" || country=="")
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
                                     CustomerName = customername,
                                     CustomerEmail = customerEmail,
-                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
-                                    ErrorMessage = "Empty CustomerName or CustomerNumber or Country"
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Empty CustomerName/CustomerNumber/Country/Email"
                                 });
                                 continue;
                             }
@@ -205,7 +205,7 @@ namespace SalesDataProject.Controllers
                                     CustomerName = customername,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
-                                    ErrorMessage = "Same domain and country Name Already Exist in the database"
+                                    ErrorMessage = "Same domain and country Name in the uploaded file "
                                 });
                                 continue; // Skip to the next row
                             }
@@ -291,16 +291,16 @@ namespace SalesDataProject.Controllers
                         existingDuplicateRecords = customersFromExcel
                             .Where(c => existingRecords
                                 .Any(e => e.Email == c.CUSTOMER_EMAIL.ToLower()
-                                          && e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
-                                          || e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
-                                          && e.Country == c.COUNTRY.ToLower()))
+                                          || e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
+                                          || (e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
+                                          && e.Country == c.COUNTRY.ToLower())))
                             .Select(c => new InvalidCustomerRecord
                             {
                                 RowNumber = customersFromExcel.IndexOf(c) + 2, // Adjusting for zero-based index and header
                                 CustomerName = c.CUSTOMER_NAME,
                                 CustomerEmail = c.CUSTOMER_EMAIL,
                                 CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                ErrorMessage = "Customer Already Exists in the DataBase with matching domain and country"
+                                ErrorMessage = "Customer Already Exists in the DataBase with matching record"
                             })
                             .ToList();
 
@@ -308,9 +308,9 @@ namespace SalesDataProject.Controllers
                         var newCustomers = customersFromExcel
                             .Where(c => !existingRecords
                                 .Any(e => e.Email == c.CUSTOMER_EMAIL.ToLower()
-                                          && e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
-                                          || e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
-                                          && e.Country == c.COUNTRY.ToLower()))
+                                          || e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
+                                          || (e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
+                                          && e.Country == c.COUNTRY.ToLower())))
                             .ToList();
 
 
@@ -442,6 +442,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(1, 1).Value = "Excel Row";
                 worksheet.Cell(1, 2).Value = "Customer Code";
                 worksheet.Cell(1, 3).Value = "Customer Email";
+                worksheet.Cell(1, 3).Value = "Customer Number";
                 worksheet.Cell(1, 4).Value = "Error Message";
 
                 // Populating data
@@ -451,7 +452,8 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(i + 2, 1).Value = record.RowNumber;
                     worksheet.Cell(i + 2, 2).Value = record.CustomerName;
                     worksheet.Cell(i + 2, 3).Value = record.CustomerEmail;
-                    worksheet.Cell(i + 2, 4).Value = record.ErrorMessage;
+                    worksheet.Cell(i + 2, 4).Value = record.CustomerNumber;
+                    worksheet.Cell(i + 2, 5).Value = record.ErrorMessage;
                 }
 
                 using (var stream = new MemoryStream())
