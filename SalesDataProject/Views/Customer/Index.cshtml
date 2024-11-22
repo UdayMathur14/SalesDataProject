@@ -40,12 +40,12 @@
                         <span asp-validation-for="CUSTOMER_CODE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="COMPANY_NAME" class="font-weight-bold">Customer Name <span class="text-danger">*</span></label>
+                        <label asp-for="COMPANY_NAME" class="font-weight-bold">Company Name <span class="text-danger">*</span></label>
                         <input asp-for="COMPANY_NAME" class="form-control form-control-sm" />
                         <span asp-validation-for="COMPANY_NAME" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CONTACT_PERSON" class="font-weight-bold">Contact Person</label>
+                        <label asp-for="CONTACT_PERSON" class="font-weight-bold">Contact Person <span class="text-danger">*</span></label>
                         <input asp-for="CONTACT_PERSON" class="form-control form-control-sm" />
                         <span asp-validation-for="CONTACT_PERSON" class="text-danger"></span>
                     </div>
@@ -53,9 +53,9 @@
 
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label asp-for="CountryCode" class="font-weight-bold">Phone Code <span class="text-danger">*</span></label>
-                        <select asp-for="CountryCode" class="form-control form-control-sm" id="CountryCode">
-                            <option value="">-- Select Code --</option>
+                        <label asp-for="CountryCode" class="font-weight-bold">Country Code <span class="text-danger">*</span></label>
+                        <select asp-for="CountryCode" class="form-control form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;" id="CountryCode">
+                            <option disabled value="">-- Select Code --</option>
                             @foreach (var code in ViewBag.CountryCodes as SelectList)
                             {
                                 <option value="@code.Text">@code.Text</option>
@@ -87,10 +87,10 @@
                         <input asp-for="CUSTOMER_EMAIL" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_EMAIL" class="text-danger"></span>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label asp-for="COUNTRY" class="font-weight-bold">Country <span class="text-danger">*</span></label>
-                        <select asp-for="COUNTRY" class="form-control form-control-sm" id="Country" name="Country">
-                            <option value="">-- Select Country --</option>
+                        <select asp-for="COUNTRY" class="form-control form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;" id="Country" name="Country">
+                            <option disabled value="">-- Select Country --</option>
                             @foreach (var country in ViewBag.Countries as SelectList)
                             {
                                 <option value="@country.Text">@country.Text</option>
@@ -103,16 +103,26 @@
                 </div>
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label asp-for="STATE" class="font-weight-bold">State <span class="text-danger">*</span></label>
+                        <label asp-for="STATE" class="font-weight-bold">State </label>
                         <input asp-for="STATE" class="form-control form-control-sm" />
                         <span asp-validation-for="STATE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CITY" class="font-weight-bold">City <span class="text-danger">*</span></label>
+                        <label asp-for="CITY" class="font-weight-bold">City </label>
                         <input asp-for="CITY" class="form-control form-control-sm" />
                         <span asp-validation-for="CITY" class="text-danger"></span>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
+                    <div class="col-md-3">
+                        <label asp-for="Category">Category <span class="text-danger">*</span></label>
+                        <select asp-for="Category" class="form-control form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;">
+                            <option disabled value="" selected> --Select Category--</option>
+                            <option value="UNIVERSITY">University</option>
+                            <option value="SME">SME</option>
+                            <option value="CORPORATE">Corporate</option>
+                            <option value="LAWFORM">Lawform</option>
+                        </select>
+                    </div>
+                    <div class="form-row col-md-3 d-flex align-items-end gap-4">
                         <button type="submit" class="btn btn-primary ">Submit</button>
                     </div>
                 </div>
