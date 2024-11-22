@@ -96,7 +96,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CompanyName = worksheet.Cell(row, 2).GetString(),
                                     CustomerEmail = email,
                                     CustomerNumber = worksheet.Cell(row, 4).GetString(),
                                     ErrorMessage = "Invalid Phone Number"
@@ -109,7 +109,7 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CompanyName = worksheet.Cell(row, 2).GetString(),
                                     CustomerEmail = email,
                                     CustomerNumber = worksheet.Cell(row, 4).GetString(),
                                     ErrorMessage = "Invalid email format."
@@ -121,10 +121,10 @@ namespace SalesDataProject.Controllers
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = worksheet.Cell(row, 2).GetString(),
+                                    CompanyName = worksheet.Cell(row, 2).GetString(),
                                     CustomerEmail = email,
                                     CustomerNumber = worksheet.Cell(row, 4).GetString(),
-                                    ErrorMessage = "Empty CustomerName or CustomerNumber"
+                                    ErrorMessage = "Empty CompanyName or CustomerNumber"
                                 });
                                 continue;
                             }
@@ -148,7 +148,7 @@ namespace SalesDataProject.Controllers
                             var customerData = new ProspectCustomer
                             {
                                 CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                CUSTOMER_NAME = worksheet.Cell(row, 2).GetString(),
+                                COMPANY_NAME = worksheet.Cell(row, 2).GetString(),
                                 CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
                                 CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
                                 CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
@@ -247,7 +247,7 @@ namespace SalesDataProject.Controllers
                 for (int i = 0; i < blockedCustomers.Count; i++)
                 {
                     blockedSheet.Cell(i + 2, 1).Value = blockedCustomers[i].CUSTOMER_CODE;
-                    blockedSheet.Cell(i + 2, 2).Value = blockedCustomers[i].CUSTOMER_NAME;
+                    blockedSheet.Cell(i + 2, 2).Value = blockedCustomers[i].COMPANY_NAME;
                     blockedSheet.Cell(i + 2, 3).Value = blockedCustomers[i].CUSTOMER_EMAIL;
                     blockedSheet.Cell(i + 2, 4).Value = blockedCustomers[i].CUSTOMER_CONTACT_NUMBER1;
                 }
@@ -262,7 +262,7 @@ namespace SalesDataProject.Controllers
                 for (int i = 0; i < cleanCustomers.Count; i++)
                 {
                     cleanSheet.Cell(i + 2, 1).Value = cleanCustomers[i].CUSTOMER_CODE;
-                    cleanSheet.Cell(i + 2, 2).Value = cleanCustomers[i].CUSTOMER_NAME;
+                    cleanSheet.Cell(i + 2, 2).Value = cleanCustomers[i].COMPANY_NAME;
                     cleanSheet.Cell(i + 2, 3).Value = cleanCustomers[i].CUSTOMER_EMAIL;
                     cleanSheet.Cell(i + 2, 4).Value = cleanCustomers[i].CUSTOMER_CONTACT_NUMBER1;
                 }
@@ -276,7 +276,7 @@ namespace SalesDataProject.Controllers
                 for (int i = 0; i < invalidCustomers.Count; i++)
                 {
                     invalidSheet.Cell(i + 2, 1).Value = invalidCustomers[i].RowNumber;
-                    invalidSheet.Cell(i + 2, 2).Value = invalidCustomers[i].CustomerName;
+                    invalidSheet.Cell(i + 2, 2).Value = invalidCustomers[i].CompanyName;
                     invalidSheet.Cell(i + 2, 3).Value = invalidCustomers[i].CustomerEmail;
                     invalidSheet.Cell(i + 2, 4).Value = invalidCustomers[i].CustomerNumber;
                     invalidSheet.Cell(i + 2, 5).Value = invalidCustomers[i].ErrorMessage;
@@ -302,7 +302,7 @@ namespace SalesDataProject.Controllers
 
                 // Define the headers in the template.
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "CUSTOMER_NAME *";
+                worksheet.Cell(1, 2).Value = "COMPANY_NAME *";
                 worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
                 worksheet.Cell(1, 4).Value = "CONTACT_NO1 *";
                 worksheet.Cell(1, 5).Value = "CONTACT_NO2";

@@ -1,12 +1,10 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
@@ -31,11 +29,11 @@ namespace SalesDataProject.Controllers
             }
 
             var countries = await _context.Countries.ToListAsync();
-            var phoneCodes = await _context.Countries.Select(c => c.PhoneCode).Distinct().ToListAsync();
+            var phoneCodes = await _context.Countries.Select(c => c.CountryCode).Distinct().ToListAsync();
 
             // Pass countries and phone codes separately to the view
             ViewBag.Countries = new SelectList(countries, "CountryName", "CountryName");
-            ViewBag.PhoneCodes = new SelectList(phoneCodes);
+            ViewBag.CountryCodes = new SelectList(phoneCodes);
             return View();
         }
         public async Task<IActionResult> ViewCustomers(Customer model)
@@ -116,246 +114,199 @@ namespace SalesDataProject.Controllers
         public async Task<IActionResult> UploadExcel(IFormFile file)
         {
             var username = HttpContext.Session.GetString("Username");
-            var invalidRecords = new List<InvalidCustomerRecord>(); // List to store invalid records
-            var existingDuplicateRecords = new List<InvalidCustomerRecord>(); // List to store records that are duplicates in the database
+            if (file == null || file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
+                return RedirectToAction(nameof(ViewCustomers));
+            }
 
-            if (file != null && file.Length > 0)
+            var invalidRecords = new List<InvalidCustomerRecord>();
+            var duplicateRecords = new List<InvalidCustomerRecord>();
+            var newCustomers = new List<Customer>();
+
+            try
             {
                 using (var stream = new MemoryStream())
                 {
                     await file.CopyToAsync(stream);
-                    stream.Position = 0; // Reset stream position to the beginning
+                    stream.Position = 0; // Reset stream position
 
                     using (var workbook = new XLWorkbook(stream))
                     {
-                        var worksheet = workbook.Worksheet(1); // Read from the first worksheet
+                        var worksheet = workbook.Worksheet(1); // Use the first worksheet
                         var lastRow = worksheet.LastRowUsed().RowNumber();
 
-                        // List to store customers from the Excel file
                         var customersFromExcel = new List<Customer>();
 
-                        for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
+                        for (int row = 3; row <= lastRow; row++) // Start reading data from row 3
                         {
-                            var customerEmail = worksheet.Cell(row, 7).GetString().ToLower();
-                            var emailDomain = customerEmail.Split('@').Last();
-                            var customername = worksheet.Cell(row, 2).GetString();
+                            var companyName = worksheet.Cell(row, 2).GetString();
+                            var contactPerson = worksheet.Cell(row, 3).GetString()?.ToUpperInvariant();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
-                            var country = worksheet.Cell(row, 8).GetString();
+                            var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                            var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
+                            var country = worksheet.Cell(row, 7).GetString();
+                            var category = worksheet.Cell(row, 12).GetString().ToUpper();
 
-
-                            if (!IsValidPhoneNumber(customerNumber))
-                            {
-                                invalidRecords.Add(new InvalidCustomerRecord
-                                {
-                                    RowNumber = row,
-                                    CustomerName = customername,
-                                    CustomerEmail = customerEmail,
-                                    CustomerNumber = customerNumber,
-                                    ErrorMessage = "Invalid phone Number"
-                                });
-                                continue;
-                            }
-                            // Validate email format
+                            // Validation
                             if (!IsValidEmail(customerEmail))
                             {
-                                // Store invalid record
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = customername,
+                                    CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
                                     ErrorMessage = "Invalid email format."
                                 });
-                                continue; // Skip to the next row
+                                continue;
                             }
-                            else if (customername== "" || customerNumber == "" || customerEmail == "" || country=="")
+
+                            if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
+                                string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = customername,
+                                    CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
-                                    ErrorMessage = "Empty CustomerName/CustomerNumber/Country/Email"
+                                    ErrorMessage = "Missing mandatory fields: Company Name, Number, Country, Email, or Country Code."
                                 });
                                 continue;
                             }
 
-                            // Check for duplicates in the list of customers
-                            if (customersFromExcel.Any(c => c.CUSTOMER_EMAIL.ToLower().Trim() == customerEmail.ToLower().Trim() || c.CUSTOMER_CONTACT_NUMBER1 == customerNumber))
+                            if (!new[] { "CORPORATE", "LAWFORM", "SME", "UNIVERSITY" }.Contains(category))
                             {
-                                // Store duplicate record
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CustomerName = customername,
+                                    CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
-                                    ErrorMessage = "Duplicate Email or PhoneNumber in the uploaded file."
+                                    ErrorMessage = "Invalid category."
                                 });
-                                continue; // Skip to the next row
-                            }
-                            if (customersFromExcel.Any(c => c.EmailDomain == emailDomain && c.COUNTRY == country))
-                            {
-                                // Store duplicate record
-                                invalidRecords.Add(new InvalidCustomerRecord
-                                {
-                                    RowNumber = row,
-                                    CustomerName = customername,
-                                    CustomerEmail = customerEmail,
-                                    CustomerNumber = customerNumber,
-                                    ErrorMessage = "Same domain and country Name in the uploaded file "
-                                });
-                                continue; // Skip to the next row
+                                continue;
                             }
 
-                            // Create a customer object
-                            if (ModelState.IsValid)
+                            // Add to the list of customers
+                            customersFromExcel.Add(new Customer
                             {
-                                var customer = new Customer
-                                {
-                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                    CUSTOMER_NAME = customername,
-                                    CUSTOMER_EMAIL = customerEmail,
-                                    CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER1 = customerNumber,
-                                    CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
-                                    COUNTRY = worksheet.Cell(row, 8).GetString(),
-                                    CITY = worksheet.Cell(row, 10).GetString(),
-                                    STATE = worksheet.Cell(row, 9).GetString(),
-                                    CREATED_BY = username, // Set this based on your logic
-                                    CREATED_ON = DateTime.Now,
-                                    MODIFIED_BY = username, // Set this based on your logic
-                                    MODIFIED_ON = DateTime.Now,
-                                    EmailDomain = customerEmail.Split('@').Last(),
-                                };
-                                customersFromExcel.Add(customer);// Add to the list of valid customers
-                            }
-                            
-
-                             
+                                CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                                COMPANY_NAME = companyName,
+                                CUSTOMER_EMAIL = customerEmail,
+                                CONTACT_PERSON = contactPerson,
+                                CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                                CountryCode = countryCode,
+                                COUNTRY = country,
+                                CITY = worksheet.Cell(row, 11).GetString()?.ToUpperInvariant(),
+                                STATE = worksheet.Cell(row, 10).GetString()?.ToUpperInvariant(),
+                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 8).GetString(),
+                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 9).GetString(),
+                                CREATED_BY = username,
+                                CREATED_ON = DateTime.UtcNow,
+                                MODIFIED_BY = username,
+                                MODIFIED_ON = DateTime.UtcNow,
+                                EmailDomain = customerEmail?.Split('@').Last(),
+                                Category = category
+                            });
                         }
 
-                        //Old version code
-                        // Check against the database for existing emails
-                        //var existingEmails = _context.Customers
-                        //    .Where(c => customersFromExcel.Select(d => d.CUSTOMER_EMAIL.ToLower().Trim()).Contains(c.CUSTOMER_EMAIL.ToLower()))
-                        //    .Select(c => c.CUSTOMER_EMAIL.ToLower() )
-                        //    .ToList();
-
-                        // Store records that already exist in the database
-                        //existingDuplicateRecords = customersFromExcel
-                        //    .Where(c => existingEmails.Contains(c.CUSTOMER_EMAIL.ToLower()))
-                        //    .Select(c => new InvalidCustomerRecord
-                        //    {
-                        //        RowNumber = customersFromExcel.IndexOf(c) + 2, // Adding 2 to adjust for zero-based index and skipping header
-                        //        CustomerName = c.CUSTOMER_NAME,
-                        //        CustomerEmail = c.CUSTOMER_EMAIL,
-                        //        CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                        //        ErrorMessage = "Customer Already Exists in the database."
-                        //    })
-                        //    .ToList();
-
-                        //var newCustomers = customersFromExcel.Where(c => !existingEmails.Contains(c.CUSTOMER_EMAIL.ToLower())).ToList();
-                        // Extract existing emails, phone numbers, and email domains from the database
-                        // Step 1: Load existing records with domain and country in-memory
-                        var existingRecords = _context.Customers
-                            .Where(c => customersFromExcel
-                                .Select(d => d.CUSTOMER_EMAIL.ToLower().Trim())
-                                .Contains(c.CUSTOMER_EMAIL.ToLower()) &&
-                                customersFromExcel
-                                .Select(d => d.CUSTOMER_CONTACT_NUMBER1.Trim())
-                                .Contains(c.CUSTOMER_CONTACT_NUMBER1) &&
-                                customersFromExcel
-                                .Select(d => d.COUNTRY.ToLower().Trim())
-                                .Contains(c.COUNTRY.ToLower()))
+                        // Retrieve the full customer records from the database, including CREATED_BY
+                        var dbCustomers = _context.Customers
                             .Select(c => new
                             {
-                                Email = c.CUSTOMER_EMAIL.ToLower(),
-                                PhoneNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                Country = c.COUNTRY.ToLower()
-                            })
-                            .ToList()
-                            .Select(c => new
-                            {
-                                c.Email,
-                                c.PhoneNumber,
-                                c.Country,
-                                EmailDomain = c.Email.Split('@').Last() // Extract the domain in-memory
+                                c.CUSTOMER_EMAIL,
+                                c.CountryCode,
+                                c.Category,
+                                c.CREATED_BY // Include the CREATED_BY field in the selection
                             })
                             .ToList();
 
-                        // Step 2: Find duplicates with both domain and country match
-                        existingDuplicateRecords = customersFromExcel
-                            .Where(c => existingRecords
-                                .Any(e => e.Email == c.CUSTOMER_EMAIL.ToLower()
-                                          || e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
-                                          || (e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
-                                          && e.Country == c.COUNTRY.ToLower())))
-                            .Select(c => new InvalidCustomerRecord
-                            {
-                                RowNumber = customersFromExcel.IndexOf(c) + 2, // Adjusting for zero-based index and header
-                                CustomerName = c.CUSTOMER_NAME,
-                                CustomerEmail = c.CUSTOMER_EMAIL,
-                                CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                ErrorMessage = "Customer Already Exists in the DataBase with matching record"
-                            })
+                        // Identify duplicate records based on matching email, country code, and category
+                        duplicateRecords = customersFromExcel
+     .Where(c =>
+     {
+         // Validate based on category type
+         if (c.Category == "CORPORATE" || c.Category == "SME")
+         {
+             return dbCustomers
+                 .Any(db =>
+                     db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
+                     db.CountryCode.Trim() == c.CountryCode.Trim() &&
+                     db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
+         }
+         else if (c.Category == "UNIVERSITY" || c.Category == "LAWFORM")
+         {
+             return dbCustomers
+                 .Any(db =>
+                     db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
+                     db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
+         }
+         return false; // If none of the conditions match, no duplicates are found.
+     })
+     .Select(c =>
+     {
+         // Find the full customer record that matches the criteria (including CREATED_BY)
+         var existingCustomer = dbCustomers
+             .FirstOrDefault(db =>
+                 db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
+                 (c.Category == "CORPORATE" || c.Category == "SME"
+                     ? db.CountryCode.Trim() == c.CountryCode.Trim() && db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()
+                     : db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()));
+
+         // Get the CreatedBy field from the existing customer record
+         var createdBy = existingCustomer?.CREATED_BY ?? "Unknown"; // Default to "Unknown" if null
+
+         // Return the InvalidCustomerRecord with the CreatedBy info
+         return new InvalidCustomerRecord
+         {
+             RowNumber = customersFromExcel.IndexOf(c) + 3, // Excel row index adjustment
+             CompanyName = c.COMPANY_NAME,
+             CustomerEmail = c.CUSTOMER_EMAIL,
+             CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
+             ErrorMessage = $"Customer already exists with matching email, category, and country code (if applicable). Created by: {createdBy}"
+         };
+     })
+     .ToList();
+
+
+                        // Identify new customers (those that do not match any existing record)
+                        newCustomers = customersFromExcel
+                            .Where(c => !duplicateRecords
+                                .Any(d => d.CustomerEmail.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim()))
                             .ToList();
 
-                        // Step 3: Filter new customers who do not exist based on email, domain, phone, and country
-                        var newCustomers = customersFromExcel
-                            .Where(c => !existingRecords
-                                .Any(e => e.Email == c.CUSTOMER_EMAIL.ToLower()
-                                          || e.PhoneNumber == c.CUSTOMER_CONTACT_NUMBER1
-                                          || (e.EmailDomain == c.CUSTOMER_EMAIL.ToLower().Split('@').Last()
-                                          && e.Country == c.COUNTRY.ToLower())))
-                            .ToList();
 
-
-                        // Add new customers to the database
-                        if (newCustomers.Count > 0)
+                        // Save valid new customers
+                        if (newCustomers.Any())
                         {
-                            try
-                            {
-                                _context.Customers.AddRange(newCustomers);
-                                await _context.SaveChangesAsync();
-                            }
-                            catch (Exception ex)
-                            {
-                                // Log the exception message if needed, e.g., using a logging library
-                                TempData["ErrorMessage"] = $" {ex.Message}";
-
-                                // Optionally, you could re-throw the exception if you want to handle it further up the chain
-                                // throw;
-                            }
-                        }
-
-
-                        // Combine invalid records and database duplicates
-                        var allInvalidRecords = invalidRecords.Concat(existingDuplicateRecords).ToList();
-
-                        // If there are any invalid or duplicate records, pass them to the view
-                        if (allInvalidRecords.Any())
-                        {
-                            if(newCustomers.Count > 0)
-                            {
-                                TempData["error"] = "Correct Data Uploaded Succesfully , Please View Invalid Data";
-                            }
-                            TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
-                            return View("InvalidRecords", allInvalidRecords);
+                            _context.Customers.AddRange(newCustomers);
+                            await _context.SaveChangesAsync();
                         }
                     }
-
-                    TempData["SuccessMessage"] = "Successfully Uploaded";
-                    return RedirectToAction(nameof(ViewCustomers));
                 }
             }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error processing file: {ex.Message}";
+                return RedirectToAction(nameof(ViewCustomers));
+            }
 
-            TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
+            // Combine all invalid records and display
+            var allInvalidRecords = invalidRecords.Concat(duplicateRecords).ToList();
+            if (allInvalidRecords.Any())
+            {
+                TempData["ErrorMessage"] = "Some records were invalid or duplicates.";
+                TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
+                return View("InvalidRecords", allInvalidRecords);
+            }
+
+            TempData["SuccessMessage"] = "File uploaded successfully.";
             return RedirectToAction(nameof(ViewCustomers));
         }
+
+
 
         // Helper method to validate email format
         private bool IsValidEmail(string email)
@@ -391,26 +342,45 @@ namespace SalesDataProject.Controllers
             {
                 var worksheet = workbook.Worksheets.Add("CustomerTemplate");
 
-                // Define the headers in the template.
+                // Define the headers in the template
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "CUSTOMER_NAME *";
-                worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
-                worksheet.Cell(1, 4).Value = "CONTACT_NO1 *";
-                worksheet.Cell(1, 5).Value = "CONTACT_NO2";
-                worksheet.Cell(1, 6).Value = "CONTACT_NO3";
-                worksheet.Cell(1, 7).Value = "EMAIL *";
-                worksheet.Cell(1, 8).Value = "COUNTRY *";
-                worksheet.Cell(1, 9).Value = "STATE";
-                worksheet.Cell(1, 10).Value = "CITY";
+                worksheet.Cell(1, 2).Value = "COMPANY_NAME*";
+                worksheet.Cell(1, 3).Value = "CONTACT_PERSON*";
+                worksheet.Cell(1, 4).Value = "CONTACT_NO1*";
+                worksheet.Cell(1, 5).Value = "EMAIL*";
+                worksheet.Cell(1, 6).Value = "COUNTRY CODE*";
+                worksheet.Cell(1, 7).Value = "COUNTRY*";
+                worksheet.Cell(1, 8).Value = "CONTACT_NO2";
+                worksheet.Cell(1, 9).Value = "CONTACT_NO3";
+                worksheet.Cell(1, 10).Value = "STATE";
+                worksheet.Cell(1, 11).Value = "CITY";
+                worksheet.Cell(1, 12).Value = "CATEGORY*";
 
-                // Optionally, add some example data for user reference (commented out).
-                // worksheet.Cell(2, 1).Value = "1001";
-                // worksheet.Cell(2, 2).Value = "John Doe";
-                // worksheet.Cell(2, 3).Value = "johndoe@example.com";
-                // worksheet.Cell(2, 4).Value = "1234567890";
-                // worksheet.Cell(2, 5).Value = "USA";
-                // worksheet.Cell(2, 6).Value = "New York";
-                // worksheet.Cell(2, 7).Value = "New York";
+                // Example data
+                worksheet.Cell(2, 1).Value = "Example";
+                worksheet.Cell(2, 2).Value = "Ennoble Ip";
+                worksheet.Cell(2, 3).Value = "Rajnish Sir";
+                worksheet.Cell(2, 4).Value = "123456789";
+                worksheet.Cell(2, 5).Value = "ennobleip@gmail.com";
+                worksheet.Cell(2, 6).Value = "+91";
+                worksheet.Cell(2, 7).Value = "INDIA";
+                worksheet.Cell(2, 8).Value = "9876543210";
+                worksheet.Cell(2, 9).Value = "9876543210";
+                worksheet.Cell(2, 10).Value = "DELHI";
+                worksheet.Cell(2, 11).Value = "NEW DELHI";
+                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFORM/SME/UNIVERSITY";
+
+                // Adjust column widths to fit content
+                worksheet.Columns().AdjustToContents();
+
+                // Optionally, apply styles to the header row for better visibility
+                var headerRow = worksheet.Range("A1:L1");
+                headerRow.Style.Font.Bold = true;
+                headerRow.Style.Font.FontColor = XLColor.White;
+                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
+
+                var row = worksheet.Range("A2:L2");
+                row.Style.Font.FontColor = XLColor.Red;
 
                 using (var stream = new MemoryStream())
                 {
@@ -420,6 +390,7 @@ namespace SalesDataProject.Controllers
                 }
             }
         }
+
 
         [HttpGet]
         public IActionResult ExportInvalidRecords()
@@ -450,7 +421,7 @@ namespace SalesDataProject.Controllers
                 {
                     var record = invalidRecords[i];
                     worksheet.Cell(i + 2, 1).Value = record.RowNumber;
-                    worksheet.Cell(i + 2, 2).Value = record.CustomerName;
+                    worksheet.Cell(i + 2, 2).Value = record.CompanyName;
                     worksheet.Cell(i + 2, 3).Value = record.CustomerEmail;
                     worksheet.Cell(i + 2, 4).Value = record.CustomerNumber;
                     worksheet.Cell(i + 2, 5).Value = record.ErrorMessage;
@@ -473,7 +444,7 @@ namespace SalesDataProject.Controllers
                 {
                     CountryId = c.CountryId.ToString(),
                     CountryName = c.CountryName,
-                    PhoneCode = c.PhoneCode
+                    CountryCode = c.CountryCode
                 })
                 .ToListAsync();
 

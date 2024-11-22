@@ -14,7 +14,7 @@ namespace SalesDataProject.Models
         public string? CUSTOMER_CODE { get; set; } // Unique, not null
 
         [StringLength(100)]
-        public string CUSTOMER_NAME { get; set; }
+        public string COMPANY_NAME { get; set; }
 
         [StringLength(100)]
         public string? CONTACT_PERSON { get; set; }

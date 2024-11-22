@@ -21,23 +21,23 @@ namespace SalesDataProject.Models
 
         [Required]
         [StringLength(100)]
-        [JsonProperty("customer_name")]
-        public string CUSTOMER_NAME { get; set; }
+        [JsonProperty("company_name")]
+        public string COMPANY_NAME { get; set; }
 
         [StringLength(100)]
         public string? CONTACT_PERSON { get; set; }
 
-        public string? PhoneCode { get; set; }
+        public string? CountryCode { get; set; }
 
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+        
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string CUSTOMER_CONTACT_NUMBER1 { get; set; }
 
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string? CUSTOMER_CONTACT_NUMBER2 { get; set; }
 
-        [StringLength(10, MinimumLength = 10, ErrorMessage = "Contact number must be exactly 10 digits.")]
+        
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string? CUSTOMER_CONTACT_NUMBER3 { get; set; }
 
@@ -73,5 +73,8 @@ namespace SalesDataProject.Models
                 _emailDomain = CommonDomains.Contains(domain) ? null : domain;
             }
         }
+
+        [Required]
+        public string Category { get; set; }
     }
 }
