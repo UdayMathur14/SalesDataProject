@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -45,25 +46,10 @@ namespace SalesDataProject.Controllers
             return View(model);
 
         }
-        public string? GetEmailDomain(string email)
-        {
-            // List of common email domains to ignore
-            var commonEmailDomains = new HashSet<string> { "gmail.com", "yahoo.com", "yahoo.co.in", "outlook.com", "hotmail.com" };
-
-            // Extract the domain from the email
-            var emailDomain = email.Split('@').LastOrDefault()?.ToLower();
-
-            // Check if the domain is in the common list, if so return null
-            if (!string.IsNullOrEmpty(emailDomain) && commonEmailDomains.Contains(emailDomain))
-            {
-                return null; // Ignore this domain
-            }
-
-            return emailDomain; // Return the domain if it's not a common one
-        }
+      
 
         [HttpPost]
-        public async Task<IActionResult> UploadSalesData(IFormFile file)
+        public async Task<IActionResult> UploadSalesData(IFormFile file, string selectedCategory)
         {
             var username = HttpContext.Session.GetString("Username");
             if (file != null && file.Length > 0)
@@ -71,6 +57,8 @@ namespace SalesDataProject.Controllers
                 var blockedCustomers = new List<ProspectCustomer>();
                 var cleanCustomers = new List<ProspectCustomer>();
                 var invalidRecords = new List<InvalidCustomerRecord>();
+                var category = selectedCategory;
+
                 using (var stream = new MemoryStream())
                 {
                     await file.CopyToAsync(stream);
@@ -81,90 +69,90 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
                         {
-                            var email = worksheet.Cell(row, 7).GetString().ToLower();
+
+                            worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
+                            worksheet.Cell(1, 2).Value = "COMPANY_NAME*";
+                            worksheet.Cell(1, 3).Value = "CONTACT_PERSON*";
+                            worksheet.Cell(1, 4).Value = "CONTACT_NO1*";
+                            worksheet.Cell(1, 5).Value = "EMAIL*";
+                            worksheet.Cell(1, 6).Value = "COUNTRY CODE*";
+                            worksheet.Cell(1, 7).Value = "COUNTRY*";
+                            worksheet.Cell(1, 8).Value = "CONTACT_NO2";
+                            worksheet.Cell(1, 9).Value = "CONTACT_NO3";
+                            worksheet.Cell(1, 10).Value = "STATE";
+                            worksheet.Cell(1, 11).Value = "CITY";
+
+                            var companyName = worksheet.Cell(row, 2).GetString();
+                            var contactPerson = worksheet.Cell(row, 3).GetString()?.ToUpperInvariant();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
-                            var customerNumber2 = worksheet.Cell(row, 5).GetString();
-                            var customerNumber3 = worksheet.Cell(row, 6).GetString();
-                            var country = worksheet.Cell(row, 8).GetString();
-                            var emailDomain = GetEmailDomain(email);
+                            var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                            var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
+                            var country = worksheet.Cell(row, 7).GetString();
 
 
-
-
-                            if (!IsValidPhoneNumber(customerNumber))
-                            {
-                                invalidRecords.Add(new InvalidCustomerRecord
-                                {
-                                    RowNumber = row,
-                                    CompanyName = worksheet.Cell(row, 2).GetString(),
-                                    CustomerEmail = email,
-                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
-                                    ErrorMessage = "Invalid Phone Number"
-                                });
-                                continue;
-                            }
-                            if (!IsValidEmail(email))
+                            if (!IsValidEmail(customerEmail))
                             {
                                 // Store invalid record
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CompanyName = worksheet.Cell(row, 2).GetString(),
-                                    CustomerEmail = email,
-                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
+                                    CompanyName = companyName,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
                                     ErrorMessage = "Invalid email format."
                                 });
                                 continue; // Skip to the next row
                             }
-                            else if (worksheet.Cell(row, 2).GetString() == "" || worksheet.Cell(row, 4).GetString() == "")
+                            else if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
+                                     string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
                                     RowNumber = row,
-                                    CompanyName = worksheet.Cell(row, 2).GetString(),
-                                    CustomerEmail = email,
-                                    CustomerNumber = worksheet.Cell(row, 4).GetString(),
-                                    ErrorMessage = "Empty CompanyName or CustomerNumber"
+                                    CompanyName = companyName,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Missing mandatory fields: Company Name, Number, Country, Email, or Country Code."
                                 });
                                 continue;
                             }
-                            // Check if the customer exists
-                            var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c =>
-                         c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() ||
-                         c.CUSTOMER_CONTACT_NUMBER1 == customerNumber ||
-                         (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER2) && c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2) ||
-                         (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER3) && c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3) ||
-                         (c.EmailDomain == emailDomain && c.COUNTRY == country)
-                     );
 
-                            var prospectCustomer = await _context.Prospects.FirstOrDefaultAsync(c =>
-                                c.CUSTOMER_EMAIL.ToLower() == email.Trim().ToLower() ||
-                                c.CUSTOMER_CONTACT_NUMBER1 == customerNumber ||
-                                (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER2) && c.CUSTOMER_CONTACT_NUMBER2 == customerNumber2) ||
-                                (!string.IsNullOrEmpty(c.CUSTOMER_CONTACT_NUMBER3) && c.CUSTOMER_CONTACT_NUMBER3 == customerNumber3) ||
-                                (c.EmailDomain == emailDomain && c.COUNTRY == country)
-                            );
+                            // Check if the category is either "University", "SME", or "Corporate" and adjust the validation
+                            IQueryable<Customer> existingCustomersQuery = _context.Customers.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.Category == category);
+                            IQueryable<ProspectCustomer> prospectCustomersQuery = _context.Prospects.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.CATEGORY == category);
+
+                            if (category == "CORPORATE" || category=="SME")
+                            {
+                                // For Corporate, check the email and country code as well
+                                existingCustomersQuery = existingCustomersQuery.Where(c => c.CountryCode == countryCode);
+                                prospectCustomersQuery = prospectCustomersQuery.Where(c => c.COUNTRY_CODE == countryCode);
+                            }
+
+                            // Check if the customer exists based on the filtered query
+                            var existingCustomer = await existingCustomersQuery.FirstOrDefaultAsync();
+                            var prospectCustomer = await prospectCustomersQuery.FirstOrDefaultAsync();
 
                             var customerData = new ProspectCustomer
                             {
                                 CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
-                                COMPANY_NAME = worksheet.Cell(row, 2).GetString(),
-                                CONTACT_PERSON = worksheet.Cell(row, 3).GetString(),
-                                CUSTOMER_CONTACT_NUMBER1 = worksheet.Cell(row, 4).GetString(),
-                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 5).GetString(),
-                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 6).GetString(),
-                                CUSTOMER_EMAIL = worksheet.Cell(row, 7).GetString().ToLower(),
-                                COUNTRY = worksheet.Cell(row, 8).GetString(),
-                                STATE = worksheet.Cell(row, 9).GetString(),
-                                CITY = worksheet.Cell(row, 10).GetString(),
+                                COMPANY_NAME = companyName,
+                                CONTACT_PERSON = contactPerson,
+                                CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row,8 ).GetString(),
+                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 9).GetString(),
+                                CUSTOMER_EMAIL = customerEmail,
+                                COUNTRY = country,
+                                STATE = worksheet.Cell(row, 10).GetString(),
+                                CITY = worksheet.Cell(row, 11).GetString(),
                                 CREATED_ON = DateTime.Now,
                                 CREATED_BY = username,
                                 MODIFIED_BY = username,
                                 MODIFIED_ON = DateTime.Now,
-                                EmailDomain = emailDomain
+                                CATEGORY = category,
+                                COUNTRY_CODE = countryCode
                             };
 
-                            // If existing customer is found, mark as blocked (RECORD_TYPE = true)
+                            // If existing customer or prospect is found, mark as blocked (RECORD_TYPE = true)
                             if (existingCustomer != null || prospectCustomer != null)
                             {
                                 customerData.RECORD_TYPE = true; // Blocked
@@ -198,6 +186,7 @@ namespace SalesDataProject.Controllers
 
             return View();
         }
+
         private bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -282,7 +271,25 @@ namespace SalesDataProject.Controllers
                     invalidSheet.Cell(i + 2, 5).Value = invalidCustomers[i].ErrorMessage;
                 }
 
+                blockedSheet.Columns().AdjustToContents();
+                invalidSheet.Columns().AdjustToContents();
+                cleanSheet.Columns().AdjustToContents();
 
+                // Optionally, apply styles to the header row for better visibility
+                var headerRow = blockedSheet.Range("A1:L1");
+                headerRow.Style.Font.Bold = true;
+                headerRow.Style.Font.FontColor = XLColor.White;
+                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
+
+                var headerRow1 = blockedSheet.Range("A1:L1");
+                headerRow1.Style.Font.Bold = true;
+                headerRow1.Style.Font.FontColor = XLColor.White;
+                headerRow1.Style.Fill.BackgroundColor = XLColor.BlueGray;
+
+                var headerRow2 = blockedSheet.Range("A1:L1");
+                headerRow2.Style.Font.Bold = true;
+                headerRow2.Style.Font.FontColor = XLColor.White;
+                headerRow2.Style.Fill.BackgroundColor = XLColor.BlueGray;
                 // Prepare the memory stream to send the Excel file
                 using (var stream = new MemoryStream())
                 {
@@ -300,32 +307,48 @@ namespace SalesDataProject.Controllers
             {
                 var worksheet = workbook.Worksheets.Add("CustomerTemplate");
 
-                // Define the headers in the template.
                 worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "COMPANY_NAME *";
-                worksheet.Cell(1, 3).Value = "CONTACT_PERSON";
-                worksheet.Cell(1, 4).Value = "CONTACT_NO1 *";
-                worksheet.Cell(1, 5).Value = "CONTACT_NO2";
-                worksheet.Cell(1, 6).Value = "CONTACT_NO3";
-                worksheet.Cell(1, 7).Value = "EMAIL *";
-                worksheet.Cell(1, 8).Value = "COUNTRY *";
-                worksheet.Cell(1, 9).Value = "STATE";
-                worksheet.Cell(1, 10).Value = "CITY";
+                worksheet.Cell(1, 2).Value = "COMPANY_NAME*";
+                worksheet.Cell(1, 3).Value = "CONTACT_PERSON*";
+                worksheet.Cell(1, 4).Value = "CONTACT_NO1*";
+                worksheet.Cell(1, 5).Value = "EMAIL*";
+                worksheet.Cell(1, 6).Value = "COUNTRY CODE*";
+                worksheet.Cell(1, 7).Value = "COUNTRY*";
+                worksheet.Cell(1, 8).Value = "CONTACT_NO2";
+                worksheet.Cell(1, 9).Value = "CONTACT_NO3";
+                worksheet.Cell(1, 10).Value = "STATE";
+                worksheet.Cell(1, 11).Value = "CITY";
 
-                // Optionally, add some example data for user reference (commented out).
-                // worksheet.Cell(2, 1).Value = "1001";
-                // worksheet.Cell(2, 2).Value = "John Doe";
-                // worksheet.Cell(2, 3).Value = "johndoe@example.com";
-                // worksheet.Cell(2, 4).Value = "1234567890";
-                // worksheet.Cell(2, 5).Value = "USA";
-                // worksheet.Cell(2, 6).Value = "New York";
-                // worksheet.Cell(2, 7).Value = "New York";
+                // Example data
+                worksheet.Cell(2, 1).Value = "Example";
+                worksheet.Cell(2, 2).Value = "Ennoble Ip";
+                worksheet.Cell(2, 3).Value = "Rajnish Sir";
+                worksheet.Cell(2, 4).Value = "9876543210";
+                worksheet.Cell(2, 5).Value = "ennobleip@gmail.com";
+                worksheet.Cell(2, 6).Value = "+91";
+                worksheet.Cell(2, 7).Value = "INDIA";
+                worksheet.Cell(2, 8).Value = "9876543211";
+                worksheet.Cell(2, 9).Value = "9876543210";
+                worksheet.Cell(2, 10).Value = "DELHI";
+                worksheet.Cell(2, 11).Value = "NEW DELHI";
+
+                // Adjust column widths to fit content
+                worksheet.Columns().AdjustToContents();
+
+                // Optionally, apply styles to the header row for better visibility
+                var headerRow = worksheet.Range("A1:L1");
+                headerRow.Style.Font.Bold = true;
+                headerRow.Style.Font.FontColor = XLColor.White;
+                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
+
+                var row = worksheet.Range("A2:L2");
+                row.Style.Font.FontColor = XLColor.Red;
 
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CustomerTemplate.xlsx");
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingTemplate.xlsx");
                 }
             }
         }

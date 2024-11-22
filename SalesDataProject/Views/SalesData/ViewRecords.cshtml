@@ -16,7 +16,15 @@
     <div class="header d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-3 text-secondary"><i>UPLOAD MAILING DATA</i></h4>
         <div class="buttons d-flex gap-3">
+            <select id="categorySelectDropdown" class="btn form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;border:2px solid red;font:bold">
+                <option value="" selected>Category *</option>
+                <option value="UNIVERSITY">University</option>
+                <option value="SME">SME</option>
+                <option value="CORPORATE">Corporate</option>
+                <option value="LAWFORM">Lawform</option>
+            </select>
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
+                <input type="hidden" id="categorySelectHidden" name="selectedCategory" value="" /> <!-- Hidden input for category -->
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
                 <button type="button" id="uploadButton" class="btn btn-outline-primary">Upload Excel</button>
             </form>
@@ -251,20 +259,40 @@
         const uploadButton = document.getElementById('uploadButton');
         const fileUpload = document.getElementById('fileUpload');
         const uploadForm = document.getElementById('uploadForm');
+        const categorySelectDropdown = document.getElementById('categorySelectDropdown'); // Category dropdown
+        const hiddenCategoryInput = document.getElementById('categorySelectHidden'); // Hidden input for category
 
-        if (uploadButton && fileUpload && uploadForm) {
+        if (uploadButton && fileUpload && uploadForm && categorySelectDropdown && hiddenCategoryInput) {
+
+            // Set hidden category input value when category changes
+            categorySelectDropdown.addEventListener('change', function () {
+                hiddenCategoryInput.value = categorySelectDropdown.value;
+                // Reset border color if category is selected
+                categorySelectDropdown.style.borderColor = '';
+            });
+
             uploadButton.addEventListener('click', function () {
-                fileUpload.click();
+                // Check if category is selected
+                if (categorySelectDropdown.value === '') {
+                    // Highlight the dropdown with a red border if no category is selected
+                    categorySelectDropdown.style.borderColor = 'red';
+                    alert("Please select a category.");
+                } else {
+                    // Proceed with file upload if category is selected
+                    fileUpload.click();
+                }
             });
 
             fileUpload.addEventListener('change', function () {
                 if (fileUpload.files.length > 0) {
+                    // Submit the form only if a file is uploaded
                     uploadForm.submit();
                 }
             });
         }
     });
 </script>
+
 
 <style>
     body {
@@ -340,4 +368,8 @@
             errorMessage.style.display = 'none';
         }
     }, 3000);
+
+
+        
+    });
 </script>

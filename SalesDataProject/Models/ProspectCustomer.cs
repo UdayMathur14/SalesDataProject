@@ -18,19 +18,20 @@ namespace SalesDataProject.Models
 
         [StringLength(100)]
         public string? CONTACT_PERSON { get; set; }
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "Contact number must be minimum 7 digits.")]
+        
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string CUSTOMER_CONTACT_NUMBER1 { get; set; }
 
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "Contact number must be minimum 7 digits.")]
+        
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string? CUSTOMER_CONTACT_NUMBER2 { get; set; }
 
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "Contact number must be minimum 7 digits.")]
+        
         [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
         public string? CUSTOMER_CONTACT_NUMBER3 { get; set; }
 
 
+        [Required]
         [StringLength(100)]
         [EmailAddress]
         public string? CUSTOMER_EMAIL { get; set; }
@@ -52,6 +53,9 @@ namespace SalesDataProject.Models
 
         public bool RECORD_TYPE { get; set; } = false;
         public bool IS_EMAIL_BLOCKED { get; set; } = false;
-        public string? EmailDomain { get; set; } = null;
+
+        public string CATEGORY { get; set; }
+
+        public string COUNTRY_CODE { get; set; }
     }
 }

@@ -163,7 +163,7 @@ namespace SalesDataProject.Controllers
                             }
 
                             if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
-                                string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode))
+                                string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode)|| string.IsNullOrWhiteSpace(category))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -426,6 +426,14 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(i + 2, 4).Value = record.CustomerNumber;
                     worksheet.Cell(i + 2, 5).Value = record.ErrorMessage;
                 }
+
+                worksheet.Columns().AdjustToContents();
+
+                // Optionally, apply styles to the header row for better visibility
+                var headerRow = worksheet.Range("A1:L1");
+                headerRow.Style.Font.Bold = true;
+                headerRow.Style.Font.FontColor = XLColor.White;
+                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
 
                 using (var stream = new MemoryStream())
                 {
