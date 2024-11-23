@@ -360,6 +360,7 @@ namespace SalesDataProject.Controllers
             var filteredBlockedCustomers = new List<ProspectCustomer>();
             var filteredCleanCustomers = new List<ProspectCustomer>();
             var username = HttpContext.Session.GetString("Username");
+            var category = model.Category;
             //if (model.RecordType == null)
             //{
             //    return View("ViewRecords", model);
@@ -372,7 +373,7 @@ namespace SalesDataProject.Controllers
                 // Fetch blocked customers (RECORD_TYPE = 1) created by the current user, based on the selected date
                 filteredCustomers = await _context.Prospects
                     .Where(c => c.RECORD_TYPE == true &&
-                                c.CREATED_BY == username &&
+                                c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category)&&
                                 (model.SelectedDate == null ||
                                  (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
@@ -392,7 +393,7 @@ namespace SalesDataProject.Controllers
                 // Fetch clean customers (RECORD_TYPE = 0) created by the current user, based on the selected date
                 filteredCustomers = await _context.Prospects
                     .Where(c => c.RECORD_TYPE == false &&
-                                c.CREATED_BY == username &&
+                                c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (model.SelectedDate == null ||
                                  (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
@@ -420,13 +421,13 @@ namespace SalesDataProject.Controllers
                 //for blocked one 
                 filteredBlockedCustomers = await _context.Prospects
                     .Where(c => c.RECORD_TYPE == true &&
-                                c.CREATED_BY == username &&
+                                c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (model.SelectedDate == null ||
                                  (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
                 filteredCleanCustomers = await _context.Prospects
                     .Where(c => c.RECORD_TYPE == false &&
-                                c.CREATED_BY == username &&
+                                c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (model.SelectedDate == null ||
                                  (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                     .ToListAsync();
@@ -495,7 +496,7 @@ namespace SalesDataProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate)
+        public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate,string category)
         {
             var username = HttpContext.Session.GetString("Username");
 
@@ -523,7 +524,7 @@ namespace SalesDataProject.Controllers
             if (isBlocked)
             {
                 model.BlockCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
+                    .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
                 if (model.BlockCustomersEmailList.Any())
@@ -539,7 +540,7 @@ namespace SalesDataProject.Controllers
             else if (isClean)
             {
                 model.CleanCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username &&
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
                 if (model.CleanCustomersEmailList.Any())
@@ -556,12 +557,12 @@ namespace SalesDataProject.Controllers
             else
             {
                 model.BlockCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username &&
+                    .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
 
                 model.CleanCustomersEmailList = await _context.Prospects
-                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username &&
+                    .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                 (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                     .ToListAsync();
 

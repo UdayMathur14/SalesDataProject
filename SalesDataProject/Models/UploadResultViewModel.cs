@@ -10,5 +10,7 @@
         public List<ProspectCustomer>? BlockCustomersEmailList { get; set; }//to block and for unblock
         public List<InvalidCustomerRecord>? invalidCustomerRecords { get; set; }
 
+        public string? Category { get; set; }
+
     }
 }
