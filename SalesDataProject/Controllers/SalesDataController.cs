@@ -295,7 +295,7 @@ namespace SalesDataProject.Controllers
                 {
                     workbook.SaveAs(stream);
                     var content = stream.ToArray();
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CustomerUploadResults.xlsx");
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingUploadResults.xlsx");
                 }
             }
         }
@@ -338,7 +338,7 @@ namespace SalesDataProject.Controllers
                 // Optionally, apply styles to the header row for better visibility
                 var headerRow = worksheet.Range("A1:L1");
                 headerRow.Style.Font.Bold = true;
-                headerRow.Style.Font.FontColor = XLColor.White;
+                headerRow.Style.Font.FontColor = XLColor.Black;
                 headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
 
                 var row = worksheet.Range("A2:L2");

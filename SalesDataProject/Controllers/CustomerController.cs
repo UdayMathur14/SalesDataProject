@@ -176,7 +176,7 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            if (!new[] { "CORPORATE", "LAWFORM", "SME", "UNIVERSITY" }.Contains(category))
+                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY" }.Contains(category))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -236,7 +236,7 @@ namespace SalesDataProject.Controllers
                      db.CountryCode.Trim() == c.CountryCode.Trim() &&
                      db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
          }
-         else if (c.Category == "UNIVERSITY" || c.Category == "LAWFORM")
+         else if (c.Category == "UNIVERSITY" || c.Category == "LAWFIRM")
          {
              return dbCustomers
                  .Any(db =>
@@ -368,7 +368,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(2, 9).Value = "9876543210";
                 worksheet.Cell(2, 10).Value = "DELHI";
                 worksheet.Cell(2, 11).Value = "NEW DELHI";
-                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFORM/SME/UNIVERSITY";
+                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY";
 
                 // Adjust column widths to fit content
                 worksheet.Columns().AdjustToContents();
@@ -376,7 +376,7 @@ namespace SalesDataProject.Controllers
                 // Optionally, apply styles to the header row for better visibility
                 var headerRow = worksheet.Range("A1:L1");
                 headerRow.Style.Font.Bold = true;
-                headerRow.Style.Font.FontColor = XLColor.White;
+                headerRow.Style.Font.FontColor = XLColor.Black;
                 headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
 
                 var row = worksheet.Range("A2:L2");
