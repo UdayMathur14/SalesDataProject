@@ -67,7 +67,7 @@ namespace SalesDataProject.Controllers
                         var worksheet = workbook.Worksheet(1);
                         var lastRow = worksheet.LastRowUsed().RowNumber();
 
-                        for (int row = 2; row <= lastRow; row++) // Start from the second row (skip header)
+                        for (int row = 3; row <= lastRow; row++) // Start from the second row (skip header)
                         {
 
                             worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";

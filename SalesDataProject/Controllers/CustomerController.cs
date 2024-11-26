@@ -163,7 +163,7 @@ namespace SalesDataProject.Controllers
                             }
 
                             if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
-                                string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode)|| string.IsNullOrWhiteSpace(category))
+                                string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(category))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -188,7 +188,6 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue;
                             }
-
 
                             // Add to the list of customers
                             customersFromExcel.Add(new Customer
@@ -224,60 +223,51 @@ namespace SalesDataProject.Controllers
                             })
                             .ToList();
 
-                        // Identify duplicate records based on matching email, country code, and category
+                        // Identify duplicate records
                         duplicateRecords = customersFromExcel
-     .Where(c =>
-     {
-         // Validate based on category type
-         if (c.Category == "CORPORATE" || c.Category == "SME")
-         {
-             return dbCustomers
-                 .Any(db =>
-                     db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                     db.CountryCode.Trim() == c.CountryCode.Trim() &&
-                     db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
-         }
-         else if (c.Category == "UNIVERSITY" || c.Category == "LAWFIRM")
-         {
-             return dbCustomers
-                 .Any(db =>
-                     db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                     db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
-         }
-         return false; // If none of the conditions match, no duplicates are found.
-     })
-     .Select(c =>
-     {
-         // Find the full customer record that matches the criteria (including CREATED_BY)
-         var existingCustomer = dbCustomers
-             .FirstOrDefault(db =>
-                 db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                 (c.Category == "CORPORATE" || c.Category == "SME"
-                     ? db.CountryCode.Trim() == c.CountryCode.Trim() && db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()
-                     : db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()));
+                            .Where(c =>
+                            {
+                                if (c.Category == "CORPORATE" || c.Category == "SME")
+                                {
+                                    return dbCustomers.Any(db =>
+                                        db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
+                                        db.CountryCode.Trim() == c.CountryCode.Trim() &&
+                                        db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
+                                }
+                                else if (c.Category == "UNIVERSITY" || c.Category == "LAWFIRM")
+                                {
+                                    return dbCustomers.Any(db =>
+                                        db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
+                                        db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
+                                }
+                                return false;
+                            })
+                            .Select(c =>
+                            {
+                                var existingCustomer = dbCustomers.FirstOrDefault(db =>
+                                    db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
+                                    (c.Category == "CORPORATE" || c.Category == "SME"
+                                        ? db.CountryCode.Trim() == c.CountryCode.Trim() && db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()
+                                        : db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()));
 
-         // Get the CreatedBy field from the existing customer record
-         var createdBy = existingCustomer?.CREATED_BY ?? "Unknown"; // Default to "Unknown" if null
+                                var createdBy = existingCustomer?.CREATED_BY ?? "Unknown";
 
-         // Return the InvalidCustomerRecord with the CreatedBy info
-         return new InvalidCustomerRecord
-         {
-             RowNumber = customersFromExcel.IndexOf(c) + 3, // Excel row index adjustment
-             CompanyName = c.COMPANY_NAME,
-             CustomerEmail = c.CUSTOMER_EMAIL,
-             CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-             ErrorMessage = $"Customer already exists with matching email, category, and country code (if applicable). Created by: {createdBy}"
-         };
-     })
-     .ToList();
+                                return new InvalidCustomerRecord
+                                {
+                                    RowNumber = customersFromExcel.IndexOf(c) + 3,
+                                    CompanyName = c.COMPANY_NAME,
+                                    CustomerEmail = c.CUSTOMER_EMAIL,
+                                    CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
+                                    ErrorMessage = $"Customer already exists. Created by: {createdBy}"
+                                };
+                            })
+                            .ToList();
 
-
-                        // Identify new customers (those that do not match any existing record)
+                        // Identify new customers
                         newCustomers = customersFromExcel
                             .Where(c => !duplicateRecords
                                 .Any(d => d.CustomerEmail.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim()))
                             .ToList();
-
 
                         // Save valid new customers
                         if (newCustomers.Any())
@@ -306,6 +296,7 @@ namespace SalesDataProject.Controllers
             TempData["SuccessMessage"] = "File uploaded successfully.";
             return RedirectToAction(nameof(ViewCustomers));
         }
+
 
 
 
