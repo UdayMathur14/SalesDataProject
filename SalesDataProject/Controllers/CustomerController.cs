@@ -146,7 +146,7 @@ namespace SalesDataProject.Controllers
                             var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                             var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                             var country = worksheet.Cell(row, 7).GetString();
-                            var category = worksheet.Cell(row, 12).GetString().ToUpper();
+                            var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
 
                             // Validation
                             if (!IsValidEmail(customerEmail))
@@ -171,12 +171,12 @@ namespace SalesDataProject.Controllers
                                     CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
-                                    ErrorMessage = "Missing mandatory fields: Company Name, Number, Country, Email, or Country Code."
+                                    ErrorMessage = "Missing mandatory fields!"
                                 });
                                 continue;
                             }
 
-                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY" }.Contains(category))
+                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY" }.Contains(category?.ToUpperInvariant()))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -188,6 +188,7 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue;
                             }
+
 
                             // Add to the list of customers
                             customersFromExcel.Add(new Customer
