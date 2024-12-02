@@ -25,20 +25,20 @@ namespace SalesDataProject.Models
         public string COMPANY_NAME { get; set; }
 
         [StringLength(100)]
-        public string? CONTACT_PERSON { get; set; }
+        public string CONTACT_PERSON { get; set; }
 
         public string? CountryCode { get; set; }
 
-        
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
+
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numeric values.")]
         public string CUSTOMER_CONTACT_NUMBER1 { get; set; }
 
 
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numeric values.")]
         public string? CUSTOMER_CONTACT_NUMBER2 { get; set; }
 
-        
-        [RegularExpression(@"^\d{10}$", ErrorMessage = "Please Enter Correct Number")]
+
+        [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numeric values.")]
         public string? CUSTOMER_CONTACT_NUMBER3 { get; set; }
 
         [Required]
@@ -53,7 +53,7 @@ namespace SalesDataProject.Models
         public string? CITY { get; set; }
 
         [StringLength(50)]
-        public string STATE { get; set; }
+        public string? STATE { get; set; }
 
         public string? CREATED_BY { get; set; } // Created by information
         public DateTime? CREATED_ON { get; set; } = DateTime.UtcNow;// Creation timestamp

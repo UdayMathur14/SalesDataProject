@@ -12,7 +12,6 @@ public class AppDbContext : DbContext
 
     public DbSet<Customer> Customers { get; set; }
     public DbSet<ProspectCustomer> Prospects { get; set; }
-    public DbSet<BlockedCustomer> BlockedCustomers { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Country> Countries { get; set; }
 

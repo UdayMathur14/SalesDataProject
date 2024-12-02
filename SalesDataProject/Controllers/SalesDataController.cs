@@ -328,7 +328,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(1, 11).Value = "CITY";
 
                 // Example data
-                worksheet.Cell(2, 1).Value = "Example";
+                worksheet.Cell(2, 1).Value = "Example(0001)";
                 worksheet.Cell(2, 2).Value = "Ennoble Ip";
                 worksheet.Cell(2, 3).Value = "Rajnish Sir";
                 worksheet.Cell(2, 4).Value = "9876543210";

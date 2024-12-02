@@ -349,7 +349,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(1, 12).Value = "CATEGORY*";
 
                 // Example data
-                worksheet.Cell(2, 1).Value = "Example";
+                worksheet.Cell(2, 1).Value = "Example(0001)";
                 worksheet.Cell(2, 2).Value = "Ennoble Ip";
                 worksheet.Cell(2, 3).Value = "Rajnish Sir";
                 worksheet.Cell(2, 4).Value = "123456789";
@@ -403,7 +403,7 @@ namespace SalesDataProject.Controllers
 
                 // Adding headers
                 worksheet.Cell(1, 1).Value = "Excel Row";
-                worksheet.Cell(1, 2).Value = "Customer Name";
+                worksheet.Cell(1, 2).Value = "Company Name";
                 worksheet.Cell(1, 3).Value = "Customer Email";
                 worksheet.Cell(1, 4).Value = "Customer Number";
                 worksheet.Cell(1, 5).Value = "Error Message";
@@ -431,7 +431,7 @@ namespace SalesDataProject.Controllers
                 {
                     workbook.SaveAs(stream);
                     stream.Position = 0;
-
+                    TempData["SuccessMessage"] = "Customer template has been successfully created.";
                     // Return the Excel file as a downloadable file
                     return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
                 }

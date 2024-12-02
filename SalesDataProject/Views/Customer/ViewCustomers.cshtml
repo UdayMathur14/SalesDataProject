@@ -60,7 +60,7 @@
            
 
             <form asp-action="DownloadTemplate" method="get">
-                <button type="submit" class="btn btn-success">Download Template</button>
+                <button onclick="downloadTemplate()" type="submit" class="btn btn-success">Download Template</button>
             </form>
         </div>
     </div>
@@ -140,4 +140,15 @@
                 }, 3000); // 3000 milliseconds = 3 seconds
             }
         });
+</script>
+<script>
+    function downloadTemplate() {
+        // Trigger file download
+        window.location.href = '/CustomerController/DownloadTemplate';
+
+        // Show success message
+        setTimeout(function () {
+            alert('Customer template has been successfully created.');
+        }, 1000);
+    }
 </script>
