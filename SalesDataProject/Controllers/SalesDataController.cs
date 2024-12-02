@@ -153,10 +153,18 @@ namespace SalesDataProject.Controllers
                             };
 
                             // If existing customer or prospect is found, mark as blocked (RECORD_TYPE = true)
-                            if (existingCustomer != null || prospectCustomer != null)
+                            if (existingCustomer != null)
                             {
                                 customerData.RECORD_TYPE = true; // Blocked
                                 customerData.IS_EMAIL_BLOCKED = true;
+                                customerData.BLOCKED_BY = existingCustomer.CREATED_BY; // Assign the name of the creator
+                                blockedCustomers.Add(customerData);
+                            }
+                            else if (prospectCustomer != null)
+                            {
+                                customerData.RECORD_TYPE = true; // Blocked
+                                customerData.IS_EMAIL_BLOCKED = true;
+                                customerData.BLOCKED_BY = prospectCustomer.CREATED_BY; // Assign the name of the creator
                                 blockedCustomers.Add(customerData);
                             }
                             else

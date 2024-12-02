@@ -57,5 +57,7 @@ namespace SalesDataProject.Models
         public string CATEGORY { get; set; }
 
         public string COUNTRY_CODE { get; set; }
+
+        public string? BLOCKED_BY { get; set; }
     }
 }
