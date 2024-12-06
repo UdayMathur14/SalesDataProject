@@ -27,7 +27,7 @@ namespace SalesDataProject.Models
         [StringLength(100)]
         public string CONTACT_PERSON { get; set; }
 
-        public string? CountryCode { get; set; }
+        public string? COUNTRY_CODE { get; set; }
 
 
         [RegularExpression(@"^\d+$", ErrorMessage = "Please enter only numeric values.")]
@@ -64,7 +64,7 @@ namespace SalesDataProject.Models
 
         private string? _emailDomain;
 
-        public string? EmailDomain
+        public string? EMAIL_DOMAIN
         {
             get => _emailDomain;
             set
@@ -75,6 +75,6 @@ namespace SalesDataProject.Models
         }
 
         [Required]
-        public string Category { get; set; }
+        public string CATEGORY { get; set; }
     }
 }

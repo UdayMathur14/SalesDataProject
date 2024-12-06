@@ -118,13 +118,13 @@ namespace SalesDataProject.Controllers
                             }
 
                             // Check if the category is either "University", "SME", or "Corporate" and adjust the validation
-                            IQueryable<Customer> existingCustomersQuery = _context.Customers.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.Category == category);
+                            IQueryable<Customer> existingCustomersQuery = _context.Customers.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.CATEGORY == category);
                             IQueryable<ProspectCustomer> prospectCustomersQuery = _context.Prospects.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.CATEGORY == category);
 
                             if (category == "CORPORATE" || category=="SME")
                             {
                                 // For Corporate, check the email and country code as well
-                                existingCustomersQuery = existingCustomersQuery.Where(c => c.CountryCode == countryCode);
+                                existingCustomersQuery = existingCustomersQuery.Where(c => c.COUNTRY_CODE == countryCode);
                                 prospectCustomersQuery = prospectCustomersQuery.Where(c => c.COUNTRY_CODE == countryCode);
                             }
 

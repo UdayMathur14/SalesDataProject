@@ -6,6 +6,10 @@ namespace SalesDataProject.Models
     [Table("TBL_PROSPECT_CUSTOMER")]
     public class ProspectCustomer
     {
+        private static readonly HashSet<string> CommonDomains = new HashSet<string>
+        {
+            "gmail.com", "yahoo.com", "yahoo.co.in", "outlook.com", "hotmail.com"
+        };
         public int ID { get; set; } // Primary Key, auto-incremented
         public int SALES_PERSON_ID { get; set; } = 0001; 
 
@@ -59,5 +63,17 @@ namespace SalesDataProject.Models
         public string COUNTRY_CODE { get; set; }
 
         public string? BLOCKED_BY { get; set; }
+
+        private string? _emailDomain;
+        public string? EMAIL_DOMAIN
+        {
+            get => _emailDomain;
+            set
+            {
+                var domain = value?.Split('@').Last().ToLower();
+                _emailDomain = CommonDomains.Contains(domain) ? null : domain;
+            }
+        }
+
     }
 }

@@ -63,7 +63,7 @@ namespace SalesDataProject.Controllers
             customer.CREATED_BY = username;
             customer.MODIFIED_BY = username;
             customer.CUSTOMER_EMAIL.ToLower();
-            customer.EmailDomain = customer.CUSTOMER_EMAIL.Split('@').Last();
+            customer.EMAIL_DOMAIN = customer.CUSTOMER_EMAIL.Split('@').Last();
 
             try
             {
@@ -74,7 +74,7 @@ namespace SalesDataProject.Controllers
      c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 ||
      (customer.CUSTOMER_CONTACT_NUMBER2 != null && c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2) ||
      (customer.CUSTOMER_CONTACT_NUMBER3 != null && c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3) ||
-     (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY == customer.COUNTRY)
+     (!string.IsNullOrEmpty(customer.EMAIL_DOMAIN) && c.EMAIL_DOMAIN == customer.EMAIL_DOMAIN && c.COUNTRY == customer.COUNTRY)
  );
                 //var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY==customer.COUNTRY));
                 if (existingCustomer != null)
@@ -197,7 +197,7 @@ namespace SalesDataProject.Controllers
                                 CUSTOMER_EMAIL = customerEmail,
                                 CONTACT_PERSON = contactPerson,
                                 CUSTOMER_CONTACT_NUMBER1 = customerNumber,
-                                CountryCode = countryCode,
+                                COUNTRY_CODE = countryCode,
                                 COUNTRY = country,
                                 CITY = worksheet.Cell(row, 11).GetString()?.ToUpperInvariant(),
                                 STATE = worksheet.Cell(row, 10).GetString()?.ToUpperInvariant(),
@@ -207,8 +207,8 @@ namespace SalesDataProject.Controllers
                                 CREATED_ON = DateTime.UtcNow,
                                 MODIFIED_BY = username,
                                 MODIFIED_ON = DateTime.UtcNow,
-                                EmailDomain = customerEmail?.Split('@').Last(),
-                                Category = category
+                                EMAIL_DOMAIN = customerEmail?.Split('@').Last(),
+                                CATEGORY = category
                             });
                         }
 
@@ -217,8 +217,8 @@ namespace SalesDataProject.Controllers
                             .Select(c => new
                             {
                                 c.CUSTOMER_EMAIL,
-                                c.CountryCode,
-                                c.Category,
+                                c.COUNTRY_CODE,
+                                c.CATEGORY,
                                 c.CREATED_BY // Include the CREATED_BY field in the selection
                             })
                             .ToList();
@@ -227,18 +227,18 @@ namespace SalesDataProject.Controllers
                         duplicateRecords = customersFromExcel
                             .Where(c =>
                             {
-                                if (c.Category == "CORPORATE" || c.Category == "SME")
+                                if (c.CATEGORY == "CORPORATE" || c.CATEGORY == "SME")
                                 {
                                     return dbCustomers.Any(db =>
                                         db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                                        db.CountryCode.Trim() == c.CountryCode.Trim() &&
-                                        db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
+                                        db.COUNTRY_CODE.Trim() == c.COUNTRY_CODE.Trim() &&
+                                        db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant());
                                 }
-                                else if (c.Category == "UNIVERSITY" || c.Category == "LAWFIRM")
+                                else if (c.CATEGORY == "UNIVERSITY" || c.CATEGORY == "LAWFIRM")
                                 {
                                     return dbCustomers.Any(db =>
                                         db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                                        db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant());
+                                        db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant());
                                 }
                                 return false;
                             })
@@ -246,9 +246,9 @@ namespace SalesDataProject.Controllers
                             {
                                 var existingCustomer = dbCustomers.FirstOrDefault(db =>
                                     db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                                    (c.Category == "CORPORATE" || c.Category == "SME"
-                                        ? db.CountryCode.Trim() == c.CountryCode.Trim() && db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()
-                                        : db.Category.ToUpperInvariant() == c.Category.ToUpperInvariant()));
+                                    (c.CATEGORY == "CORPORATE" || c.CATEGORY == "SME"
+                                        ? db.COUNTRY_CODE.Trim() == c.COUNTRY_CODE.Trim() && db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant()
+                                        : db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant()));
 
                                 var createdBy = existingCustomer?.CREATED_BY ?? "Unknown";
 
