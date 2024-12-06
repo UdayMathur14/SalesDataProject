@@ -49,7 +49,7 @@ namespace SalesDataProject.Controllers
       
 
         [HttpPost]
-        public async Task<IActionResult> UploadSalesData(IFormFile file, string selectedCategory)
+        public async Task<IActionResult> UploadSalesData(IFormFile file)
         {
             var username = HttpContext.Session.GetString("Username");
             if (file != null && file.Length > 0)
@@ -57,7 +57,6 @@ namespace SalesDataProject.Controllers
                 var blockedCustomers = new List<ProspectCustomer>();
                 var cleanCustomers = new List<ProspectCustomer>();
                 var invalidRecords = new List<InvalidCustomerRecord>();
-                var category = selectedCategory;
 
                 using (var stream = new MemoryStream())
                 {
@@ -67,28 +66,16 @@ namespace SalesDataProject.Controllers
                         var worksheet = workbook.Worksheet(1);
                         var lastRow = worksheet.LastRowUsed().RowNumber();
 
-                        for (int row = 3; row <= lastRow; row++) // Start from the second row (skip header)
+                        for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
                         {
-
-                            worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                            worksheet.Cell(1, 2).Value = "COMPANY_NAME*";
-                            worksheet.Cell(1, 3).Value = "CONTACT_PERSON*";
-                            worksheet.Cell(1, 4).Value = "CONTACT_NO1*";
-                            worksheet.Cell(1, 5).Value = "EMAIL*";
-                            worksheet.Cell(1, 6).Value = "COUNTRY CODE*";
-                            worksheet.Cell(1, 7).Value = "COUNTRY*";
-                            worksheet.Cell(1, 8).Value = "CONTACT_NO2";
-                            worksheet.Cell(1, 9).Value = "CONTACT_NO3";
-                            worksheet.Cell(1, 10).Value = "STATE";
-                            worksheet.Cell(1, 11).Value = "CITY";
-
                             var companyName = worksheet.Cell(row, 2).GetString();
                             var contactPerson = worksheet.Cell(row, 3).GetString()?.ToUpperInvariant();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
                             var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                             var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                             var country = worksheet.Cell(row, 7).GetString();
-
+                            var category = worksheet.Cell(row, 12).GetString();
+                            var emailDomain = customerEmail?.Split('@').Last();
 
                             if (!IsValidEmail(customerEmail))
                             {
@@ -104,7 +91,7 @@ namespace SalesDataProject.Controllers
                                 continue; // Skip to the next row
                             }
                             else if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
-                                     string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode))
+                                     string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(category))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -112,25 +99,17 @@ namespace SalesDataProject.Controllers
                                     CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
-                                    ErrorMessage = "Missing mandatory fields: Company Name, Number, Country, Email, or Country Code."
+                                    ErrorMessage = "Missing Mandatory Fields"
                                 });
                                 continue;
                             }
 
-                            // Check if the category is either "University", "SME", or "Corporate" and adjust the validation
-                            IQueryable<Customer> existingCustomersQuery = _context.Customers.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.CATEGORY == category);
-                            IQueryable<ProspectCustomer> prospectCustomersQuery = _context.Prospects.Where(c => c.CUSTOMER_EMAIL == customerEmail && c.CATEGORY == category);
+                            // Check if email exists in Customers or Prospects table
+                            var existingCustomer = await _context.Customers .Where(c => c.CUSTOMER_EMAIL == customerEmail || c.COMPANY_NAME == companyName).Select(c => c.CREATED_BY).FirstOrDefaultAsync();
 
-                            if (category == "CORPORATE" || category=="SME")
-                            {
-                                // For Corporate, check the email and country code as well
-                                existingCustomersQuery = existingCustomersQuery.Where(c => c.COUNTRY_CODE == countryCode);
-                                prospectCustomersQuery = prospectCustomersQuery.Where(c => c.COUNTRY_CODE == countryCode);
-                            }
+                            // Check if email exists in Prospects table
+                            var existingProspect = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL == customerEmail ||c.COMPANY_NAME == companyName ||(c.EMAIL_DOMAIN == emailDomain && c.RECORD_TYPE == true)).Select(c => c.CREATED_BY).FirstOrDefaultAsync();
 
-                            // Check if the customer exists based on the filtered query
-                            var existingCustomer = await existingCustomersQuery.FirstOrDefaultAsync();
-                            var prospectCustomer = await prospectCustomersQuery.FirstOrDefaultAsync();
 
                             var customerData = new ProspectCustomer
                             {
@@ -138,7 +117,7 @@ namespace SalesDataProject.Controllers
                                 COMPANY_NAME = companyName,
                                 CONTACT_PERSON = contactPerson,
                                 CUSTOMER_CONTACT_NUMBER1 = customerNumber,
-                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row,8 ).GetString(),
+                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 8).GetString(),
                                 CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 9).GetString(),
                                 CUSTOMER_EMAIL = customerEmail,
                                 COUNTRY = country,
@@ -148,23 +127,20 @@ namespace SalesDataProject.Controllers
                                 CREATED_BY = username,
                                 MODIFIED_BY = username,
                                 MODIFIED_ON = DateTime.Now,
+                                COUNTRY_CODE = countryCode,
+                                EMAIL_DOMAIN = emailDomain,
                                 CATEGORY = category,
-                                COUNTRY_CODE = countryCode
                             };
 
-                            // If existing customer or prospect is found, mark as blocked (RECORD_TYPE = true)
-                            if (existingCustomer != null)
+                            // Apply blocking logic
+                            if (!string.IsNullOrEmpty(existingCustomer) || !string.IsNullOrEmpty(existingProspect))
                             {
                                 customerData.RECORD_TYPE = true; // Blocked
                                 customerData.IS_EMAIL_BLOCKED = true;
-                                customerData.BLOCKED_BY = existingCustomer.CREATED_BY; // Assign the name of the creator
-                                blockedCustomers.Add(customerData);
-                            }
-                            else if (prospectCustomer != null)
-                            {
-                                customerData.RECORD_TYPE = true; // Blocked
-                                customerData.IS_EMAIL_BLOCKED = true;
-                                customerData.BLOCKED_BY = prospectCustomer.CREATED_BY; // Assign the name of the creator
+
+                                // Set BLOCKED_BY to the creator of the existing record
+                                customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer) ? existingCustomer : existingProspect;
+
                                 blockedCustomers.Add(customerData);
                             }
                             else
@@ -188,12 +164,12 @@ namespace SalesDataProject.Controllers
                     invalidCustomerRecords = invalidRecords
                 };
                 TempData["Success"] = "Successfully Uploaded";
-                // Return view with blocked and clean customers
                 return View("UploadResults", model);
             }
 
             return View();
         }
+
 
         private bool IsValidEmail(string email)
         {
@@ -326,6 +302,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(1, 9).Value = "CONTACT_NO3";
                 worksheet.Cell(1, 10).Value = "STATE";
                 worksheet.Cell(1, 11).Value = "CITY";
+                worksheet.Cell(1, 12).Value = "CATEGORY*";
 
                 // Example data
                 worksheet.Cell(2, 1).Value = "Example(0001)";
@@ -339,6 +316,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(2, 9).Value = "9876543210";
                 worksheet.Cell(2, 10).Value = "DELHI";
                 worksheet.Cell(2, 11).Value = "NEW DELHI";
+                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY";
 
                 // Adjust column widths to fit content
                 worksheet.Columns().AdjustToContents();

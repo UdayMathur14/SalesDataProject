@@ -16,13 +16,13 @@
     <div class="header d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-3 text-secondary"><i>UPLOAD MAILING DATA</i></h4>
         <div class="buttons d-flex gap-3">
-            <select id="categorySelectDropdown" class="btn form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;border:2px solid red;font:bold">
+            @* <select id="categorySelectDropdown" class="btn form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;border:2px solid red;font:bold">
                 <option value="" selected>Category <span class="text-danger">*</span></option>
                 <option value="UNIVERSITY">University</option>
                 <option value="SME">SME</option>
                 <option value="CORPORATE">Corporate</option>
                 <option value="LAWFIRM">LAWFIRM</option>
-            </select>
+            </select> *@
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
                 <input type="hidden" id="categorySelectHidden" name="selectedCategory" value="" /> <!-- Hidden input for category -->
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />

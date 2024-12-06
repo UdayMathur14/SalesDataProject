@@ -176,7 +176,7 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY" }.Contains(category?.ToUpperInvariant()))
+                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY", "PTC" }.Contains(category?.ToUpperInvariant()))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -212,45 +212,71 @@ namespace SalesDataProject.Controllers
                             });
                         }
 
+                        // Identify duplicates within the Excel sheet itself (based on email or company name)
+                        var excelDuplicates = customersFromExcel
+                            .GroupBy(c => new { c.CUSTOMER_EMAIL, c.COMPANY_NAME })
+                            .Where(g => g.Count() > 1)
+                            .SelectMany(g => g)
+                            .ToList();
+
                         // Retrieve the full customer records from the database, including CREATED_BY
                         var dbCustomers = _context.Customers
                             .Select(c => new
                             {
                                 c.CUSTOMER_EMAIL,
-                                c.COUNTRY_CODE,
-                                c.CATEGORY,
+                                c.COMPANY_NAME,
                                 c.CREATED_BY // Include the CREATED_BY field in the selection
                             })
                             .ToList();
 
-                        // Identify duplicate records
+                        // Retrieve the full prospect records from the database
+                        var dbProspects = _context.Prospects
+                            .Select(p => new
+                            {
+                                p.CUSTOMER_EMAIL,
+                                p.COMPANY_NAME,
+                                p.EMAIL_DOMAIN,
+                                p.RECORD_TYPE,
+                                p.CREATED_BY // Include the CREATED_BY field in the selection
+                            })
+                            .ToList();
+
+                        // Identify duplicate records (from both Excel and database)
                         duplicateRecords = customersFromExcel
                             .Where(c =>
                             {
-                                if (c.CATEGORY == "CORPORATE" || c.CATEGORY == "SME")
-                                {
-                                    return dbCustomers.Any(db =>
-                                        db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                                        db.COUNTRY_CODE.Trim() == c.COUNTRY_CODE.Trim() &&
-                                        db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant());
-                                }
-                                else if (c.CATEGORY == "UNIVERSITY" || c.CATEGORY == "LAWFIRM")
-                                {
-                                    return dbCustomers.Any(db =>
-                                        db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                                        db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant());
-                                }
-                                return false;
+                                // Check if the customer exists in the Customers table
+                                var existingCustomer = dbCustomers.Any(db =>
+                                    db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
+                                    db.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim());
+
+                                // Check if the customer exists in the Prospects table
+                                var existingProspect = dbProspects.Any(p =>
+                                    p.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
+                                    p.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim() ||
+                                    (p.EMAIL_DOMAIN == c.CUSTOMER_EMAIL?.Split('@').Last() && p.RECORD_TYPE == true)); // Check blocked emails in Prospects
+
+                                // Check if the entry is a duplicate within the Excel sheet
+                                var isExcelDuplicate = excelDuplicates.Any(e =>
+                                    e.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
+                                    e.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim());
+
+                                return existingCustomer || existingProspect || isExcelDuplicate;
                             })
                             .Select(c =>
                             {
+                                // Find which table (Customer or Prospect) the duplicate was found in
                                 var existingCustomer = dbCustomers.FirstOrDefault(db =>
-                                    db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() &&
-                                    (c.CATEGORY == "CORPORATE" || c.CATEGORY == "SME"
-                                        ? db.COUNTRY_CODE.Trim() == c.COUNTRY_CODE.Trim() && db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant()
-                                        : db.CATEGORY.ToUpperInvariant() == c.CATEGORY.ToUpperInvariant()));
+                                    db.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
+                                    db.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim());
 
-                                var createdBy = existingCustomer?.CREATED_BY ?? "Unknown";
+                                var existingProspect = dbProspects.FirstOrDefault(p =>
+                                    p.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
+                                    p.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim() ||
+                                    (p.EMAIL_DOMAIN == c.CUSTOMER_EMAIL?.Split('@').Last() && p.RECORD_TYPE == true));
+
+                                // Determine the origin of the existing record (database or Excel duplicate)
+                                var createdBy = existingCustomer?.CREATED_BY ?? existingProspect?.CREATED_BY ?? "Unknown";
 
                                 return new InvalidCustomerRecord
                                 {
@@ -296,6 +322,9 @@ namespace SalesDataProject.Controllers
             TempData["SuccessMessage"] = "File uploaded successfully.";
             return RedirectToAction(nameof(ViewCustomers));
         }
+
+
+
 
 
 
