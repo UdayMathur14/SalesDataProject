@@ -265,12 +265,12 @@ namespace SalesDataProject.Controllers
                 headerRow.Style.Font.FontColor = XLColor.White;
                 headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
 
-                var headerRow1 = blockedSheet.Range("A1:L1");
+                var headerRow1 = cleanSheet.Range("A1:L1");
                 headerRow1.Style.Font.Bold = true;
                 headerRow1.Style.Font.FontColor = XLColor.White;
                 headerRow1.Style.Fill.BackgroundColor = XLColor.BlueGray;
 
-                var headerRow2 = blockedSheet.Range("A1:L1");
+                var headerRow2 = invalidSheet.Range("A1:L1");
                 headerRow2.Style.Font.Bold = true;
                 headerRow2.Style.Font.FontColor = XLColor.White;
                 headerRow2.Style.Fill.BackgroundColor = XLColor.BlueGray;
