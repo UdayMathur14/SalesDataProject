@@ -49,7 +49,7 @@ namespace SalesDataProject.Controllers
       
 
         [HttpPost]
-        public async Task<IActionResult> UploadSalesData(IFormFile file, string? category)
+        public async Task<IActionResult> UploadSalesData(IFormFile file, string selectedCategory)
         {
             var username = HttpContext.Session.GetString("Username");
             if (file != null && file.Length > 0)
@@ -129,7 +129,7 @@ namespace SalesDataProject.Controllers
                                 MODIFIED_ON = DateTime.Now,
                                 COUNTRY_CODE = countryCode,
                                 EMAIL_DOMAIN = emailDomain,
-                                CATEGORY = category,
+                                CATEGORY = selectedCategory,
                             };
 
                             // Apply blocking logic
