@@ -80,7 +80,7 @@ namespace SalesDataProject.Controllers
                 //var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY==customer.COUNTRY));
                 if (existingCustomer != null)
                 {
-                    ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Emial already exists.");
+                    ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Email already exists.");
                     TempData["ErrorMessage"] = "This customer Email already exists.";
                     return RedirectToAction(nameof(Index));
                 }
@@ -177,7 +177,7 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY", "PTC" }.Contains(category?.ToUpperInvariant()))
+                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY", "LAWFIRM+PCT" }.Contains(category?.ToUpperInvariant()))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -390,7 +390,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(2, 9).Value = "9876543210";
                 worksheet.Cell(2, 10).Value = "DELHI";
                 worksheet.Cell(2, 11).Value = "NEW DELHI";
-                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY";
+                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY/LAWFIRM+PCT";
 
                 // Adjust column widths to fit content
                 worksheet.Columns().AdjustToContents();
