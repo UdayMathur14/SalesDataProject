@@ -49,7 +49,7 @@ namespace SalesDataProject.Controllers
       
 
         [HttpPost]
-        public async Task<IActionResult> UploadSalesData(IFormFile file)
+        public async Task<IActionResult> UploadSalesData(IFormFile file, string? category)
         {
             var username = HttpContext.Session.GetString("Username");
             if (file != null && file.Length > 0)
@@ -74,7 +74,7 @@ namespace SalesDataProject.Controllers
                             var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                             var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                             var country = worksheet.Cell(row, 7).GetString();
-                            var category = worksheet.Cell(row, 12).GetString();
+                            //var category = worksheet.Cell(row, 12).GetString();
                             var emailDomain = customerEmail?.Split('@').Last();
 
                             if (!IsValidEmail(customerEmail))
@@ -91,7 +91,7 @@ namespace SalesDataProject.Controllers
                                 continue; // Skip to the next row
                             }
                             else if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
-                                     string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(category))
+                                     string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country) )
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -291,44 +291,51 @@ namespace SalesDataProject.Controllers
             {
                 var worksheet = workbook.Worksheets.Add("CustomerTemplate");
 
-                worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "COMPANY_NAME*";
-                worksheet.Cell(1, 3).Value = "CONTACT_PERSON*";
-                worksheet.Cell(1, 4).Value = "CONTACT_NO1*";
-                worksheet.Cell(1, 5).Value = "EMAIL*";
-                worksheet.Cell(1, 6).Value = "COUNTRY CODE*";
-                worksheet.Cell(1, 7).Value = "COUNTRY*";
-                worksheet.Cell(1, 8).Value = "CONTACT_NO2";
-                worksheet.Cell(1, 9).Value = "CONTACT_NO3";
-                worksheet.Cell(1, 10).Value = "STATE";
-                worksheet.Cell(1, 11).Value = "CITY";
-                worksheet.Cell(1, 12).Value = "CATEGORY*";
+                worksheet.Cell(1, 1).Value = "CustomerCode";
+                worksheet.Cell(1, 2).Value = "*CompanyName";
+                worksheet.Cell(1, 3).Value = "*ContactPerson";
+                worksheet.Cell(1, 4).Value = "*ContactNo1";
+                worksheet.Cell(1, 5).Value = "*Email";
+                worksheet.Cell(1, 6).Value = "*CountryCode";
+                worksheet.Cell(1, 7).Value = "*Country";
+                worksheet.Cell(1, 8).Value = "ContactNo2";
+                worksheet.Cell(1, 9).Value = "ContactNo3";
+                worksheet.Cell(1, 10).Value = "State";
+                worksheet.Cell(1, 11).Value = "City";
+                //worksheet.Cell(1, 12).Value = "*Category";
 
                 // Example data
                 worksheet.Cell(2, 1).Value = "Example(0001)";
                 worksheet.Cell(2, 2).Value = "Ennoble Ip";
                 worksheet.Cell(2, 3).Value = "Rajnish Sir";
-                worksheet.Cell(2, 4).Value = "9876543210";
+                worksheet.Cell(2, 4).Value = "123456789";
                 worksheet.Cell(2, 5).Value = "ennobleip@gmail.com";
                 worksheet.Cell(2, 6).Value = "+91";
                 worksheet.Cell(2, 7).Value = "INDIA";
-                worksheet.Cell(2, 8).Value = "9876543211";
+                worksheet.Cell(2, 8).Value = "9876543210";
                 worksheet.Cell(2, 9).Value = "9876543210";
                 worksheet.Cell(2, 10).Value = "DELHI";
                 worksheet.Cell(2, 11).Value = "NEW DELHI";
-                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY";
+                //worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY";
 
                 // Adjust column widths to fit content
                 worksheet.Columns().AdjustToContents();
 
                 // Optionally, apply styles to the header row for better visibility
+                worksheet.Columns().AdjustToContents();
+
+                // Optionally, apply styles to the header row for better visibility
                 var headerRow = worksheet.Range("A1:L1");
                 headerRow.Style.Font.Bold = true;
-                headerRow.Style.Font.FontColor = XLColor.Black;
-                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
+                headerRow.Style.Font.FontColor = XLColor.Red;
+                headerRow.Style.Fill.BackgroundColor = XLColor.Yellow;
+                headerRow.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+                headerRow.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+                headerRow.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+                headerRow.Style.Border.RightBorder = XLBorderStyleValues.Thin;
 
                 var row = worksheet.Range("A2:L2");
-                row.Style.Font.FontColor = XLColor.Red;
+                row.Style.Font.FontColor = XLColor.Black;
 
                 using (var stream = new MemoryStream())
                 {

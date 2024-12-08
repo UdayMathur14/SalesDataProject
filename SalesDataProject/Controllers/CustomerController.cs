@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
+using System;
 using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
@@ -138,7 +139,7 @@ namespace SalesDataProject.Controllers
 
                         var customersFromExcel = new List<Customer>();
 
-                        for (int row = 3; row <= lastRow; row++) // Start reading data from row 3
+                        for (int row = 2; row <= lastRow; row++) // Start reading data from row 3
                         {
                             var companyName = worksheet.Cell(row, 2).GetString();
                             var contactPerson = worksheet.Cell(row, 3).GetString()?.ToUpperInvariant();
@@ -207,7 +208,7 @@ namespace SalesDataProject.Controllers
                                 CREATED_ON = DateTime.UtcNow,
                                 MODIFIED_BY = username,
                                 MODIFIED_ON = DateTime.UtcNow,
-                                EMAIL_DOMAIN = customerEmail?.Split('@').Last(),
+                                EMAIL_DOMAIN = customerEmail,
                                 CATEGORY = category
                             });
                         }
@@ -284,7 +285,7 @@ namespace SalesDataProject.Controllers
                                     CompanyName = c.COMPANY_NAME,
                                     CustomerEmail = c.CUSTOMER_EMAIL,
                                     CustomerNumber = c.CUSTOMER_CONTACT_NUMBER1,
-                                    ErrorMessage = $"Customer already exists. Created by: {createdBy}"
+                                    ErrorMessage = $"Company already exists. Created by: {createdBy}"
                                 };
                             })
                             .ToList();
@@ -364,18 +365,18 @@ namespace SalesDataProject.Controllers
                 var worksheet = workbook.Worksheets.Add("CustomerTemplate");
 
                 // Define the headers in the template
-                worksheet.Cell(1, 1).Value = "CUSTOMER_CODE";
-                worksheet.Cell(1, 2).Value = "COMPANY_NAME*";
-                worksheet.Cell(1, 3).Value = "CONTACT_PERSON*";
-                worksheet.Cell(1, 4).Value = "CONTACT_NO1*";
-                worksheet.Cell(1, 5).Value = "EMAIL*";
-                worksheet.Cell(1, 6).Value = "COUNTRY CODE*";
-                worksheet.Cell(1, 7).Value = "COUNTRY*";
-                worksheet.Cell(1, 8).Value = "CONTACT_NO2";
-                worksheet.Cell(1, 9).Value = "CONTACT_NO3";
-                worksheet.Cell(1, 10).Value = "STATE";
-                worksheet.Cell(1, 11).Value = "CITY";
-                worksheet.Cell(1, 12).Value = "CATEGORY*";
+                worksheet.Cell(1, 1).Value = "CustomerCode";
+                worksheet.Cell(1, 2).Value = "*CompanyName";
+                worksheet.Cell(1, 3).Value = "*ContactPerson";
+                worksheet.Cell(1, 4).Value = "*ContactNo1";
+                worksheet.Cell(1, 5).Value = "*Email";
+                worksheet.Cell(1, 6).Value = "*CountryCode";
+                worksheet.Cell(1, 7).Value = "*Country";
+                worksheet.Cell(1, 8).Value = "ContactNo2";
+                worksheet.Cell(1, 9).Value = "ContactNo3";
+                worksheet.Cell(1, 10).Value = "State";
+                worksheet.Cell(1, 11).Value = "City";
+                worksheet.Cell(1, 12).Value = "*Category";
 
                 // Example data
                 worksheet.Cell(2, 1).Value = "Example(0001)";
@@ -397,11 +398,16 @@ namespace SalesDataProject.Controllers
                 // Optionally, apply styles to the header row for better visibility
                 var headerRow = worksheet.Range("A1:L1");
                 headerRow.Style.Font.Bold = true;
-                headerRow.Style.Font.FontColor = XLColor.Black;
-                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
+                headerRow.Style.Font.FontColor = XLColor.Red;
+                headerRow.Style.Fill.BackgroundColor = XLColor.Yellow;
+                headerRow.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+                headerRow.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+                headerRow.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+                headerRow.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+
 
                 var row = worksheet.Range("A2:L2");
-                row.Style.Font.FontColor = XLColor.Red;
+                row.Style.Font.FontColor = XLColor.Black;
 
                 using (var stream = new MemoryStream())
                 {

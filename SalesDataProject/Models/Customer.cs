@@ -63,7 +63,6 @@ namespace SalesDataProject.Models
         public DateTime? MODIFIED_ON { get; set; } = DateTime.UtcNow; // Nullable in case it hasn't been modified yet
 
         private string? _emailDomain;
-
         public string? EMAIL_DOMAIN
         {
             get => _emailDomain;
