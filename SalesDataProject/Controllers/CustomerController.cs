@@ -139,7 +139,7 @@ namespace SalesDataProject.Controllers
 
                         var customersFromExcel = new List<Customer>();
 
-                        for (int row = 2; row <= lastRow; row++) // Start reading data from row 3
+                        for (int row = 3; row <= lastRow; row++) // Start reading data from row 3
                         {
                             var companyName = worksheet.Cell(row, 2).GetString();
                             var contactPerson = worksheet.Cell(row, 3).GetString()?.ToUpperInvariant();
