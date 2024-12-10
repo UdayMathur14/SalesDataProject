@@ -11,7 +11,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options => {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Set timeout as needed
+    options.IdleTimeout = TimeSpan.FromMinutes(100); // Set timeout as needed
     options.Cookie.HttpOnly = true; // Protects the session cookie
     options.Cookie.IsEssential = true; // Required for session to work
 });

@@ -16,14 +16,25 @@ namespace SalesDataProject.Controllers
         {
             _context = context;
         }
+
+
         [HttpGet]
         public IActionResult Index()
         {
+            // Check if the user has permission to access the page
             if (HttpContext.Session.GetString("CanAccessSales") != "True")
             {
-                // If not authorized, redirect to home or another page
-                return RedirectToAction("AccessDenied", "Auth");
+                // If not authorized, redirect to login page or another appropriate page
+                return RedirectToAction("Login", "Auth");
             }
+
+            // Fetch the list of users from the Users master table
+            var users = _context.Users.ToList(); // Assuming 'Users' is your DbSet<User> in YourDbContext
+
+            // Pass the list of users to the view using ViewBag
+            ViewBag.Users = users;
+
+            // Return the view
             return View();
         }
         public IActionResult UploadResults(UploadResultViewModel model)
@@ -31,7 +42,7 @@ namespace SalesDataProject.Controllers
             if (HttpContext.Session.GetString("CanAccessSales") != "True")
             {
                 // If not authorized, redirect to home or another page
-                return RedirectToAction("AccessDenied", "Auth");
+                return RedirectToAction("Login", "Auth");
             }
             return View(model);
 
@@ -41,7 +52,7 @@ namespace SalesDataProject.Controllers
             if (HttpContext.Session.GetString("CanAccessSales") != "True")
             {
                 // If not authorized, redirect to home or another page
-                return RedirectToAction("AccessDenied", "Auth");
+                return RedirectToAction("Login", "Auth");
             }
             return View(model);
 
