@@ -223,7 +223,7 @@ namespace SalesDataProject.Controllers
 
                 // Add headers for blocked customers
                 blockedSheet.Cell(1, 1).Value = "Customer Code";
-                blockedSheet.Cell(1, 2).Value = "Customer Name";
+                blockedSheet.Cell(1, 2).Value = "Company Name";
                 blockedSheet.Cell(1, 3).Value = "Email";
                 blockedSheet.Cell(1, 4).Value = "Contact Number";
 
@@ -238,7 +238,7 @@ namespace SalesDataProject.Controllers
 
                 // Add headers for clean customers
                 cleanSheet.Cell(1, 1).Value = "Customer Code";
-                cleanSheet.Cell(1, 2).Value = "Customer Name";
+                cleanSheet.Cell(1, 2).Value = "Company Name";
                 cleanSheet.Cell(1, 3).Value = "Email";
                 cleanSheet.Cell(1, 4).Value = "Contact Number";
 
@@ -252,7 +252,7 @@ namespace SalesDataProject.Controllers
                 }
 
                 invalidSheet.Cell(1, 1).Value = "Row";
-                invalidSheet.Cell(1, 2).Value = "Customer Name";
+                invalidSheet.Cell(1, 2).Value = "Company Name";
                 invalidSheet.Cell(1, 3).Value = "Email";
                 invalidSheet.Cell(1, 4).Value = "Contact Number";
                 invalidSheet.Cell(1, 5).Value = "Error Message";
