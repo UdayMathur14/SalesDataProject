@@ -70,15 +70,9 @@ namespace SalesDataProject.Controllers
             {
                 // Attempt to add the new customer to the context
                 _context.Customers.Add(customer);
-                var existingCustomer = _context.Customers.FirstOrDefault(c =>
-     c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() ||
-     c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 ||
-     (customer.CUSTOMER_CONTACT_NUMBER2 != null && c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2) ||
-     (customer.CUSTOMER_CONTACT_NUMBER3 != null && c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3) ||
-     (!string.IsNullOrEmpty(customer.EMAIL_DOMAIN) && c.EMAIL_DOMAIN == customer.EMAIL_DOMAIN && c.COUNTRY == customer.COUNTRY)
- );
-                //var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.CUSTOMER_CONTACT_NUMBER1 == customer.CUSTOMER_CONTACT_NUMBER1 || c.CUSTOMER_CONTACT_NUMBER2 == customer.CUSTOMER_CONTACT_NUMBER2 || c.CUSTOMER_CONTACT_NUMBER3 == customer.CUSTOMER_CONTACT_NUMBER3 || (!string.IsNullOrEmpty(customer.EmailDomain) && c.EmailDomain == customer.EmailDomain && c.COUNTRY==customer.COUNTRY));
-                if (existingCustomer != null)
+                var existingCustomer = _context.Customers.FirstOrDefault(c =>c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower()  || c.COMPANY_NAME.ToUpper() == c.COMPANY_NAME.ToUpper());
+                var existingSalesCustomer = _context.Prospects.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == customer.COMPANY_NAME.ToUpper()|| (c.EMAIL_DOMAIN.ToLower() == c.EMAIL_DOMAIN.ToLower() && c.RECORD_TYPE == true));
+                if (existingCustomer != null || existingSalesCustomer!=null)
                 {
                     ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Email already exists.");
                     TempData["ErrorMessage"] = "This customer Email already exists.";
@@ -141,12 +135,14 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 3; row <= lastRow; row++) // Start reading data from row 3
                         {
-                            var companyName = worksheet.Cell(row, 2).GetString();
-                            var contactPerson = worksheet.Cell(row, 3).GetString()?.ToUpperInvariant();
+                            var companyName = worksheet.Cell(row, 2).GetString().ToUpper();
+                            var contactPerson = worksheet.Cell(row, 3).GetString();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
                             var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                             var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                             var country = worksheet.Cell(row, 7).GetString();
+                            var customerNumber2 = worksheet.Cell(row, 8).GetString();
+                            var customerNumber3 = worksheet.Cell(row, 9).GetString();
                             var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
 
                             // Validation
@@ -154,7 +150,19 @@ namespace SalesDataProject.Controllers
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
-                                    RowNumber = row,
+                                    RowNumber = row-1,
+                                    CompanyName = companyName,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Invalid email format."
+                                });
+                                continue;
+                            }
+                            if (!IsValidPhoneNumber(customerNumber)|| !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3))
+                            {
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row-1,
                                     CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
@@ -163,12 +171,13 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
+
                             if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
                                 string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(category))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
-                                    RowNumber = row,
+                                    RowNumber = row-1,
                                     CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
@@ -181,7 +190,7 @@ namespace SalesDataProject.Controllers
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
-                                    RowNumber = row,
+                                    RowNumber = row - 1,
                                     CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
@@ -202,8 +211,8 @@ namespace SalesDataProject.Controllers
                                 COUNTRY = country,
                                 CITY = worksheet.Cell(row, 11).GetString()?.ToUpperInvariant(),
                                 STATE = worksheet.Cell(row, 10).GetString()?.ToUpperInvariant(),
-                                CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 8).GetString(),
-                                CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 9).GetString(),
+                                CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+                                CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
                                 CREATED_BY = username,
                                 CREATED_ON = DateTime.UtcNow,
                                 MODIFIED_BY = username,
@@ -349,13 +358,14 @@ namespace SalesDataProject.Controllers
         }
         public bool IsValidPhoneNumber(string customerNumber)
         {
-            // Regular expression to match exactly 10 digits
-            string pattern = @"^\d{10}$";
+            // Regular expression to match only digits or an empty string
+            string pattern = @"^\d*$";
             Regex regex = new Regex(pattern);
 
             // Check if the customer number matches the regex pattern
             return regex.IsMatch(customerNumber);
         }
+
 
         [HttpGet]
         public IActionResult DownloadTemplate()

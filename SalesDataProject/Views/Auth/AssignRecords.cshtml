@@ -1,0 +1,111 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model SalesDataProject.Models.AssignToViewModel
+
+<div class="card shadow-sm p-4 mb-4 mt-5 mb-3">
+    <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
+    <form asp-action="FilterRecords" method="post">
+        <div class="form-row d-flex gap-4">
+            <div class="col-md-3 mb-3">
+                <label for="Category" class="font-weight-bold">Select Category:</label>
+                <select id="Category" name="Category" class="form-select form-control-sm">
+                    <option value="">--Select--</option>
+                    <option value="UNIVERSITY">University</option>
+                    <option value="SME">SME</option>
+                    <option value="CORPORATE">Corporate</option>
+                    <option value="LAWFIRM">LawFirm</option>
+                    <option value="LAWFIRM+PCT">LawFirm+PCT</option>
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="UserName" class="font-weight-bold">Select User:</label>
+                <select asp-for="UserName" class="form-select form-control-sm">
+                    <option value="">--Select--</option>
+                    @if (ViewBag.Users != null)
+                    {
+                        foreach (var user in ViewBag.Users as SelectList)
+                        {
+                            <option value="@user.Value">@user.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2 mb-3 align-self-end">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Display Company Records -->
+    <div id="companyRecordsList">
+        <h5 class="text-secondary">Available Records</h5>
+        <form asp-action="Assign" method="post">
+            
+            @if (Model.RecordsList != null && Model.RecordsList.Any())
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" />
+                            </th>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Company Name</th>
+                            <th>Contact Number</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in Model.RecordsList)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="RecordIds" value="@record.ID" />
+                                </td>
+                                <td>@record.ID</td>
+                                <td>@record.CATEGORY</td>
+                                <td>@record.COMPANY_NAME</td>
+                                <td>@record.CUSTOMER_CONTACT_NUMBER1</td>
+                                <td>@record.CUSTOMER_EMAIL</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No records found for the selected criteria.</p>
+            }
+            <div class="d-flex justify-content-end mb-3 gap-3">
+                @* <button type="submit" class="btn btn-success" name="assignAll" value="true">Assign All Records</button> *@
+                <button type="submit" class="btn btn-success" name="assignAll" value="false">Assign selected Records</button>
+                <div class="col-md-3 mb-3">
+                    <label for="UserName" class="font-weight-bold">Assign To User:</label>
+                    <select asp-for="UserName" class="form-select form-control-sm">
+                        <option value="">--Select--</option>
+                        @if (ViewBag.Users != null)
+                        {
+                            foreach (var user in ViewBag.Users as SelectList)
+                            {
+                                <option value="@user.Value">@user.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                </div>  
+            
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleSelectAll(checkbox) {
+        const checkboxes = document.querySelectorAll('input[name="RecordIds"]');
+        checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    }
+</script>

@@ -9,10 +9,15 @@
         <p>@TempData["Success"]</p>
     </div>
 }
-<h2 class="text-center my-4">Manage Users Permissions</h2>
 
-<div class="d-flex justify-content-end mb-3">
-    <a asp-action="CreateUser" class="btn btn-primary">Create User</a>
+<div class="header d-flex justify-content-between">
+<h2 style="color:black" class="text-center my-4">Manage Users Permissions</h2>
+
+<div class="d-flex justify-content-end mb-4 gap-3">
+    <a style="color:black" asp-action="CreateUser" class="btn btn-success">Create User</a>
+    <a style="color:black" asp-action="ChangeRecordType" class="btn btn-success">Change Record</a>
+    <a style="color:black;font:bold" asp-action="AssignRecords" class="btn btn-success">Assign Record</a>
+</div>
 </div>
 
 <form asp-action="UpdateUserAccess" method="post">
@@ -64,6 +69,7 @@
     table {
         border-collapse: separate;
         border-spacing: 0;
+        border-color:black;
     }
 
     th, td {
@@ -87,11 +93,15 @@
     }
 
     .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #f9f9f9;
+        background-color: #f9f9f9; /* Light gray */
     }
 
-    .table-hover tbody tr:hover {
-        background-color: antiquewhite;
+    .table-striped tbody tr:nth-of-type(even) {
+        background-color: antiquewhite; /* White */
+    }
+
+    .table-striped tbody tr:hover {
+        background-color: aqua; /* Light blue for hover effect */
     }
 
     td.align-middle {
@@ -124,5 +134,5 @@
         if (errorMessage) {
             errorMessage.style.display = 'none';
         }
-    }, 2000);
+    }, 2500);
 </script>
