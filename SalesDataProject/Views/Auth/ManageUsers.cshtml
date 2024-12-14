@@ -11,12 +11,18 @@
 }
 
 <div class="header d-flex justify-content-between">
-<h2 style="color:black" class="text-center my-4">Manage Users Permissions</h2>
+<h2 style="color:black" class="text-center">Manage Users Permissions</h2>
 
-<div class="d-flex justify-content-end mb-4 gap-3">
-    <a style="color:black" asp-action="CreateUser" class="btn btn-success">Create User</a>
-    <a style="color:black" asp-action="ChangeRecordType" class="btn btn-success">Change Record</a>
-    <a style="color:black;font:bold" asp-action="AssignRecords" class="btn btn-success">Assign Record</a>
+<div class="d-flex justify-content-end mb-3 gap-2">
+        <form asp-action="AssignRecords" method="get">
+            <button type="submit" class="btn btn-success">Assign Record</button>
+        </form>
+        <form asp-action="ChangeRecordType" method="get">
+            <button type="submit" class="btn btn-success">Change Record</button>
+        </form>
+        <form asp-action="CreateUser" method="get">
+            <button type="submit" class="btn btn-success">Create User</button>
+        </form>
 </div>
 </div>
 
@@ -93,7 +99,7 @@
     }
 
     .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #f9f9f9; /* Light gray */
+        background-color: salmon; /* Light gray */
     }
 
     .table-striped tbody tr:nth-of-type(even) {
@@ -101,7 +107,7 @@
     }
 
     .table-striped tbody tr:hover {
-        background-color: aqua; /* Light blue for hover effect */
+        background-color: dimgrey; /* Light blue for hover effect */
     }
 
     td.align-middle {

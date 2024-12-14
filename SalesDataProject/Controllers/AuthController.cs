@@ -24,7 +24,7 @@ namespace SalesDataProject.Controllers
         public async Task<IActionResult> AssignRecords()
         {
             var users = await _context.Users.ToListAsync();
-            ViewBag.Users = new SelectList(users, "Id", "Username");
+            ViewBag.Users = new SelectList(users, "Username", "Username");
 
             var model = new AssignToViewModel
             {
@@ -43,7 +43,7 @@ namespace SalesDataProject.Controllers
             var users = await _context.Users.ToListAsync();
 
             // Pass the list of users to the view using ViewBag
-            ViewBag.Users = new SelectList(users, "Id", "Username");
+            ViewBag.Users = new SelectList(users, "Username", "Username");
 
             return View(model);
 
@@ -263,7 +263,7 @@ namespace SalesDataProject.Controllers
             var users = await _context.Users.ToListAsync();
 
             // Ensure ViewBag.Users is populated after form submission
-            ViewBag.Users = new SelectList(users, "Id", "Username");
+            ViewBag.Users = new SelectList(users, "Username", "Username");
             return View("ChangeRecordType", model); // Return the view with the populated UploadResultViewModel
         }
 

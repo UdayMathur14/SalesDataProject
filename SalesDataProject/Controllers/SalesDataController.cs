@@ -53,7 +53,7 @@ namespace SalesDataProject.Controllers
             var users = await _context.Users.ToListAsync();
 
             // Pass the list of users to the view using ViewBag
-            ViewBag.Users = new SelectList(users, "Id", "Username");
+            ViewBag.Users = new SelectList(users, "Username", "Username");
 
             return View(model);
 
