@@ -155,7 +155,7 @@ namespace SalesDataProject.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["messagesuccess"] = "Successfully cleaned selected customers.";
+                TempData["messagesuccess"] = "Successfully cleaned selected companies.";
             }
 
             // Change clean customers to blocked
@@ -171,7 +171,7 @@ namespace SalesDataProject.Controllers
                     customer.RECORD_TYPE = true;
                 }
                 await _context.SaveChangesAsync();
-                TempData["messagesuccess"] = "Successfully blocked selected customers.";
+                TempData["messagesuccess"] = "Successfully blocked selected companies.";
 
             }
 
@@ -197,12 +197,6 @@ namespace SalesDataProject.Controllers
             // Parse the RecordType to determine if it's clean or blocked
             bool isClean = RecordType == "Clean";
             bool isBlocked = RecordType == "Blocked";
-
-            // If both record type and selected date are not provided
-            if (string.IsNullOrEmpty(RecordType) && !SelectedDate.HasValue)
-            {
-                return View("ChangeRecordType", model); // Pass the empty model to the view
-            }
 
             // Blocked records: RecordType == 0 and IS_EMAIL_BLOCKED == true
             if (isBlocked)

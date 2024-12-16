@@ -1,9 +1,28 @@
 ﻿@model SalesDataProject.Models.UploadResultViewModel
 
+@if (TempData["messagesuccess"] != null)
+{
+    <div class="error-message collor" id="errorMessage">
+        <p>@TempData["messagesuccess"]</p>
+    </div>
+}
 <div class="card shadow-sm p-4 mb-4 mt-5 mb-3">
     <h4 class="mb-3" style="color:red"><I>CHANGE RECORD TYPE</I></h4>
     <form asp-action="ViewEmailRecords" method="post" class="form-inline">
         <div class="form-row d-flex gap-4">
+            <div class="col-md-2 mb-3">
+                <label for="UserName" class="font-weight-bold">Select User:</label>
+                <select asp-for="UserName" class="form-select form-control-sm">
+                    <option value="">--Select--</option>
+                    @if (ViewBag.Users != null)
+                    {
+                        foreach (var user in ViewBag.Users as SelectList)
+                        {
+                            <option value="@user.Value">@user.Text</option>
+                        }
+                    }
+                </select>
+            </div>
             <div class="col-md-2 mb-3">
                 <label for="SelectedDate" class="font-weight-bold">Select Date:</label>
                 <input id="SelectedDate" name="SelectedDate" class="form-select form-control-sm" type="date" placeholder="Choose a date" onfocus="this.showPicker()" />
@@ -27,19 +46,7 @@
                     <option value="LAWFIRM">LAWFIRM+PCT</option>
                 </select>
             </div>
-            <div class="col-md-2 mb-3">
-                <label for="UserName" class="font-weight-bold">Select User:</label>
-                <select asp-for="UserName" class="form-select form-control-sm">
-                    <option value="">--Select--</option>
-                    @if (ViewBag.Users != null)
-                    {
-                        foreach (var user in ViewBag.Users as SelectList)
-                        {
-                            <option value="@user.Value">@user.Text</option>
-                        }
-                    }
-                </select>
-            </div>
+            
 
             <div class="col-md-4 mb-3 align-self-end">
                 <button type="submit" class="btn btn-primary w-90">Search</button>
@@ -48,7 +55,7 @@
     </form>
 
     <!-- Display Blocked Customers -->
-    <h5 class="text-secondary">Blocked Customers</h5>
+    <h5 class="text-secondary">Blocked Companies</h5>
     <form asp-action="UpdateCustomerStatus" method="post">
         <div id="blockedCustomersList">
             @if (Model.BlockCustomersEmailList != null && Model.BlockCustomersEmailList.Any())
@@ -56,7 +63,10 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Select</th>
+                            <th>
+                                <input type="checkbox" id="selectAllBlocked" onclick="toggleSelectAll('selectAllBlocked', 'BlockedCustomerIds')" />
+                                Select All
+                            </th>
                             <th>ID</th>
                             <th>Category</th>
                             <th>Company Name</th>
@@ -86,13 +96,12 @@
                 <p>No blocked emails found.</p>
             }
         </div>
-
-        <!-- Submit Button to change blocked to clean -->
         <button type="submit" class="btn btn-success mb-3">Change to Clean</button>
     </form>
 
+
     <!-- Display Clean Customers -->
-    <h5 class="text-secondary">Clean Customers</h5>
+    <h5 class="text-secondary">Clean Companies</h5>
     <form asp-action="UpdateCustomerStatus" method="post">
         <div id="cleanCustomersList">
             @if (Model.CleanCustomersEmailList != null && Model.CleanCustomersEmailList.Any())
@@ -100,7 +109,10 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Select</th>
+                            <th>
+                                <input type="checkbox" id="selectAllClean" onclick="toggleSelectAll('selectAllClean', 'CleanCustomerIds')" />
+                                Select All
+                            </th>
                             <th>ID</th>
                             <th>Category</th>
                             <th>Company Name</th>
@@ -130,9 +142,52 @@
                 <p>No clean emails found.</p>
             }
         </div>
-
-        <!-- Submit Button to change clean to blocked -->
         <button type="submit" class="btn btn-warning">Change to Blocked</button>
     </form>
 
+
 </div>
+<script>
+    function toggleSelectAll(masterCheckboxId, checkboxName) {
+        var masterCheckbox = document.getElementById(masterCheckboxId);
+        var checkboxes = document.getElementsByName(checkboxName);
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = masterCheckbox.checked;
+        }
+    }
+</script>
+<style>
+    .error-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: red; /* Softer red for a less intense tone */
+        color: black;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        transition: opacity 0.4s ease-out;
+        opacity: 0.95;
+    }
+
+        .error-message.collor {
+            background-color: greenyellow;
+        }
+
+    #categorySelectDropdown {
+        border: 2px solid green;
+    }
+</style>
+
+<script>
+    // Automatically hide the error message after 5 seconds
+    setTimeout(() => {
+        const errorMessage = document.getElementById('errorMessage');
+        if (errorMessage) {
+            errorMessage.style.display = 'none';
+        }
+    }, 2500);
+</script>

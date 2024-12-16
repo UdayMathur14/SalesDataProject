@@ -335,10 +335,6 @@ namespace SalesDataProject.Controllers
 
 
 
-
-
-
-
         // Helper method to validate email format
         private bool IsValidEmail(string email)
         {

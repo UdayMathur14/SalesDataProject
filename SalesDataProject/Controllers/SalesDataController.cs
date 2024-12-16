@@ -83,12 +83,27 @@ namespace SalesDataProject.Controllers
                             var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
                             var contactPerson = worksheet.Cell(row, 3).GetString();
                             var customerNumber = worksheet.Cell(row, 4).GetString();
+                            var customerNumber2 = worksheet.Cell(row, 8).GetString();
+                            var customerNumber3 = worksheet.Cell(row, 9).GetString();
                             var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                             var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                             var country = worksheet.Cell(row, 7).GetString();
                             //var category = worksheet.Cell(row, 12).GetString();
                             var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
+
+                            if (!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3))
+                            {
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row ,
+                                    CompanyName = companyName,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Invalid Contact Number."
+                                });
+                                continue;
+                            }
                             if (!IsValidEmail(customerEmail))
                             {
                                 // Store invalid record
@@ -183,6 +198,7 @@ namespace SalesDataProject.Controllers
         }
 
 
+
         private bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -201,8 +217,8 @@ namespace SalesDataProject.Controllers
         }
         public bool IsValidPhoneNumber(string customerNumber)
         {
-            // Regular expression to match exactly 10 digits
-            string pattern = @"^\d{10}$";
+            // Regular expression to match only digits or an empty string
+            string pattern = @"^\d*$";
             Regex regex = new Regex(pattern);
 
             // Check if the customer number matches the regex pattern
