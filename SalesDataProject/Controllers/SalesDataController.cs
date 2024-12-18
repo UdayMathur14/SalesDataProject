@@ -88,10 +88,21 @@ namespace SalesDataProject.Controllers
                             var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                             var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                             var country = worksheet.Cell(row, 7).GetString();
-                            //var category = worksheet.Cell(row, 12).GetString();
+                            var category = worksheet.Cell(row, 12).GetString();
                             var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
-
+                            if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
+                            {
+                                invalidRecords.Add(new InvalidCustomerRecord
+                                {
+                                    RowNumber = row,
+                                    CompanyName = companyName,
+                                    CustomerEmail = customerEmail,
+                                    CustomerNumber = customerNumber,
+                                    ErrorMessage = "Invalid category."
+                                });
+                                continue;
+                            }
                             if (!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
@@ -156,7 +167,7 @@ namespace SalesDataProject.Controllers
                                 MODIFIED_ON = DateTime.Now,
                                 COUNTRY_CODE = countryCode,
                                 EMAIL_DOMAIN = emailDomain,
-                                CATEGORY = selectedCategory,
+                                CATEGORY = category,
                             };
 
                             // Apply blocking logic
@@ -330,7 +341,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(1, 9).Value = "ContactNo3";
                 worksheet.Cell(1, 10).Value = "State";
                 worksheet.Cell(1, 11).Value = "City";
-                //worksheet.Cell(1, 12).Value = "*Category";
+                worksheet.Cell(1, 12).Value = "*Category";
 
                 // Example data
                 worksheet.Cell(2, 1).Value = "Example(0001)";
@@ -344,7 +355,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(2, 9).Value = "9876543210";
                 worksheet.Cell(2, 10).Value = "DELHI";
                 worksheet.Cell(2, 11).Value = "NEW DELHI";
-                //worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY";
+                worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT";
 
                 // Adjust column widths to fit content
                 worksheet.Columns().AdjustToContents();

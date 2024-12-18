@@ -119,6 +119,7 @@ namespace SalesDataProject.Controllers
                     // Update the access permissions based on form data
                     existingUser.CanAccessCustomer = user.CanAccessCustomer;
                     existingUser.CanAccessSales = user.CanAccessSales;
+                    existingUser.CanAccessUserManagement = user.CanAccessUserManagement;
 
                     // Save changes to the database
                     _context.Update(existingUser);

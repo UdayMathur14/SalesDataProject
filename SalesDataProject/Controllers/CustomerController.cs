@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
@@ -186,7 +187,7 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY", "LAWFIRM+PCT" }.Contains(category?.ToUpperInvariant()))
+                            if (!new[] { "Corporate","CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -396,7 +397,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(2, 9).Value = "9876543210";
                 worksheet.Cell(2, 10).Value = "DELHI";
                 worksheet.Cell(2, 11).Value = "NEW DELHI";
-                worksheet.Cell(2, 12).Value = "CORPORATE/LAWFIRM/SME/UNIVERSITY/LAWFIRM+PCT";
+                worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT";
 
                 // Adjust column widths to fit content
                 worksheet.Columns().AdjustToContents();

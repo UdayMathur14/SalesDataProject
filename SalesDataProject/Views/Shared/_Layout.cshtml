@@ -80,20 +80,51 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm mb-3">
             <div class="container-fluid">
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 ml-5" style="display:flex;justify-content:left">
-                        <li class="nav-item" style="float:right;">
-                            <a class="nav-link text-dark " style="font-weight: bold; font-style: italic; font-size: 1.5rem; float:right" asp-area="" asp-controller="Home" asp-action="Index">Dashboard</a>
-                            <a class="nav-link text-dark " style="font-weight: bold; font-style: italic; font-size: 1.5rem; float:right" asp-area="" asp-controller="Customer" asp-action="ViewCustomers">Customer Module</a>
-                            <a class="nav-link text-dark " style="font-weight: bold; font-style: italic; font-size: 1.5rem; float:right" asp-area="" asp-controller="SalesData" asp-action="ViewRecords">Mailing Module</a>
-                            <a class="nav-link text-dark " style="font-weight: bold; font-style: italic; font-size: 1.5rem; float:right" asp-area="" asp-controller="Auth" asp-action="ManageUsers">Admin Module</a>
+                    <ul class="navbar-nav flex-grow-1 justify-content-start align-items-center gap-4">
+                        <li class="nav-item">
+                            <a class="nav-link text-primary fw-bold fst-italic fs-5 text-uppercase"
+                               asp-area="" asp-controller="Home" asp-action="Index">
+                                Dashboard
+                            </a>
                         </li>
+                        @* <li class="nav-item">
+                            <a class="nav-link text-primary fw-bold fst-italic fs-5 text-uppercase"
+                               asp-area="" asp-controller="Customer" asp-action="ViewCustomers">
+                                Customer Module
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-primary fw-bold fst-italic fs-5 text-uppercase"
+                               asp-area="" asp-controller="SalesData" asp-action="ViewRecords">
+                                Mailing Module
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-primary fw-bold fs-5 fst-italic text-uppercase" style="font:italic"
+                               asp-area="" asp-controller="Auth" asp-action="ManageUsers">
+                                Admin Module
+                            </a>
+                        </li> *@
+                        
                     </ul>
                 </div>
             </div>
         </nav>
+
+        <style>
+            .navbar-nav .nav-link {
+                transition: all 0.1s ease-in-out !important;
+            }
+
+                .navbar-nav .nav-link:hover {
+                    color: red !important; /* Bootstrap primary color */
+                    text-decoration: underline !important;
+                }
+        </style>
+
     </header>
 
     <div class="container">
