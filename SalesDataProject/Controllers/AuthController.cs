@@ -1,9 +1,13 @@
 ﻿// Controllers/AuthController.cs
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SalesDataProject.Models;
 using SalesDataProject.Models.AuthenticationModels;
+using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
 {
@@ -20,6 +24,11 @@ namespace SalesDataProject.Controllers
         public IActionResult Login()
         {
             return View();
+        }
+        public IActionResult AddRecord()
+        {
+            var domains = _context.CommonDomains.ToList();
+            return View(domains);
         }
         public async Task<IActionResult> AssignRecords()
         {
@@ -264,7 +273,7 @@ namespace SalesDataProject.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> FilterRecords(string Category, string UserName )
+        public async Task<IActionResult> FilterRecords(string Category, string UserName)
         {
             var users = await _context.Users.ToListAsync();
             ViewBag.Users = new SelectList(users, "Username", "Username");
@@ -273,11 +282,11 @@ namespace SalesDataProject.Controllers
 
             if (!string.IsNullOrEmpty(Category) && !string.IsNullOrEmpty(UserName))
             {
-                recordsQuery = recordsQuery.Where(r => r.CATEGORY == Category && !r.RECORD_TYPE && r.CREATED_BY==UserName);
+                recordsQuery = recordsQuery.Where(r => r.CATEGORY == Category && !r.RECORD_TYPE && r.CREATED_BY == UserName);
             }
             if (!string.IsNullOrEmpty(UserName))
             {
-                recordsQuery = recordsQuery.Where(r=>!r.RECORD_TYPE && r.CREATED_BY == UserName);
+                recordsQuery = recordsQuery.Where(r => !r.RECORD_TYPE && r.CREATED_BY == UserName);
             }
 
             var model = new AssignToViewModel
@@ -327,6 +336,188 @@ namespace SalesDataProject.Controllers
 
             TempData["messagesuccess"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}.";
             return RedirectToAction("AssignRecords");
+        }
+
+        [HttpPost]
+        public IActionResult AddDomain(string domainName)
+        {
+            if (string.IsNullOrEmpty(domainName))
+            {
+                TempData["Error"] = "Domain name cannot be empty.";
+                return RedirectToAction(nameof(AddRecord));
+            }
+
+            if (_context.CommonDomains.Any(d => d.DomainName == domainName))
+            {
+                TempData["Error"] = "This domain already exists.";
+                return RedirectToAction(nameof(AddRecord));
+            }
+
+            var domain = new CommonDomains { DomainName = domainName };
+            _context.CommonDomains.Add(domain);
+            _context.SaveChanges();
+
+            TempData["Success"] = "Domain added successfully!";
+            return RedirectToAction(nameof(AddRecord));
+        }
+
+
+        public async Task<IActionResult> UploadRecord(IFormFile file)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (file == null || file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
+                return RedirectToAction(nameof(AddRecord));
+            }
+
+            var newCustomers = new List<ProspectCustomer>();
+            var invalidRecords = new List<InvalidCustomerRecord>();
+            using (var stream = new MemoryStream())
+            {
+                await file.CopyToAsync(stream);
+                stream.Position = 0; // Reset stream position
+
+                using (var workbook = new XLWorkbook(stream))
+                {
+                    var worksheet = workbook.Worksheet(1); // Use the first worksheet
+                    var lastRow = worksheet.LastRowUsed().RowNumber();
+
+                    var customersFromExcel = new List<ProspectCustomer>();
+
+                    for (int row = 3; row <= lastRow; row++) // Start reading data from row 3
+                    {
+                        var companyName = worksheet.Cell(row, 2).GetString().ToUpper();
+                        var contactPerson = worksheet.Cell(row, 3).GetString();
+                        var customerNumber = worksheet.Cell(row, 4).GetString();
+                        var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                        var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
+                        var country = worksheet.Cell(row, 7).GetString();
+                        var customerNumber2 = worksheet.Cell(row, 8).GetString();
+                        var customerNumber3 = worksheet.Cell(row, 9).GetString();
+                        var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
+                        var recordtype = worksheet.Cell(row, 13).GetString().ToUpper().Trim();
+
+                        // Validation
+                        if (!IsValidEmail(customerEmail))
+                        {
+                            invalidRecords.Add(new InvalidCustomerRecord
+                            {
+                                RowNumber = row - 1,
+                                CompanyName = companyName,
+                                CustomerEmail = customerEmail,
+                                CustomerNumber = customerNumber,
+                                ErrorMessage = "Invalid email format."
+                            });
+                            continue;
+                        }
+                        if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && (customerNumber != "" || customerNumber != null))
+                        {
+                            invalidRecords.Add(new InvalidCustomerRecord
+                            {
+                                RowNumber = row - 1,
+                                CompanyName = companyName,
+                                CustomerEmail = customerEmail,
+                                CustomerNumber = customerNumber,
+                                ErrorMessage = "Invalid Phone Number"
+                            });
+                            continue;
+                        }
+
+
+                        if (string.IsNullOrWhiteSpace(companyName) ||
+                            string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(category))
+                        {
+                            invalidRecords.Add(new InvalidCustomerRecord
+                            {
+                                RowNumber = row - 1,
+                                CompanyName = companyName,
+                                CustomerEmail = customerEmail,
+                                CustomerNumber = customerNumber,
+                                ErrorMessage = "Missing mandatory fields!"
+                            });
+                            continue;
+                        }
+
+                        if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
+                        {
+                            invalidRecords.Add(new InvalidCustomerRecord
+                            {
+                                RowNumber = row - 1,
+                                CompanyName = companyName,
+                                CustomerEmail = customerEmail,
+                                CustomerNumber = customerNumber,
+                                ErrorMessage = "Invalid category."
+                            });
+                            continue;
+                        }
+
+                        // Add to the list of customers
+                        var customerData = new ProspectCustomer
+                        {
+                            CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                            COMPANY_NAME = companyName,
+                            CUSTOMER_EMAIL = customerEmail,
+                            CONTACT_PERSON = contactPerson,
+                            CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                            COUNTRY_CODE = countryCode,
+                            COUNTRY = country,
+                            CITY = worksheet.Cell(row, 11).GetString()?.ToUpperInvariant(),
+                            STATE = worksheet.Cell(row, 10).GetString()?.ToUpperInvariant(),
+                            CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+                            CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
+                            CREATED_BY = username,
+                            CREATED_ON = DateTime.UtcNow,
+                            MODIFIED_BY = username,
+                            MODIFIED_ON = DateTime.UtcNow,
+                            EMAIL_DOMAIN = customerEmail,
+                            CATEGORY = category
+                        };
+
+                        if (recordtype == "clean")
+                        {
+                            customerData.RECORD_TYPE = true; // Blocked
+                            customerData.IS_EMAIL_BLOCKED = true;
+                        }
+                        else
+                        {
+                            customerData.RECORD_TYPE = true; // Blocked
+                            customerData.IS_EMAIL_BLOCKED = true;
+                        }
+                        _context.Prospects.Add(customerData);
+                    }
+                    await _context.SaveChangesAsync();
+
+                }
+            }
+            return View(AddRecord);
+        }
+
+
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                // Use Regex to validate the email pattern
+                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                return emailRegex.IsMatch(email);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public bool IsValidPhoneNumber(string customerNumber)
+        {
+            // Regular expression to match only digits or an empty string
+            string pattern = @"^\d*$";
+            Regex regex = new Regex(pattern);
+
+            // Check if the customer number matches the regex pattern
+            return regex.IsMatch(customerNumber);
         }
 
     }

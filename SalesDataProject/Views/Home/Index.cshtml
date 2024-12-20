@@ -4,6 +4,9 @@
     var canAccessSales = Context.Session.GetString("CanAccessSales") == "True";
     var canAccessUserManagement = Context.Session.GetString("CanAccessUserManagement") == "True";
 }
+@{
+    ViewData["Title"] = "";
+}
 
 @if (TempData["Success"] != null)
 {

@@ -1,6 +1,9 @@
 ﻿@{
 }
 @using System.Text.Json
+@{
+    ViewData["Title"] = "Mailing Result";
+}
 
 @model SalesDataProject.Models.UploadResultViewModel
 @if (TempData["Success"] != null)
@@ -18,7 +21,6 @@
             <table class="table table-bordered">
                 <thead class="thead-light">
                     <tr>
-                        <th>Customer Code</th>
                         <th>Company Name</th>
                         <th>Email</th>
                         <th>Contact Number</th>
@@ -29,7 +31,6 @@
                     @foreach (var customer in Model.BlockedCustomers)
                     {
                         <tr>
-                            <td>@customer.CUSTOMER_CODE</td>
                             <td>@customer.COMPANY_NAME</td>
                             <td>@customer.CUSTOMER_EMAIL</td>
                             <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
@@ -47,7 +48,6 @@
             <table class="table table-bordered">
                 <thead class="thead-light">
                     <tr>
-                        <th>Customer Code</th>
                         <th>Company Name</th>
                         <th>Email</th>
                         <th>Contact Number</th>
@@ -57,7 +57,6 @@
                     @foreach (var customer in Model.CleanCustomers)
                     {
                         <tr>
-                            <td>@customer.CUSTOMER_CODE</td>
                             <td>@customer.COMPANY_NAME</td>
                             <td>@customer.CUSTOMER_EMAIL</td>
                             <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>

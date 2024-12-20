@@ -4,6 +4,9 @@
 @{
 }
 @model IEnumerable<SalesDataProject.Models.InvalidCustomerRecord>
+@{
+    ViewData["Title"] = "Invalid Records";
+}
 
 @if (TempData["Error"] != null)
 {

@@ -159,7 +159,7 @@ namespace SalesDataProject.Controllers
                                 });
                                 continue;
                             }
-                            if (!IsValidPhoneNumber(customerNumber)|| !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3))
+                            if ((!IsValidPhoneNumber(customerNumber)|| !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && (customerNumber!="" || customerNumber!=null))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -167,13 +167,13 @@ namespace SalesDataProject.Controllers
                                     CompanyName = companyName,
                                     CustomerEmail = customerEmail,
                                     CustomerNumber = customerNumber,
-                                    ErrorMessage = "Invalid email format."
+                                    ErrorMessage = "Invalid Phone Number"
                                 });
                                 continue;
                             }
 
 
-                            if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerNumber) ||
+                            if (string.IsNullOrWhiteSpace(companyName) ||
                                 string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(category))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
@@ -375,7 +375,7 @@ namespace SalesDataProject.Controllers
                 worksheet.Cell(1, 1).Value = "CustomerCode";
                 worksheet.Cell(1, 2).Value = "*CompanyName";
                 worksheet.Cell(1, 3).Value = "*ContactPerson";
-                worksheet.Cell(1, 4).Value = "*ContactNo1";
+                worksheet.Cell(1, 4).Value = "ContactNo1";
                 worksheet.Cell(1, 5).Value = "*Email";
                 worksheet.Cell(1, 6).Value = "*CountryCode";
                 worksheet.Cell(1, 7).Value = "*Country";

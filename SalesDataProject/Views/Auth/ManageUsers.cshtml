@@ -3,6 +3,10 @@
 @{
     var userList = Model.ToList();
 }
+@{
+    ViewData["Title"] = "ManageUsers";
+}
+
 @if (TempData["Success"] != null)
 {
     <div class="error-message" id="errorMessage">
@@ -13,17 +17,20 @@
 <div class="header d-flex justify-content-between">
 <h2 style="color:black" class="text-center">Manage Users Permissions</h2>
 
-<div class="d-flex justify-content-end mb-3 gap-2">
+    <div class="d-flex justify-content-end mb-3 gap-2">
         <form asp-action="AssignRecords" method="get">
-            <button type="submit" class="btn btn-success">Assign Record</button>
+            <button type="submit" class="btn btn-primary">Assign Record</button>
         </form>
         <form asp-action="ChangeRecordType" method="get">
-            <button type="submit" class="btn btn-success">Change Record</button>
+            <button type="submit" class="btn btn-warning">Change Record</button>
         </form>
         <form asp-action="CreateUser" method="get">
-            <button type="submit" class="btn btn-success">Create User</button>
+            <button type="submit" class="btn btn-danger">Create User</button>
         </form>
-</div>
+        <form asp-action="AddRecord" method="get">
+            <button type="submit" class="btn btn-danger">Domain/Record</button>
+        </form>
+    </div>
 </div>
 
 <form asp-action="UpdateUserAccess" method="post">

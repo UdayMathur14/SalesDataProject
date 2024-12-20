@@ -1,6 +1,9 @@
 ﻿@model SalesDataProject.Models.AuthenticationModels.User
-<h2 class="text-center my-4" style="color:black">Create User</h2>
+@{
+    ViewData["Title"] = "Create User";
+}
 
+<h2 class="text-center my-4" style="color:black">Create User</h2>
 
 
 <form asp-action="CreateUser" method="post" class="container p-4 border rounded shadow-sm" style="">

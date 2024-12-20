@@ -1,5 +1,7 @@
 ﻿@model SalesDataProject.Models.UploadResultViewModel
-
+@{
+    ViewData["Title"] = "Change Record Type";
+}
 @if (TempData["messagesuccess"] != null)
 {
     <div class="error-message collor" id="errorMessage">
@@ -13,9 +15,10 @@
             <div class="col-md-2 mb-3">
                 <label for="UserName" class="font-weight-bold">Select User:</label>
                 <select asp-for="UserName" class="form-select form-control-sm">
-                    <option value="">--Select--</option>
+                    
                     @if (ViewBag.Users != null)
                     {
+                        <option value="">--Select--</option>
                         foreach (var user in ViewBag.Users as SelectList)
                         {
                             <option value="@user.Value">@user.Text</option>
@@ -38,6 +41,7 @@
             <div class="col-md-2 mb-3">
                 <label for="Category" class="font-weight-bold">Select Category:</label>
                 <select asp-for="Category" class="form-select form-control-sm">
+                    <option value="">--Select--</option>
                     <option value="UNIVERSITY">University</option>
                     <option value="SME">SME</option>
                     <option value="CORPORATE">Corporate</option>

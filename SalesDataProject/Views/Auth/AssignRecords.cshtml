@@ -4,22 +4,13 @@
 @{
 }
 @model SalesDataProject.Models.AssignToViewModel
-
+@{
+    ViewData["Title"] = "Assign Records";
+}
 <div class="card shadow-sm p-4 mb-4 mt-5 mb-3">
     <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
     <form asp-action="FilterRecords" method="post">
         <div class="form-row d-flex gap-4">
-            <div class="col-md-3 mb-3">
-                <label for="Category" class="font-weight-bold">Select Category:</label>
-                <select id="Category" name="Category" class="form-select form-control-sm">
-                    <option value="">--Select--</option>
-                    <option value="UNIVERSITY">University</option>
-                    <option value="SME">SME</option>
-                    <option value="CORPORATE">Corporate</option>
-                    <option value="LAWFIRM">Law Firm</option>
-                    <option value="PCT">PCT</option>
-                </select>
-            </div>
             <div class="col-md-3 mb-3">
                 <label for="UserName" class="font-weight-bold">Select User:</label>
                 <select asp-for="UserName" class="form-select form-control-sm">
@@ -31,6 +22,17 @@
                             <option value="@user.Value">@user.Text</option>
                         }
                     }
+                </select>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="Category" class="font-weight-bold">Select Category:</label>
+                <select id="Category" name="Category" class="form-select form-control-sm">
+                    <option value="">--Select--</option>
+                    <option value="UNIVERSITY">University</option>
+                    <option value="SME">SME</option>
+                    <option value="CORPORATE">Corporate</option>
+                    <option value="LAWFIRM">Law Firm</option>
+                    <option value="PCT">PCT</option>
                 </select>
             </div>
 
@@ -81,9 +83,9 @@
             {
                 <p>No records found for the selected criteria.</p>
             }
-            <div class="d-flex justify-content-end mb-3 gap-3">
+            <div class="text-center mt-4 d-flex justify-content-end mb-3 gap-3">
                 @* <button type="submit" class="btn btn-success" name="assignAll" value="true">Assign All Records</button> *@
-                <button type="submit" class="btn btn-success" name="assignAll" value="false">Assign selected Records</button>
+                <button type="submit" class="btn btn-success" name="assignAll" value="false">Assign Records</button>
                 <div class="col-md-3 mb-3">
                     <label for="UserName" class="font-weight-bold">Assign To User:</label>
                     <select asp-for="UserName" class="form-select form-control-sm">
