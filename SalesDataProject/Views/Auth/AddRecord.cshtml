@@ -4,70 +4,79 @@
 @{
 }
 @model List<CommonDomains>
+
 <div class="container mt-4">
-<div class="header d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-3 " style="color:green"><i>Upload Clean/Block Record</i></h4>
-    <div class="buttons d-flex gap-3">
-        <form asp-action="UploadRecord" method="post" enctype="multipart/form-data" id="uploadForm">
-            <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
-            <button type="button" id="uploadButton" class="btn btn-outline-primary">Upload Excel</button>
-        </form>
-        <form asp-action="DownloadTemplate" method="get">
-            <button type="submit" class="btn btn-outline-success">Download Template</button>
-        </form>
-    </div>
-</div>
-</div>
-<h2>Manage Common Domains</h2>
-<form asp-action="AddDomain" method="post">
-    <div class="form-group">
-        <label for="domainName" class="form-label">Domain Name</label>
-        <div class="input-group">
-            <input type="text" id="domainName" name="domainName" class="form-control" placeholder="Enter domain name" required />
+    <!-- Upload Section -->
+    <div class="upload-section border p-4 mb-4 rounded shadow-sm">
+        <div class="header d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 text-success"><i>Upload Clean/Block Record</i></h4>
+        </div>
+        <div class="d-flex gap-3">
+            <!-- Upload Form -->
+            <form asp-action="UploadRecord" method="post" enctype="multipart/form-data" id="uploadForm">
+                <input type="file" id="fileUpload" name="file" class="form-control-file d-none" required />
+                <button type="button" id="uploadButton" class="btn btn-outline-primary">Upload Excel</button>
+            </form>
+            <!-- Download Template Form -->
+            <form asp-action="DownloadTemplate" method="get">
+                <button type="submit" class="btn btn-outline-success">Download Template</button>
+            </form>
         </div>
     </div>
-    <div class="form-group text-center">
-        <button type="submit" class="btn btn-primary">Add Domain</button>
-    </div>
-</form>
 
-@if (TempData["Error"] != null)
-{
-    <div id="errorMessage" class="alert alert-danger">@TempData["Error"]</div>
-}
-@if (TempData["Success"] != null)
-{
-    <div id="successMessage" class="alert alert-success">@TempData["Success"]</div>
-}
+    <!-- Manage Domains Section -->
+    <div class="manage-domains-section border p-4 rounded shadow-sm">
+        <h4 class="mb-4">Manage Common Domains</h4>
+        <form asp-action="AddDomain" method="post" class="d-flex gap-3 align-items-center mb-4">
+            <div class="flex-grow-1">
+                <label for="domainName" class="form-label">Domain Name</label>
+                <input type="text" id="domainName" name="domainName" class="form-control" placeholder="Enter domain name" required />
+            </div>
+            <button type="submit" class="btn btn-primary mt-4">Add Domain</button>
+        </form>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Domain Name</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (!Model.Any())
+        <!-- Alert Messages -->
+        @if (TempData["Error"] != null)
         {
-            <tr>
-                <td colspan="2" class="text-center">No domains found.</td>
-            </tr>
+            <div id="errorMessage" class="alert alert-danger">@TempData["Error"]</div>
         }
-        else
+        @if (TempData["Success"] != null)
         {
-            @for (int i = 0; i < Model.Count; i++)
-            {
+            <div id="successMessage" class="alert alert-success">@TempData["Success"]</div>
+        }
+
+        <!-- Domains Table -->
+        <table class="table table-bordered mt-4">
+            <thead>
                 <tr>
-                    <td>@(i + 1)</td>
-                    <td>@Model[i].DomainName</td>
+                    <th>Id</th>
+                    <th>Domain Name</th>
                 </tr>
-            }
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="2" class="text-center">No domains found.</td>
+                    </tr>
+                }
+                else
+                {
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@Model[i].DomainName</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JavaScript Section -->
 <script>
-    // Wait for the DOM to be fully loaded
     document.addEventListener("DOMContentLoaded", function () {
         // Hide the error message after 2 seconds
         const errorMessage = document.getElementById("errorMessage");
@@ -84,5 +93,10 @@
                 successMessage.style.display = "none";
             }, 2000);
         }
+
+        // Trigger file upload dialog on button click
+        const uploadButton = document.getElementById("uploadButton");
+        const fileUpload = document.getElementById("fileUpload");
+        uploadButton.addEventListener("click", () => fileUpload.click());
     });
 </script>
