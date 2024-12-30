@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;  // Import this for ExcelPackage
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Set EPPlus license context for non-commercial use (LGPL license)
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial; // Or LicenseContext.Commercial if you have a commercial license
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -15,7 +19,6 @@ builder.Services.AddSession(options => {
     options.Cookie.HttpOnly = true; // Protects the session cookie
     options.Cookie.IsEssential = true; // Required for session to work
 });
-
 
 var app = builder.Build();
 

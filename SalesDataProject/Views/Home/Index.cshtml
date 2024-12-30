@@ -3,6 +3,7 @@
     var canAccessCustomer = Context.Session.GetString("CanAccessCustomer") == "True";
     var canAccessSales = Context.Session.GetString("CanAccessSales") == "True";
     var canAccessUserManagement = Context.Session.GetString("CanAccessUserManagement") == "True";
+    var canAccessTitle = Context.Session.GetString("CanAccessUserTitle") == "True";
 }
 @{
     ViewData["Title"] = "";
@@ -61,6 +62,21 @@
                         <h5 class="card-title">User Management</h5>
                         <p class="card-text">User Management Add/Delete and Permissions</p>
                         <a href="@Url.Action("ManageUsers", "Auth")" class="btn btn-primary">User Module</a>
+                    </div>
+                </div>
+            </div>
+        }
+        @if (canAccessTitle)
+        {
+            <div class="col-md-6 col-lg-5 mb-5">
+                <div class="card custom-card shadow-lg border-0 rounded-3">
+                    <div class="gradient-bg">
+                        <i class="fas fa-chart-line fa-3x"></i>
+                    </div>
+                    <div class="card-content">
+                        <h5 class="card-title">Title Validation</h5>
+                        <p class="card-text">Validate your Titiles here and upload insert or delete titles </p>
+                        <a href="@Url.Action("Index", "Title")" class="btn btn-primary">Title Module</a>
                     </div>
                 </div>
             </div>

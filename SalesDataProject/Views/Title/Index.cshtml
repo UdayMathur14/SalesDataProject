@@ -1,0 +1,128 @@
+﻿@model ValidationResultViewModel
+
+<h2 class="text-center">Title Validation</h2>
+
+<!-- Header Section -->
+<div class="container mt-4">
+    <div class="header d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-3" style="color:green"><i>UPLOAD Titles</i></h4>
+        <div class="buttons d-flex gap-3">
+            <!-- Form for Uploading Excel -->
+            <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
+                <div class="form-group">
+                    <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
+                    <button type="button" id="uploadButton" class="btn btn-outline-primary">Upload Excel</button>
+                </div>
+            </form>
+
+            <!-- Form for Downloading Template -->
+            <form asp-action="DownloadTemplate" method="get">
+                <button type="submit" class="btn btn-outline-success">Download Template</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Validation Result Section -->
+    @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null))
+    {
+        <div class="mt-4">
+            <h5>Validation Results</h5>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Row Number</th>
+                        <th>Title</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var title in Model.CleanTitles)
+                    {
+                        <tr class="@(title.Status == "Blocked" ? "table-danger" : "table-success")">
+                            <td>@title.RowNumber</td>
+                            <td>@title.Title</td>
+                            <td>@title.Status</td>
+                        </tr>
+                    }
+                    @foreach (var title in Model.BlockedTitles)
+                    {
+                        <tr class="@(title.Status == "Blocked" ? "table-danger" : "table-success")">
+                            <td>@title.RowNumber</td>
+                            <td>@title.Title</td>
+                            <td>@title.Status</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+           
+        </div>
+    }
+
+  <form asp-action="InsertCleanTitles" method="post" id="insertForm">
+    <input type="hidden" id="cleanTitles" name="cleanTitles" />
+    <button type="submit" class="btn btn-success">Insert Clean Titles</button>
+</form>
+
+
+
+
+
+
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadButton = document.getElementById('uploadButton');
+        const fileUpload = document.getElementById('fileUpload');
+        const uploadForm = document.getElementById('uploadForm');
+
+        if (uploadButton && fileUpload && uploadForm) {
+            // Trigger file input when the upload button is clicked
+            uploadButton.addEventListener('click', function () {
+                fileUpload.click();
+            });
+
+            // Submit the form when a file is selected
+            fileUpload.addEventListener('change', function () {
+                if (fileUpload.files.length > 0) {
+                    uploadForm.submit();
+                } else {
+                    alert("Please select a file to upload.");
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+    .table-success {
+        background-color: #d4edda;
+    }
+    .table-danger {
+        background-color: #f8d7da;
+    }
+    .btn-outline-primary, .btn-outline-success {
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    document.getElementById("insertForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Extract and filter titles
+        var cleanTitles = @Html.Raw(Json.Serialize(Model?.CleanTitles?.Select(c => c.Title) ?? new List<string>()));
+
+        if (cleanTitles && cleanTitles.length > 0) {
+            // Set the value of the hidden input
+            document.getElementById("cleanTitles").value = JSON.stringify(cleanTitles);
+
+            // Submit the form
+            e.target.submit();
+        } else {
+            alert("No clean titles to insert.");
+        }
+    });
+</script>

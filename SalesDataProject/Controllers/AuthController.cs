@@ -70,6 +70,7 @@ namespace SalesDataProject.Controllers
                 HttpContext.Session.SetString("CanAccessCustomer", user.CanAccessCustomer.ToString());
                 HttpContext.Session.SetString("CanAccessSales", user.CanAccessSales.ToString());
                 HttpContext.Session.SetString("CanAccessUserManagement", user.CanAccessUserManagement.ToString());
+                HttpContext.Session.SetString("CanAccessTitle", user.CanAccessTitle.ToString());
                 TempData["Success"] = "Successfully Login";
                 return RedirectToAction("Index", "Home");
 
@@ -129,6 +130,7 @@ namespace SalesDataProject.Controllers
                     existingUser.CanAccessCustomer = user.CanAccessCustomer;
                     existingUser.CanAccessSales = user.CanAccessSales;
                     existingUser.CanAccessUserManagement = user.CanAccessUserManagement;
+                    existingUser.CanAccessTitle = user.CanAccessTitle;
 
                     // Save changes to the database
                     _context.Update(existingUser);
