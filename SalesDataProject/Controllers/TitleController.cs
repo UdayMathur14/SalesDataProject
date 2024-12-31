@@ -150,7 +150,7 @@ namespace SalesDataProject.Controllers
                     _context.SaveChanges();
                 }
             }
-
+            TempData["messagesuccess"] = "Successfully Uploaded";
             // Redirect to the Index page after insertion
             return RedirectToAction("Index");
         }
