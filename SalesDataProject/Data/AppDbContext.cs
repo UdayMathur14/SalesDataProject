@@ -20,5 +20,11 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         // You can configure model properties here if needed
+        modelBuilder.Entity<TitleValidationViewModel>()
+       .Property(e => e.CREATED_ON)
+       .HasConversion(
+           v => v.ToDateTime(TimeOnly.MinValue), // Convert DateOnly to DateTime for the database
+           v => DateOnly.FromDateTime(v)        // Convert DateTime back to DateOnly for the app
+       );
     }
 }

@@ -1,81 +1,106 @@
 ﻿@model ValidationResultViewModel
-
-<h2 class="text-center">Title Validation</h2>
-@if (TempData["messagesuccess"] != null)
+@if (TempData["Error"] != null)
 {
-    <div class="error-message collor" id="errorMessage">
-        <p>@TempData["messagesuccess"]</p>
+    <div class="alert alert-danger" id="errorMessage">
+        @TempData["Error"]
     </div>
 }
-<!-- Header Section -->
-<div class="container mt-4">
-    <div class="header d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-3" style="color:green"><i>UPLOAD Titles</i></h4>
-        <div class="buttons d-flex gap-3">
-            <!-- Form for Uploading Excel -->
-            <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
-                <div class="form-group">
-                    <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
-                    <button type="button" id="uploadButton" class="btn btn-outline-primary">Upload Excel</button>
-                </div>
-            </form>
+<div class="container mt-5">
+    <!-- Title Section -->
+    <div class="text-center mb-4">
+        <h1 class="text-primary" style="color:black"></h1>
+        @if (TempData["messagesuccess"] != null)
+        {
+            <div class="error-message collor" id="errorMessage">
+                <p>@TempData["messagesuccess"]</p>
+            </div>
+        }
+    </div>
+    <div class="header d-flex justify-content-between">
+        <h2 style="color:black" class="text-center">Title Validation</h2>
 
-            <!-- Form for Downloading Template -->
-            <form asp-action="DownloadTemplate" method="get">
-                <button type="submit" class="btn btn-outline-success">Download Template</button>
+        <div class="d-flex justify-content-end mb-3 gap-2">
+            <form asp-action="ViewTitles" method="get">
+                <button type="submit" class="btn btn-primary">View Titles</button>
             </form>
+           
+        </div>
+    </div>
+    <!-- Upload and Download Buttons Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <h4 class="text-secondary"><i>Upload Titles</i></h4>
+            <div class="d-flex gap-2">
+                <!-- Upload Excel -->
+                <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
+                    <input type="file" id="fileUpload" name="file" class="d-none" required />
+                    <button type="button" id="uploadButton" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-upload"></i> Upload Excel
+                    </button>
+                </form>
+                <!-- Download Template -->
+                <form asp-action="DownloadTemplate" method="get">
+                    <button type="submit" class="btn btn-outline-success btn-lg">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Download Template
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- Validation Result Section -->
+    <!-- Validation Results Section -->
     @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null))
     {
-        <div class="mt-4">
-            <h5>Validation Results</h5>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Row Number</th>
-                        <th>Title</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var title in Model.CleanTitles)
-                    {
-                        <tr class="@(title.Status == "Blocked" ? "table-danger" : "table-success")">
-                            <td>@title.RowNumber</td>
-                            <td>@title.Title</td>
-                            <td>@title.Status</td>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-dark">Validation Results</h5>
+                <table class="table table-hover table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Row Number</th>
+                            <th>Invoice Number</th>
+                            <th>Code Reference</th>
+                            <th>Title</th>
+                            <th>Status</th>
                         </tr>
-                    }
-                    @foreach (var title in Model.BlockedTitles)
-                    {
-                        <tr class="@(title.Status == "Blocked" ? "table-danger" : "table-success")">
-                            <td>@title.RowNumber</td>
-                            <td>@title.Title</td>
-                            <td>@title.Status</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-           
+                    </thead>
+                    <tbody>
+                        @foreach (var title in Model.CleanTitles)
+                        {
+                            <tr class="table-success">
+                                <td>@title.RowNumber</td>
+                                <td>@title.InvoiceNumber</td>
+                                <td>@title.CodeReference</td>
+                                <td>@title.Title</td>
+                                <td>@title.Status</td>
+                            </tr>
+                        }
+                        @foreach (var title in Model.BlockedTitles)
+                        {
+                            <tr class="table-danger">
+                                <td>@title.RowNumber</td>
+                                <td>@title.InvoiceNumber</td>
+                                <td>@title.CodeReference</td>
+                                <td>@title.Title</td>
+                                <td>@title.Status</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 
-  <form asp-action="InsertCleanTitles" method="post" id="insertForm">
-    <input type="hidden" id="cleanTitles" name="cleanTitles" />
-    <button type="submit" class="btn btn-success">Insert Clean Titles</button>
-</form>
-
-
-
-
-
-
+    <!-- Insert Clean Titles Button -->
+    @* <div class="text-center mt-3">
+        <form asp-action="InsertCleanTitles" method="post" id="insertForm">
+            <input type="hidden" id="cleanTitles" name="cleanTitles" />
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> Insert Clean Titles
+            </button>
+        </form>
+    </div> *@
 </div>
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -84,12 +109,10 @@
         const uploadForm = document.getElementById('uploadForm');
 
         if (uploadButton && fileUpload && uploadForm) {
-            // Trigger file input when the upload button is clicked
             uploadButton.addEventListener('click', function () {
                 fileUpload.click();
             });
 
-            // Submit the form when a file is selected
             fileUpload.addEventListener('change', function () {
                 if (fileUpload.files.length > 0) {
                     uploadForm.submit();
@@ -99,37 +122,80 @@
             });
         }
     });
+
+    // document.getElementById("insertForm").addEventListener("submit", function (e) {
+    //     e.preventDefault();
+    //     var cleanTitles = @Html.Raw(Json.Serialize(Model?.CleanTitles?.Select(c => c.Title) ?? new List<string>()));
+
+    //     if (cleanTitles && cleanTitles.length > 0) {
+    //         document.getElementById("cleanTitles").value = JSON.stringify(cleanTitles);
+    //         e.target.submit();
+    //     } else {
+    //         alert("No clean titles to insert.");
+    //     }
+    // });
 </script>
 
 <style>
+    /* General Styling */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    h1 {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
+    }
+
+    .btn-lg {
+        padding: 0.8rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 8px;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .alert {
+        border-radius: 10px;
+    }
+
+    .table {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+
     .table-success {
-        background-color: #d4edda;
+        background-color: #eafaf1;
     }
+
     .table-danger {
-        background-color: #f8d7da;
+        background-color: #fdecef;
     }
-    .btn-outline-primary, .btn-outline-success {
-        font-weight: bold;
+
+    .btn-outline-primary:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+
+    .btn-outline-success:hover {
+        background-color: #218838;
+        color: white;
     }
 </style>
-
 <script>
-    document.getElementById("insertForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        // Extract and filter titles
-        var cleanTitles = @Html.Raw(Json.Serialize(Model?.CleanTitles?.Select(c => c.Title) ?? new List<string>()));
-
-        if (cleanTitles && cleanTitles.length > 0) {
-            // Set the value of the hidden input
-            document.getElementById("cleanTitles").value = JSON.stringify(cleanTitles);
-
-            // Submit the form
-            e.target.submit();
-        } else {
-            alert("No clean titles to insert.");
+    // Automatically remove the error message after 3 seconds
+    setTimeout(function () {
+        var errorMessage = document.getElementById("errorMessage");
+        if (errorMessage) {
+            errorMessage.style.display = "none";
         }
-    });
+    }, 3000); // 3000 milliseconds = 3 seconds
 </script>
 <style>
     .error-message {
@@ -164,5 +230,5 @@
         if (errorMessage) {
             errorMessage.style.display = 'none';
         }
-    }, 2500);
+    }, 3000);
 </script>

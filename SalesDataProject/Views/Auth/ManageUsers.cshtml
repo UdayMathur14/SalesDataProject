@@ -43,6 +43,7 @@
                     <th>Customer Module</th>
                     <th>Mailing Data Module</th>
                     <th>User Management Module</th>
+                    <th>Title Module</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,7 +68,9 @@
                             <input type="checkbox" name="Users[@i].CanAccessUserManagement"
                                    value="true" @(userList[i].CanAccessUserManagement ? "checked" : "") class="form-check-input mx-auto" />
                             <input type="hidden" name="Users[@i].CanAccessUserManagement" value="false" />
-                        </td><td class="text-center align-middle">
+                        </td>
+                        
+                        <td class="text-center align-middle">
                             <input type="checkbox" name="Users[@i].CanAccessTitle"
                                    value="true" @(userList[i].CanAccessTitle ? "checked" : "") class="form-check-input mx-auto" />
                             <input type="hidden" name="Users[@i].CanAccessTitle" value="false" />
