@@ -15,5 +15,9 @@ namespace SalesDataProject.Models
         public string CREATED_BY { get; set; }
         public DateOnly CREATED_ON { get; set; } 
         public string Status { get; set; } // "Blocked" or "Clean"
+        public string ReferenceTitle { get; set; } // "Blocked" or "Clean"
+        [NotMapped]
+        public int? BlockedId { get; set; }
+
     }
 }

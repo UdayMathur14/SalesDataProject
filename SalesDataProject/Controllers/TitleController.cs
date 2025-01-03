@@ -1,10 +1,8 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using SalesDataProject.Models;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 namespace SalesDataProject.Controllers
 {
@@ -52,7 +50,9 @@ namespace SalesDataProject.Controllers
                     var invoiceNumber = worksheet.Cells[row, 1].Text;
                     var codeReference = worksheet.Cells[row, 2].Text;
                     var cleantitle = worksheet.Cells[row, 3].Text;
-                    string title = CleanTitle(cleantitle); // Clean the title
+
+                    // Clean and concatenate the title
+                    string concatenatedTitle = CleanTitle(cleantitle);
 
                     // Check if the InvoiceNumber is empty or null
                     if (string.IsNullOrWhiteSpace(invoiceNumber))
@@ -60,20 +60,22 @@ namespace SalesDataProject.Controllers
                         hasInvalidInvoiceNumber = true; // Set the flag if an invalid row is found
                     }
 
-                    // Check if the title exists in the Titles table (case-insensitive) using in-memory data
+                    // Check if the concatenated title matches any ReferenceTitle in the database
                     var existingTitle = allTitles
-                        .FirstOrDefault(t => CleanTitle(t.Title) == title);
+                        .FirstOrDefault(t => (t.ReferenceTitle) == concatenatedTitle);
 
                     // Create a TitleValidationViewModel for the current row
                     var titleValidation = new TitleValidationViewModel
                     {
                         RowNumber = row,
-                        Title = title,
+                        Title = cleantitle, // Save the concatenated title
                         InvoiceNumber = invoiceNumber,
                         CodeReference = codeReference,
                         CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
                         CREATED_BY = username,
-                        Status = existingTitle != null ? "Blocked" : "Clean"
+                        Status = existingTitle != null ? "Blocked" : "Clean",
+                        ReferenceTitle = concatenatedTitle,
+                        BlockedId = existingTitle?.Id
                     };
 
                     // Add the titleValidation object to the appropriate list
@@ -101,7 +103,8 @@ namespace SalesDataProject.Controllers
                         CodeReference = tv.CodeReference,
                         CREATED_ON = tv.CREATED_ON,
                         CREATED_BY = tv.CREATED_BY,
-                        Status = tv.Status
+                        Status = tv.Status,
+                        ReferenceTitle = CleanTitle(tv.Title) // Save the concatenated title as ReferenceTitle
                     }).ToList();
 
                 if (cleanRecordsToSave.Any())
@@ -109,7 +112,6 @@ namespace SalesDataProject.Controllers
                     _context.Titles.AddRange(cleanRecordsToSave); // Add to the database context
                     await _context.SaveChangesAsync(); // Save changes
                     TempData["messagesuccess"] = "Successfully Saved";
-
                 }
             }
             else
@@ -157,18 +159,15 @@ namespace SalesDataProject.Controllers
         }
 
 
-        public string CleanTitle(string title)
+        private string CleanTitle(string title)
         {
-            // Convert to lowercase to make the comparison case-insensitive
-            string cleanedTitle = title.ToLower();
+            if (string.IsNullOrWhiteSpace(title))
+                return string.Empty;
 
-            // Remove special characters (keep only letters and spaces)
-            cleanedTitle = Regex.Replace(cleanedTitle, @"[^a-zA-Z0-9\s]", "");
+            // Remove all special characters and spaces
+            string cleanedTitle = Regex.Replace(title, @"[^a-zA-Z0-9]", "");
 
-            // Remove extra spaces
-            cleanedTitle = Regex.Replace(cleanedTitle, @"\s+", " ").Trim();
-
-            return cleanedTitle;
+            return cleanedTitle.ToLower(); // Convert to lowercase for uniformity
         }
 
         //[HttpPost]

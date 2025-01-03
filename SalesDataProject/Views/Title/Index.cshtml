@@ -62,6 +62,7 @@
                             <th>Code Reference</th>
                             <th>Title</th>
                             <th>Status</th>
+                            <th>BlockedBy</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,6 +74,7 @@
                                 <td>@title.CodeReference</td>
                                 <td>@title.Title</td>
                                 <td>@title.Status</td>
+
                             </tr>
                         }
                         @foreach (var title in Model.BlockedTitles)
@@ -83,6 +85,7 @@
                                 <td>@title.CodeReference</td>
                                 <td>@title.Title</td>
                                 <td>@title.Status</td>
+                                <td>@title.BlockedId</td>
                             </tr>
                         }
                     </tbody>
