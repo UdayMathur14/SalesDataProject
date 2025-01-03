@@ -18,6 +18,9 @@
 <h2 style="color:black" class="text-center">Manage Users Permissions</h2>
 
     <div class="d-flex justify-content-end mb-3 gap-2">
+        <form asp-action="AddRecord" method="get">
+            <button type="submit" class="btn btn-dark">Add Record/Domain</button>
+        </form>
         <form asp-action="AssignRecords" method="get">
             <button type="submit" class="btn btn-primary">Assign Record</button>
         </form>
@@ -27,9 +30,7 @@
         <form asp-action="CreateUser" method="get">
             <button type="submit" class="btn btn-danger">Create User</button>
         </form>
-        <form asp-action="AddRecord" method="get">
-            <button type="submit" class="btn btn-dark">Add Domain/Record</button>
-        </form>
+        
     </div>
 </div>
 
@@ -44,6 +45,7 @@
                     <th>Mailing Data Module</th>
                     <th>User Management Module</th>
                     <th>Title Module</th>
+                    <th>Can View Titles</th>
                 </tr>
             </thead>
             <tbody>
@@ -74,6 +76,11 @@
                             <input type="checkbox" name="Users[@i].CanAccessTitle"
                                    value="true" @(userList[i].CanAccessTitle ? "checked" : "") class="form-check-input mx-auto" />
                             <input type="hidden" name="Users[@i].CanAccessTitle" value="false" />
+                        </td>
+                        <td class="text-center align-middle">
+                            <input type="checkbox" name="Users[@i].CanViewTitles"
+                                   value="true" @(userList[i].CanViewTitles ? "checked" : "") class="form-check-input mx-auto" />
+                            <input type="hidden" name="Users[@i].CanViewTitles" value="false" />
                         </td>
                     </tr>
                 }

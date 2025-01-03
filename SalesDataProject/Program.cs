@@ -13,7 +13,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddDistributedMemoryCache();
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromMinutes(720); // Set timeout as needed
     options.Cookie.HttpOnly = true; // Protects the session cookie

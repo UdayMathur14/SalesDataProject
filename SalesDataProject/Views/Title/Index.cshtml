@@ -1,9 +1,14 @@
-﻿@model ValidationResultViewModel
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var canAccessTitle = ViewData["CanViewTitles"]?.ToString();
+}
+
+@model ValidationResultViewModel
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger" id="errorMessage">
+        <div class="alert alert-danger" id="errorMessage">
         @TempData["Error"]
-    </div>
+        </div>
 }
 <div class="container mt-5">
     <!-- Title Section -->
@@ -11,20 +16,22 @@
         <h1 class="text-primary" style="color:black"></h1>
         @if (TempData["messagesuccess"] != null)
         {
-            <div class="error-message collor" id="errorMessage">
-                <p>@TempData["messagesuccess"]</p>
-            </div>
+                <div class="error-message collor" id="errorMessage">
+                    <p>@TempData["messagesuccess"]</p>
+                </div>
         }
     </div>
     <div class="header d-flex justify-content-between">
         <h2 style="color:black" class="text-center">Title Validation</h2>
 
-        <div class="d-flex justify-content-end mb-3 gap-2">
-            <form asp-action="ViewTitles" method="get">
-                <button type="submit" class="btn btn-primary">View Titles</button>
-            </form>
-           
-        </div>
+        @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
+        {
+            <div class="d-flex justify-content-end mb-3 gap-2">
+                <form asp-action="ViewTitles" method="get">
+                    <button type="submit" class="btn btn-primary">View Titles</button>
+                </form>
+            </div>
+        }
     </div>
     <!-- Upload and Download Buttons Section -->
     <div class="card shadow-sm mb-4">
@@ -49,49 +56,70 @@
     </div>
 
     <!-- Validation Results Section -->
-    @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null))
+    @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null || Model.DuplicateTitlesInExcel != null))
     {
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title text-dark">Validation Results</h5>
-                <table class="table table-hover table-striped align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Row Number</th>
-                            <th>Invoice Number</th>
-                            <th>Code Reference</th>
-                            <th>Title</th>
-                            <th>Status</th>
-                            <th>BlockedBy</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-dark">Validation Results</h5>
+                    <table class="table table-hover table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Row Number</th>
+                                <th>Invoice Number</th>
+                                <th>Code Reference</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>BlockedBy</th>
+                                <th>InvoiceNumber</th>
+                                <th>CodeReference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                         @foreach (var title in Model.CleanTitles)
                         {
-                            <tr class="table-success">
-                                <td>@title.RowNumber</td>
-                                <td>@title.InvoiceNumber</td>
-                                <td>@title.CodeReference</td>
-                                <td>@title.Title</td>
-                                <td>@title.Status</td>
+                                    <tr class="table-success">
+                                        <td>@title.RowNumber</td>
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td>@title.Title</td>
+                                        <td>@title.Status</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
 
-                            </tr>
+                                    </tr>
                         }
                         @foreach (var title in Model.BlockedTitles)
                         {
-                            <tr class="table-danger">
-                                <td>@title.RowNumber</td>
-                                <td>@title.InvoiceNumber</td>
-                                <td>@title.CodeReference</td>
-                                <td>@title.Title</td>
-                                <td>@title.Status</td>
-                                <td>@title.BlockedId</td>
-                            </tr>
+                                    <tr class="table-danger">
+                                        <td>@title.RowNumber</td>
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td>@title.Title</td>
+                                        <td>@title.Status</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                    </tr>
                         }
-                    </tbody>
-                </table>
+                        @foreach (var title in Model.DuplicateTitlesInExcel)
+                        {
+                                    <tr class="table-danger">
+                                        <td>@title.RowNumber</td>
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td>@title.Title</td>
+                                        <td>@title.Status</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                    </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+
     }
 
     <!-- Insert Clean Titles Button -->

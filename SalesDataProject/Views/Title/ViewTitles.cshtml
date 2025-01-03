@@ -1,5 +1,7 @@
 ﻿<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
 @model List<SalesDataProject.Models.TitleValidationViewModel>
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger" id="errorMessage">
@@ -21,9 +23,9 @@
     </div>
 
     <!-- Button Section -->
-    <div class="col-md-6 text-md-end text-center mt-3 mt-md-0">
+   @*  <div class="col-md-6 text-md-end text-center mt-3 mt-md-0">
         <button type="submit" class="btn btn-danger">Delete Selected</button>
-    </div>
+    </div> *@
 </div>
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
         <table class="table table-striped table-bordered">

@@ -16,10 +16,14 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult Index(ValidationResultViewModel model)
         {
+            var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+            ViewData["CanViewTitles"] = canAccessTitle;
             return View(model);
         }
         public async Task<IActionResult> ViewTitles()
         {
+            
+            
             var titles = await _context.Titles.ToListAsync();
             return View(titles);
         }
@@ -27,134 +31,181 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadExcel(IFormFile file)
         {
-            var username = HttpContext.Session.GetString("Username");
-            if (file == null || file.Length == 0)
+            try
             {
-                return BadRequest("No file uploaded.");
-            }
 
-            var result = new ValidationResultViewModel(); // Initialize result
-            bool hasInvalidInvoiceNumber = false; // Flag to check for invalid rows
 
-            using (var package = new ExcelPackage(file.OpenReadStream()))
-            {
-                var worksheet = package.Workbook.Worksheets[0];
-                var rowCount = worksheet.Dimension.Rows;
-
-                // Fetch all Titles from the database
-                var allTitles = await _context.Titles.ToListAsync();
-
-                // Loop through each row in the worksheet (starting from row 2 to skip the header)
-                for (int row = 2; row <= rowCount; row++)
+                var username = HttpContext.Session.GetString("Username");
+                if (file == null || file.Length == 0)
                 {
-                    var invoiceNumber = worksheet.Cells[row, 1].Text;
-                    var codeReference = worksheet.Cells[row, 2].Text;
-                    var cleantitle = worksheet.Cells[row, 3].Text;
+                    return BadRequest("No file uploaded.");
+                }
 
-                    // Clean and concatenate the title
-                    string concatenatedTitle = CleanTitle(cleantitle);
+                var result = new ValidationResultViewModel(); // Initialize result
+                bool hasInvalidInvoiceNumber = false; // Flag to check for invalid rows
 
-                    // Check if the InvoiceNumber is empty or null
-                    if (string.IsNullOrWhiteSpace(invoiceNumber))
+                var duplicateTitlesInExcel = new HashSet<string>(); // To track duplicates within the Excel file
+                var titlesInExcel = new HashSet<string>(); // To store unique titles within the Excel file
+
+                using (var package = new ExcelPackage(file.OpenReadStream()))
+                {
+
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension.Rows;
+
+                    // Fetch all Titles from the database
+                    var allTitles = await _context.Titles.ToListAsync();
+
+                    // Loop through each row in the worksheet (starting from row 2 to skip the header)
+                    for (int row = 2; row <= rowCount; row++)
                     {
-                        hasInvalidInvoiceNumber = true; // Set the flag if an invalid row is found
-                    }
+                        var invoiceNumber = worksheet.Cells[row, 1].Text;
+                        var codeReference = worksheet.Cells[row, 2].Text;
+                        var cleantitle = worksheet.Cells[row, 3].Text;
+                        if (string.IsNullOrWhiteSpace(cleantitle))
+                        {
+                            // Assume that an empty Title indicates the end of the valid rows
+                            break; // Exit the loop when an empty Title is encountered
+                        }
 
-                    // Check if the concatenated title matches any ReferenceTitle in the database
-                    var existingTitle = allTitles
-                        .FirstOrDefault(t => (t.ReferenceTitle) == concatenatedTitle);
+                        // Clean and concatenate the title
+                        string concatenatedTitle = CleanTitle(cleantitle);
 
-                    // Create a TitleValidationViewModel for the current row
-                    var titleValidation = new TitleValidationViewModel
-                    {
-                        RowNumber = row,
-                        Title = cleantitle, // Save the concatenated title
-                        InvoiceNumber = invoiceNumber,
-                        CodeReference = codeReference,
-                        CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
-                        CREATED_BY = username,
-                        Status = existingTitle != null ? "Blocked" : "Clean",
-                        ReferenceTitle = concatenatedTitle,
-                        BlockedId = existingTitle?.Id
-                    };
+                        // Check if the InvoiceNumber is empty or null
+                        if (string.IsNullOrWhiteSpace(invoiceNumber))
+                        {
+                            hasInvalidInvoiceNumber = true; // Set the flag if an invalid row is found
+                        }
 
-                    // Add the titleValidation object to the appropriate list
-                    if (existingTitle != null)
-                    {
-                        result.BlockedTitles.Add(titleValidation); // Add to BlockedTitles if it already exists
-                    }
-                    else
-                    {
-                        result.CleanTitles.Add(titleValidation); // Add to CleanTitles if it doesn't exist
+                        // Check for duplicate titles within the Excel file
+                        if (titlesInExcel.Contains(concatenatedTitle))
+                        {
+                            duplicateTitlesInExcel.Add(concatenatedTitle);
+
+                            result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                Title = cleantitle,
+                                InvoiceNumber = invoiceNumber,
+                                CodeReference = codeReference,
+                                Status = "Duplicate in Excel"
+                            });
+
+                            continue; // Skip further processing for duplicates
+                        }
+                        else
+                        {
+                            titlesInExcel.Add(concatenatedTitle);
+                        }
+
+                        // Check if the concatenated title matches any ReferenceTitle in the database
+                        var existingTitle = allTitles
+                            .FirstOrDefault(t => t.ReferenceTitle == concatenatedTitle);
+
+                        // Create a TitleValidationViewModel for the current row
+                        var titleValidation = new TitleValidationViewModel
+                        {
+                            RowNumber = row,
+                            Title = cleantitle,
+                            InvoiceNumber = invoiceNumber,
+                            CodeReference = codeReference,
+                            CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
+                            CREATED_BY = username,
+                            Status = existingTitle != null ? "Blocked" : "Clean",
+                            ReferenceTitle = concatenatedTitle,
+                            BlockedId = existingTitle?.Id
+                        };
+
+                        // Add the titleValidation object to the appropriate list
+                        if (existingTitle != null)
+                        {
+                            result.BlockedTitles.Add(titleValidation); // Add to BlockedTitles if it already exists
+                        }
+                        else
+                        {
+                            result.CleanTitles.Add(titleValidation); // Add to CleanTitles if it doesn't exist
+                        }
                     }
                 }
-            }
 
-            // Save only clean records to the database if all rows have valid InvoiceNumbers
-            if (!hasInvalidInvoiceNumber)
-            {
-                // Filter only clean records for saving
-                var cleanRecordsToSave = result.CleanTitles
-                    .Select(tv => new TitleValidationViewModel
-                    {
-                        RowNumber = tv.RowNumber,
-                        Title = tv.Title,
-                        InvoiceNumber = tv.InvoiceNumber,
-                        CodeReference = tv.CodeReference,
-                        CREATED_ON = tv.CREATED_ON,
-                        CREATED_BY = tv.CREATED_BY,
-                        Status = tv.Status,
-                        ReferenceTitle = CleanTitle(tv.Title) // Save the concatenated title as ReferenceTitle
-                    }).ToList();
-
-                if (cleanRecordsToSave.Any())
+                // Save only clean records to the database if all rows have valid InvoiceNumbers
+                if (!hasInvalidInvoiceNumber)
                 {
-                    _context.Titles.AddRange(cleanRecordsToSave); // Add to the database context
-                    await _context.SaveChangesAsync(); // Save changes
-                    TempData["messagesuccess"] = "Successfully Saved";
-                }
-            }
-            else
-            {
-                TempData["Error"] = "One or more rows have an empty Invoice Number. No data has been saved to the database.";
-            }
+                    var cleanRecordsToSave = result.CleanTitles
+                        .Select(tv => new TitleValidationViewModel
+                        {
+                            Title = tv.Title,
+                            InvoiceNumber = tv.InvoiceNumber,
+                            CodeReference = tv.CodeReference,
+                            CREATED_ON = tv.CREATED_ON,
+                            CREATED_BY = tv.CREATED_BY,
+                            ReferenceTitle = CleanTitle(tv.Title),
+                            Status = "Clean"
+                        }).ToList();
 
-            // Return the result to the view
-            return View("Index", result);
+                    if (cleanRecordsToSave.Any())
+                    {
+                        _context.Titles.AddRange(cleanRecordsToSave);
+                        await _context.SaveChangesAsync();
+                        TempData["messagesuccess"] = "Successfully Saved";
+                    }
+                }
+                else
+                {
+                    TempData["Error"] = "One or more rows have an empty Invoice Number. No data has been saved to the database.";
+                }
+
+                // Return the result to the view
+                return View("Index", result);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                return View("Index");
+            }
         }
+
 
 
 
         [HttpGet]
         public IActionResult DownloadTemplate()
         {
-            using (var workbook = new XLWorkbook())
+            try
             {
-                var worksheet = workbook.Worksheets.Add("Titles");
-
-                // Define the headers in the template
-                worksheet.Cell(1, 1).Value = "InvoiceNumber";
-                worksheet.Cell(1, 2).Value = "CodeReference";
-                worksheet.Cell(1, 3).Value = "Title";
-
-                // Set the column width specifically for the "Title" column
-                worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
-
-                // Optionally, adjust the other columns to fit content
-                worksheet.Column(1).AdjustToContents();
-                worksheet.Column(2).AdjustToContents();
-
-                // Optionally, apply styles to the header row for better visibility
-                var headerRow = worksheet.Range("A1:C1");
-                headerRow.Style.Font.Bold = true;
-                headerRow.Style.Font.FontColor = XLColor.Red;
-
-                using (var stream = new MemoryStream())
+                using (var workbook = new XLWorkbook())
                 {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UploadTitles.xlsx");
+                    var worksheet = workbook.Worksheets.Add("Titles");
+
+                    // Define the headers in the template
+                    worksheet.Cell(1, 1).Value = "InvoiceNumber";
+                    worksheet.Cell(1, 2).Value = "CodeReference";
+                    worksheet.Cell(1, 3).Value = "Title";
+
+                    // Set the column width specifically for the "Title" column
+                    worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
+
+                    // Optionally, adjust the other columns to fit content
+                    worksheet.Column(1).AdjustToContents();
+                    worksheet.Column(2).AdjustToContents();
+
+                    // Optionally, apply styles to the header row for better visibility
+                    var headerRow = worksheet.Range("A1:C1");
+                    headerRow.Style.Font.Bold = true;
+                    headerRow.Style.Font.FontColor = XLColor.Red;
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UploadTitles.xlsx");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                return View("Index");
             }
         }
 
@@ -209,26 +260,36 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteSelected(List<int> selectedIds)
         {
-            if (selectedIds == null || !selectedIds.Any())
+            try
             {
-                TempData["Error"] = "No records selected for deletion.";
+
+
+                if (selectedIds == null || !selectedIds.Any())
+                {
+                    TempData["Error"] = "No records selected for deletion.";
+                    return RedirectToAction("ViewTitles");
+                }
+
+                var titlesToDelete = _context.Titles.Where(t => selectedIds.Contains(t.Id)).ToList();
+
+                if (titlesToDelete.Any())
+                {
+                    _context.Titles.RemoveRange(titlesToDelete);
+                    await _context.SaveChangesAsync();
+                    TempData["messagesuccess"] = "Selected records deleted successfully.";
+                }
+                else
+                {
+                    TempData["Error"] = "No matching records found for deletion.";
+                }
+
                 return RedirectToAction("ViewTitles");
             }
-
-            var titlesToDelete = _context.Titles.Where(t => selectedIds.Contains(t.Id)).ToList();
-
-            if (titlesToDelete.Any())
+            catch (Exception ex)
             {
-                _context.Titles.RemoveRange(titlesToDelete);
-                await _context.SaveChangesAsync();
-                TempData["messagesuccess"] = "Selected records deleted successfully.";
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                return RedirectToAction("ViewTitles");
             }
-            else
-            {
-                TempData["Error"] = "No matching records found for deletion.";
-            }
-
-            return RedirectToAction("ViewTitles");
         }
 
 
