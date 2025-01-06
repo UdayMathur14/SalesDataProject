@@ -18,6 +18,13 @@ namespace SalesDataProject.Models
         public string ReferenceTitle { get; set; } // "Blocked" or "Clean"
         [NotMapped]
         public int? BlockedId { get; set; }
+        public string TitleYear { get; set; }
+        [NotMapped]
+
+        public string BlockedByInvoiceNo { get; set; }
+        [NotMapped]
+
+        public string BlockedCodeRef { get; set; }
 
     }
 }

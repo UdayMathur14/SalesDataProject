@@ -21,9 +21,9 @@ namespace SalesDataProject.Controllers
             return View(model);
         }
         public async Task<IActionResult> ViewTitles()
-        {
-            
-            
+        {   
+            var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+            ViewData["CanViewTitles"] = canAccessTitle;
             var titles = await _context.Titles.ToListAsync();
             return View(titles);
         }
@@ -33,9 +33,9 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 var username = HttpContext.Session.GetString("Username");
+                ViewBag.Username = username;
+               
                 if (file == null || file.Length == 0)
                 {
                     return BadRequest("No file uploaded.");
@@ -57,11 +57,13 @@ namespace SalesDataProject.Controllers
                     var allTitles = await _context.Titles.ToListAsync();
 
                     // Loop through each row in the worksheet (starting from row 2 to skip the header)
-                    for (int row = 2; row <= rowCount; row++)
+                    for (int row = 3; row <= rowCount; row++)
                     {
                         var invoiceNumber = worksheet.Cells[row, 1].Text;
                         var codeReference = worksheet.Cells[row, 2].Text;
                         var cleantitle = worksheet.Cells[row, 3].Text;
+                        var yearTtile = worksheet.Cells[row, 4].Text;
+
                         if (string.IsNullOrWhiteSpace(cleantitle))
                         {
                             // Assume that an empty Title indicates the end of the valid rows
@@ -77,6 +79,22 @@ namespace SalesDataProject.Controllers
                             hasInvalidInvoiceNumber = true; // Set the flag if an invalid row is found
                         }
 
+                        if (yearTtile == null || string.IsNullOrWhiteSpace(yearTtile))
+                        {
+                            duplicateTitlesInExcel.Add(concatenatedTitle);
+
+                            result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                Title = cleantitle,
+                                InvoiceNumber = invoiceNumber,
+                                CodeReference = codeReference,
+                                Status = "Year Missing ",
+                                TitleYear = yearTtile
+                            });
+
+                            continue; // Skip further processing for duplicates
+                        }
                         // Check for duplicate titles within the Excel file
                         if (titlesInExcel.Contains(concatenatedTitle))
                         {
@@ -88,7 +106,8 @@ namespace SalesDataProject.Controllers
                                 Title = cleantitle,
                                 InvoiceNumber = invoiceNumber,
                                 CodeReference = codeReference,
-                                Status = "Duplicate in Excel"
+                                Status = "Duplicate in Excel",
+                                TitleYear = yearTtile
                             });
 
                             continue; // Skip further processing for duplicates
@@ -113,7 +132,11 @@ namespace SalesDataProject.Controllers
                             CREATED_BY = username,
                             Status = existingTitle != null ? "Blocked" : "Clean",
                             ReferenceTitle = concatenatedTitle,
-                            BlockedId = existingTitle?.Id
+                            BlockedId = existingTitle?.Id,
+                            TitleYear = yearTtile,
+                            // Only populate BlockedByInvoiceNo and BlockedCodeRef if the title is blocked
+                            BlockedByInvoiceNo = existingTitle != null ? invoiceNumber : null,
+                            BlockedCodeRef = existingTitle != null ? codeReference : null
                         };
 
                         // Add the titleValidation object to the appropriate list
@@ -140,7 +163,9 @@ namespace SalesDataProject.Controllers
                             CREATED_ON = tv.CREATED_ON,
                             CREATED_BY = tv.CREATED_BY,
                             ReferenceTitle = CleanTitle(tv.Title),
-                            Status = "Clean"
+                            Status = "Clean",
+                            TitleYear = tv.TitleYear
+
                         }).ToList();
 
                     if (cleanRecordsToSave.Any())
@@ -154,7 +179,8 @@ namespace SalesDataProject.Controllers
                 {
                     TempData["Error"] = "One or more rows have an empty Invoice Number. No data has been saved to the database.";
                 }
-
+                var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+                ViewData["CanViewTitles"] = canAccessTitle;
                 // Return the result to the view
                 return View("Index", result);
             }
@@ -180,7 +206,14 @@ namespace SalesDataProject.Controllers
                     // Define the headers in the template
                     worksheet.Cell(1, 1).Value = "InvoiceNumber";
                     worksheet.Cell(1, 2).Value = "CodeReference";
-                    worksheet.Cell(1, 3).Value = "Title";
+                    worksheet.Cell(1, 3).Value = "*Title";
+                    worksheet.Cell(1, 4).Value = "*Year";
+
+                    worksheet.Cell(2, 1).Value = "ExINV001";
+                    worksheet.Cell(2, 2).Value = "Ex1234";
+                    worksheet.Cell(2, 3).Value = "UploadTitle";
+                    worksheet.Cell(2, 4).Value = "2025";
+                    
 
                     // Set the column width specifically for the "Title" column
                     worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
@@ -189,10 +222,15 @@ namespace SalesDataProject.Controllers
                     worksheet.Column(1).AdjustToContents();
                     worksheet.Column(2).AdjustToContents();
 
+                   
+
                     // Optionally, apply styles to the header row for better visibility
-                    var headerRow = worksheet.Range("A1:C1");
+                    var headerRow = worksheet.Range("A1:D1");
                     headerRow.Style.Font.Bold = true;
                     headerRow.Style.Font.FontColor = XLColor.Red;
+
+                    var row = worksheet.Range("A2:L2");
+                    row.Style.Font.FontColor = XLColor.Black;
 
                     using (var stream = new MemoryStream())
                     {

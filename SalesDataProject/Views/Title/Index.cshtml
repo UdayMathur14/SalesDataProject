@@ -1,6 +1,7 @@
 ﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
     var canAccessTitle = ViewData["CanViewTitles"]?.ToString();
+    ViewBag.CanAccessTitle = "True";
 }
 
 @model ValidationResultViewModel
@@ -70,67 +71,57 @@
                                 <th>Title</th>
                                 <th>Status</th>
                                 <th>BlockedBy</th>
-                                <th>InvoiceNumber</th>
-                                <th>CodeReference</th>
+                                <th>BlockInvoiceNo</th>
+                                <th>BlockCodeRef</th>
                             </tr>
                         </thead>
-                        <tbody>
+                    <tbody>
                         @foreach (var title in Model.CleanTitles)
                         {
-                                    <tr class="table-success">
-                                        <td>@title.RowNumber</td>
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                        <td>@title.Title</td>
-                                        <td>@title.Status</td>
-                                        <td>@title.BlockedId</td>
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-
-                                    </tr>
+                            <tr class="table-success">
+                                <td>@title.RowNumber</td>
+                                <td>@title.InvoiceNumber</td>
+                                <td>@title.CodeReference</td>
+                                <td>@title.Title</td>
+                                <td>@title.Status</td>
+                                <td>"-"</td>
+                                <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display blank or '-' if null -->
+                                <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display blank or '-' if null -->
+                            </tr>
                         }
                         @foreach (var title in Model.BlockedTitles)
                         {
-                                    <tr class="table-danger">
-                                        <td>@title.RowNumber</td>
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                        <td>@title.Title</td>
-                                        <td>@title.Status</td>
-                                        <td>@title.BlockedId</td>
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                    </tr>
+                            <tr class="table-danger">
+                                <td>@title.RowNumber</td>
+                                <td>@title.InvoiceNumber</td>
+                                <td>@title.CodeReference</td>
+                                <td>@title.Title</td>
+                                <td>@title.Status</td>
+                                <td>@title.BlockedId</td>
+                                <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
+                                <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
+                            </tr>
                         }
                         @foreach (var title in Model.DuplicateTitlesInExcel)
                         {
-                                    <tr class="table-danger">
-                                        <td>@title.RowNumber</td>
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                        <td>@title.Title</td>
-                                        <td>@title.Status</td>
-                                        <td>@title.BlockedId</td>
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                    </tr>
+                            <tr class="table-danger">
+                                <td>@title.RowNumber</td>
+                                <td>@title.InvoiceNumber</td>
+                                <td>@title.CodeReference</td>
+                                <td>@title.Title</td>
+                                <td>@title.Status</td>
+                                <td>@title.BlockedId</td>
+                                <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
+                                <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
+                            </tr>
                         }
-                        </tbody>
+                    </tbody>
+
                     </table>
                 </div>
             </div>
 
     }
-
-    <!-- Insert Clean Titles Button -->
-    @* <div class="text-center mt-3">
-        <form asp-action="InsertCleanTitles" method="post" id="insertForm">
-            <input type="hidden" id="cleanTitles" name="cleanTitles" />
-            <button type="submit" class="btn btn-success btn-lg">
-                <i class="bi bi-check-circle"></i> Insert Clean Titles
-            </button>
-        </form>
-    </div> *@
 </div>
 
 <script>
