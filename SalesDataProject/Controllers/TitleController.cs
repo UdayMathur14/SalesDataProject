@@ -331,6 +331,35 @@ namespace SalesDataProject.Controllers
         }
 
 
+        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterTitle)
+        {
+            // Pass filters back to the view
+            ViewData["FilterId"] = filterId;
+            ViewData["FilterCodeReference"] = filterCodeReference;
+            ViewData["FilterTitle"] = filterTitle;
+
+            // Fetch data and filter based on inputs
+            var query = _context.Titles.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filterId) && int.TryParse(filterId, out int id))
+            {
+                query = query.Where(x => x.Id == id);
+            }
+
+            if (!string.IsNullOrEmpty(filterCodeReference))
+            {
+                query = query.Where(x => x.CodeReference.Contains(filterCodeReference));
+            }
+
+            if (!string.IsNullOrEmpty(filterTitle))
+            {
+                query = query.Where(x => x.Title.Contains(filterTitle));
+            }
+
+            var model = await query.ToListAsync();
+
+            return View("ViewTitles", model);
+        }
 
 
     }
