@@ -15,6 +15,12 @@ namespace SalesDataProject.Controllers
 
         public IActionResult Index()
         {
+            var username = HttpContext.Session.GetString("Username");
+            if (username == "" || username==null)
+            {
+                // If not authorized, redirect to home or another page
+                return RedirectToAction("Login", "Auth");
+            }
             return View();
         }
 

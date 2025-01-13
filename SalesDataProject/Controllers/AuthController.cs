@@ -1,10 +1,8 @@
 ﻿// Controllers/AuthController.cs
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Presentation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using SalesDataProject.Models;
 using SalesDataProject.Models.AuthenticationModels;
 using System.Text.RegularExpressions;
@@ -680,5 +678,28 @@ namespace SalesDataProject.Controllers
 
 
         }
+
+        [HttpPost]
+        public IActionResult Logout()
+        {
+            try
+            {
+                // Clear all session variables
+                HttpContext.Session.Clear();
+
+                // Set a success message using TempData (optional)
+                TempData["Success"] = "You have been logged out successfully.";
+
+                // Redirect to the login page or any desired page
+                return RedirectToAction("Login", "Auth");
+            }
+            catch (Exception ex)
+            {
+                // Handle any unexpected errors
+                TempData["Error"] = "An error occurred while logging out. Please try again.";
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
     }
 }
