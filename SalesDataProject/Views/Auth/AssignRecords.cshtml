@@ -7,7 +7,7 @@
 @{
     ViewData["Title"] = "Assign Records";
 }
-<div class="card shadow-sm p-4 mb-4 mt-5 mb-3">
+<div class="card shadow-sm p-4 mb-2 mt-5 mb-3">
     <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
     <form asp-action="FilterRecords" method="post">
         <div class="form-row d-flex gap-4">
@@ -24,7 +24,7 @@
                     }
                 </select>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-3 mb-2">
                 <label for="Category" class="font-weight-bold">Select Category:</label>
                 <select id="Category" name="Category" class="form-select form-control-sm">
                     <option value="">--Select--</option>
@@ -43,51 +43,52 @@
     </form>
 
     <!-- Display Company Records -->
-    <div id="companyRecordsList">
+    <div class="custom-table" id="companyRecordsList">
         <h5 class="text-secondary">Available Records</h5>
         <form asp-action="Assign" method="post">
-            
             @if (Model.RecordsList != null && Model.RecordsList.Any())
             {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>
-                                <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" />
-                            </th>
-                            <th>ID</th>
-                            <th>Category</th>
-                            <th>Company Name</th>
-                            <th>Contact Number</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var record in Model.RecordsList)
-                        {
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                    <table class="table table-striped mb-0">
+                        <thead>
                             <tr>
-                                <td>
-                                    <input type="checkbox" name="RecordIds" value="@record.ID" />
-                                </td>
-                                <td>@record.ID</td>
-                                <td>@record.CATEGORY</td>
-                                <td>@record.COMPANY_NAME</td>
-                                <td>@record.CUSTOMER_CONTACT_NUMBER1</td>
-                                <td>@record.CUSTOMER_EMAIL</td>
+                                <th>
+                                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" />
+                                </th>
+                                <th>ID</th>
+                                <th>Category</th>
+                                <th>Company Name</th>
+                                <th>Contact Number</th>
+                                <th>Email</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var record in Model.RecordsList)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="RecordIds" value="@record.ID" />
+                                    </td>
+                                    <td>@record.ID</td>
+                                    <td>@record.CATEGORY</td>
+                                    <td>@record.COMPANY_NAME</td>
+                                    <td>@record.CUSTOMER_CONTACT_NUMBER1</td>
+                                    <td>@record.CUSTOMER_EMAIL</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
             else
             {
                 <p>No records found for the selected criteria.</p>
             }
-            <div class="text-center mt-4 d-flex justify-content-end mb-3 gap-3">
-                @* <button type="submit" class="btn btn-success" name="assignAll" value="true">Assign All Records</button> *@
-                <button type="submit" class="btn btn-success" name="assignAll" value="false">Assign Records</button>
+
+            <div class="text-center mt-2 d-flex justify-content-center gap-3">
+                <button type="submit" class="btn btn-success mt-4" name="assignAll" value="false" style="height: 40px !important">Assign Records</button>
                 <div class="col-md-3 mb-3">
-                    <label for="UserName" class="font-weight-bold">Assign To User:</label>
+                    <label for="UserName" class="font-weight-bold"></label>
                     <select asp-for="UserName" class="form-select form-control-sm">
                         <option value="">--Select--</option>
                         @if (ViewBag.Users != null)
@@ -99,11 +100,9 @@
                         }
                     </select>
                 </div>
-                </div>  
-            
+            </div>
         </form>
     </div>
-</div>
 
 <script>
     function toggleSelectAll(checkbox) {

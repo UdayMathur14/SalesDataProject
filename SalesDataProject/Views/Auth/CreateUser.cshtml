@@ -3,65 +3,107 @@
     ViewData["Title"] = "Create User";
 }
 
-<h2 class="text-center my-4" style="color:black">Create User</h2>
-
-
-<form asp-action="CreateUser" method="post" class="container p-4 border rounded shadow-sm" style="">
-    <div class="form-row align-items-center" style="display:flex;flex-direction:column">
-        <div class="col-md-4 mb-3">
-            <label asp-for="Username" class="font-weight-bold">Username</label>
+<form asp-action="CreateUser" method="post" class="container shadow rounded p-4" style="max-width: 550px;">
+    <h2 class="text-center mb-4">Create New User</h2>
+    <div class="align-items-center d-flex flex-column">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Username" class="form-label fw-bold">Username</label>
             <input type="text" asp-for="Username" class="form-control" placeholder="Enter username" />
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <label asp-for="Password" class="font-weight-bold">Password</label>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Password" class="form-label fw-bold">Password</label>
             <input type="password" asp-for="Password" class="form-control" placeholder="Enter password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <div class="col-md-4 mb-3 form-check">
-            <input type="checkbox" asp-for="CanAccessCustomer" class="form-check-input" />
-            <label asp-for="CanAccessCustomer" class="form-check-label font-weight-bold">Access Customer Module</label>
+        <div class="col-md-6 mb-3">
+            <h5 class="fw-bold">Access Permissions</h5>
+            <div class="form-check">
+                <input type="checkbox" asp-for="CanAccessCustomer" class="form-check-input" />
+                <label asp-for="CanAccessCustomer" class="form-check-label">Access Customer Module</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" asp-for="CanAccessSales" class="form-check-input" />
+                <label asp-for="CanAccessSales" class="form-check-label">Access Mailing Module</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" asp-for="CanAccessUserManagement" class="form-check-input" />
+                <label asp-for="CanAccessUserManagement" class="form-check-label">Access Admin Module</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" asp-for="CanAccessTitle" class="form-check-input" />
+                <label asp-for="CanAccessTitle" class="form-check-label">Access Title Module</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" asp-for="CanViewTitles" class="form-check-input" />
+                <label asp-for="CanViewTitles" class="form-check-label">Can View Titles</label>
+            </div>
         </div>
 
-        <div class="col-md-4 mb-3 form-check">
-            <input type="checkbox" asp-for="CanAccessSales" class="form-check-input" />
-            <label asp-for="CanAccessSales" class="form-check-label font-weight-bold">Access Mailing Module</label>
-        </div>
-        <div class="col-md-4 mb-3 form-check">
-            <input type="checkbox" asp-for="CanAccessUserManagement" class="form-check-input" />
-            <label asp-for="CanAccessUserManagement" class="form-check-label font-weight-bold">Access Admin Module</label>
-        </div><div class="col-md-4 mb-3 form-check">
-            <input type="checkbox" asp-for="CanAccessTitle" class="form-check-input" />
-            <label asp-for="CanAccessTitle" class="form-check-label font-weight-bold">Access Title Module</label>
-        </div>
-        </div><div class="col-md-4 mb-3 form-check">
-        <input type="checkbox" asp-for="CanViewTitles" class="form-check-input" />
-        <label asp-for="CanViewTitles" class="form-check-label font-weight-bold">CanViewTitles</label>
-        </div>
-        <div class="text-center">
-            <button type="submit" class="btn btn-primary">Create</button>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Create</button>
         </div>
     </div>
-
-    
 </form>
 
 <style>
     h2 {
         color: #4A90E2;
+        font-weight: bold;
+        font-size: 1.8rem;
     }
 
     form.container {
-        background-color: #f8f9fa;
+        background-color: #ffffff;
+        border: 1px solid #e0e0e0;
     }
 
-    .form-group label {
-        margin-bottom: 0.5rem;
+    .form-control {
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+        .form-control:focus {
+            border-color: #4A90E2;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+        }
+
+    .form-label {
+        color: #333;
     }
 
     .btn-primary {
-        font-size: 1.1rem;
+        background-color: #4A90E2;
+        border: none;
+        transition: background-color 0.3s;
+    }
+
+        .btn-primary:hover {
+            background-color: #357ABD;
+        }
+
+    .form-check-label {
+        font-size: 1rem;
+        color: #495057;
+    }
+
+    .form-check-input:checked {
+        background-color: #4A90E2;
+        border-color: #4A90E2;
+    }
+
+    .shadow {
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .rounded {
+        border-radius: 10px;
+    }
+
+    .text-danger {
+        font-size: 0.9rem;
     }
 </style>

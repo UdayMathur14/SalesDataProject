@@ -17,17 +17,17 @@
 }
 <div class="container mt-5">
     <h2 class="mb-5 text-center display-5 text-dark" style="font-weight: bold; font-style: italic; font-size: 2.0rem">Explore Our Modules</h2>
-    <div class="row justify-content-center">
+    <div class="row">
         <!-- Customer Module Card -->
         @if (canAccessCustomer)
         {
-            <div class="col-md-6 col-lg-5 mb-5">
+            <div class="col-md-3 col-lg-3 mb-5">
                 <div class="card custom-card shadow-lg border-0 rounded-3">
-                    <div class="gradient-bg">
+                    <div class="gradient-bg" style="background:linear-gradient(135deg, #0000ff, #feb47b);">
                         <i class="fas fa-users fa-3x"></i>
                     </div>
                     <div class="card-content">
-                        <h5 class="card-title">Customer Module</h5>
+                        <h5 class="card-title" style="color:grey">Customer Module</h5>
                         <p class="card-text">Upload customer data, view customer details, and more.</p>
                         <a href="@Url.Action("ViewCustomers", "Customer")" class="btn btn-primary">Customer Module</a>
                     </div>
@@ -38,13 +38,14 @@
         <!-- Sales Data Card -->
         @if (canAccessSales)
         {
-            <div class="col-md-6 col-lg-5 mb-5">
+            <div class="col-md-3 col-lg-3 mb-5">
                 <div class="card custom-card shadow-lg border-0 rounded-3">
-                    <div class="gradient-bg">
+                    <div class="gradient-bg" style="background:linear-gradient(135deg, #0000ff, #feb47b);">
+
                         <i class="fas fa-chart-line fa-3x"></i>
                     </div>
                     <div class="card-content">
-                        <h5 class="card-title">Mailing Module</h5>
+                        <h5 class="card-title" style="color:brown">Mailing Module</h5>
                         <p class="card-text">Upload Sales Data and view Blocked/Clean records.</p>
                         <a href="@Url.Action("ViewRecords", "SalesData")" class="btn btn-primary">Sales Module</a>
                     </div>
@@ -53,13 +54,15 @@
         }
         @if (canAccessUserManagement)
         {
-            <div class="col-md-6 col-lg-5 mb-5">
+            <div class="col-md-3 col-lg-3 mb-5">
+                <a href="@Url.Action("ManageUsers", "Auth")"></a>
                 <div class="card custom-card shadow-lg border-0 rounded-3">
-                    <div class="gradient-bg">
+                    <div class="gradient-bg" style="background:linear-gradient(13deg, #0000ff, #feb47b);">
+
                         <i class="fas fa-chart-line fa-3x"></i>
                     </div>
                     <div class="card-content">
-                        <h5 class="card-title">User Management</h5>
+                        <h5 class="card-title" style="color:blueviolet">User Management</h5>
                         <p class="card-text">User Management Add/Delete and Permissions</p>
                         <a href="@Url.Action("ManageUsers", "Auth")" class="btn btn-primary">User Module</a>
                     </div>
@@ -68,13 +71,14 @@
         }
         @if (canAccessTitle)
         {
-            <div class="col-md-6 col-lg-5 mb-5">
+            <div class="col-md-3 col-lg-3 mb-5">
                 <div class="card custom-card shadow-lg border-0 rounded-3">
-                    <div class="gradient-bg">
+                    <div class="gradient-bg" style="background:linear-gradient(135deg, #0000ff, #feb47b);">
+
                         <i class="fas fa-chart-line fa-3x"></i>
                     </div>
                     <div class="card-content">
-                        <h5 class="card-title">Title Validation</h5>
+                        <h5 class="card-title" style="color:yellow">Title <br> Validation</h5>
                         <p class="card-text">Validate your Titiles here and upload insert or delete titles </p>
                         <a href="@Url.Action("Index", "Title")" class="btn btn-primary">Title Module</a>
                     </div>
@@ -87,7 +91,6 @@
 <style>
     /* General Container Adjustments */
     .container {
-        max-width: 1000px;
         margin: 0 auto;
     }
 
@@ -97,13 +100,13 @@
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 18px 28px rgba(0, 0, 0, 0.15);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        min-height: 100px;
+        /* transition: transform 0.3s ease, box-shadow 0.3s ease; */
+        min-height: 375px;
+        border: 1px solid black; 
     }
 
-        .custom-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 29px 26px rgba(0, 0, 0, 0.2);
+        .custom-card:hover { 
+            background-color: lightblue;
         }
 
     .gradient-bg {
@@ -112,15 +115,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 150px;
-        flex-shrink: 0;
+        /* width: 150px; */
+        /* flex-shrink: 0; */
         color: white;
-        transition: transform 0.3s ease;
+        /* transition: transform 0.3s ease; */
     }
 
-    .custom-card:hover .gradient-bg {
-        transform: scale(1.1);
-    }
+    /* .custom-card:hover .gradient-bg { */
+    /*     transform: scale(1.1); */
+    /* } */
 
     .card-content {
         padding: 35px;
@@ -149,6 +152,7 @@
         padding: 12px 24px;
         border-radius: 40px;
         transition: background-color 0.1s, box-shadow 0.3s;
+        /* min-height: 75px; */
     }
 
         .btn-primary:hover {
@@ -163,9 +167,9 @@
     }
 
     /* Spacing adjustments */
-    .row {
-        gap: 50px; /* Increased space between cards */
-    }
+    /* .row { */
+    /*     gap: 50px; /* Increased space between cards */ */
+    /* } */
 </style>
 <style>
     .error-message {
