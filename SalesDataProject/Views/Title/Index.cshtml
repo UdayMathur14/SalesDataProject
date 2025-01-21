@@ -46,13 +46,13 @@
                 <!-- Upload Excel -->
                 <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
                     <input type="file" id="fileUpload" name="file" class="d-none" required />
-                    <button type="button" id="uploadButton" class="btn btn-outline-primary btn-lg">
+                    <button type="button" id="uploadButton" class="btn btn-primary btn-md">
                         <i class="bi bi-upload"></i> Upload Excel
                     </button>
                 </form>
                 <!-- Download Template -->
                 <form asp-action="DownloadTemplate" method="get">
-                    <button type="submit" class="btn btn-outline-success btn-lg">
+                    <button type="submit" class="btn btn-success btn-md">
                         <i class="bi bi-file-earmark-arrow-down"></i> Download Template
                     </button>
                 </form>
@@ -66,13 +66,13 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title text-dark">Validation Results</h5>
-                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
                     <table class="table table-hover table-striped align-middle">
                         <thead class="table-dark">
                             <tr>
                                 <th>Row Number</th>
                                 <th>Invoice Number</th>
-                                <th>Code Reference</th>
+                                <th>CodeRef</th>
                                 <th>Title</th>
                                 <th>Status</th>
                                 <th>BlockedBy</th>
@@ -96,7 +96,7 @@
                         }
                         @foreach (var title in Model.BlockedTitles)
                         {
-                            <tr class="table-danger">
+                            <tr >
                                 <td>@title.RowNumber</td>
                                 <td>@title.InvoiceNumber</td>
                                 <td>@title.CodeReference</td>
@@ -195,7 +195,7 @@
     }
 
     .table-hover tbody tr:hover {
-        background-color: #f1f1f1;
+        background-color: lightblue;
     }
 
     .table-success {
@@ -203,7 +203,7 @@
     }
 
     .table-danger {
-        background-color: #fdecef;
+        background-color: #ddd;
     }
 
     .btn-outline-primary:hover {
