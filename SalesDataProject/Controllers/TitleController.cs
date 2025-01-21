@@ -57,7 +57,7 @@ namespace SalesDataProject.Controllers
                     var allTitles = await _context.Titles.ToListAsync();
 
                     // Loop through each row in the worksheet (starting from row 2 to skip the header)
-                    for (int row = 3; row <= rowCount; row++)
+                    for (int row = 2; row <= rowCount; row++)
                     {
                         var invoiceNumber = worksheet.Cells[row, 1].Text;
                         var codeReference = worksheet.Cells[row, 2].Text;
@@ -209,10 +209,10 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(1, 3).Value = "*Title";
                     worksheet.Cell(1, 4).Value = "*Year";
 
-                    worksheet.Cell(2, 1).Value = "ExINV001";
-                    worksheet.Cell(2, 2).Value = "Ex1234";
-                    worksheet.Cell(2, 3).Value = "UploadTitle";
-                    worksheet.Cell(2, 4).Value = "2025";
+                    //worksheet.Cell(2, 1).Value = "ExINV001";
+                    //worksheet.Cell(2, 2).Value = "Ex1234";
+                    //worksheet.Cell(2, 3).Value = "UploadTitle";
+                    //worksheet.Cell(2, 4).Value = "2025";
                     
 
                     // Set the column width specifically for the "Title" column

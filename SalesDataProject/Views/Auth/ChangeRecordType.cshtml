@@ -60,7 +60,7 @@
     <!-- Display Blocked Customers -->
     <h5 class="text-secondary">Blocked Companies</h5>
     <form asp-action="UpdateCustomerStatus" method="post">
-        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+        <div style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
         <div id="blockedCustomersList">
             @if (Model.BlockCustomersEmailList != null && Model.BlockCustomersEmailList.Any())
             {
