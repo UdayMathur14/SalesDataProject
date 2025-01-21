@@ -19,12 +19,12 @@
     <div class="row align-items-center mb-4">
         <!-- Heading Section -->
         <div class="col-md-6 text-md-start text-center">
-            <h1 class="mb-0" style="color:black;">Title Records</h1>
+            <h1 class="mb-0" style="color:brown;">Title Records</h1>
         </div>
     </div>
 
     <!-- Filter Form -->
-    <form  id="filterForm" method="get" action="/Title/querydata">
+    <form id="filterForm" method="get" action="/Title/querydata">
         <div class="row mb-4">
             <div class="col-md-3">
                 <input type="text" name="filterId" class="form-control" placeholder="Filter by ID" value="@ViewData["FilterId"]" />
@@ -37,7 +37,7 @@
             </div>
             <div class="col-md-3 text-md-end text-center">
                 <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="/Title" class="btn btn-secondary">Clear</a> <!-- Clear filters -->
+                <button type="button" class="btn btn-secondary" id="clearButton">Clear</button> <!-- Clear filters -->
             </div>
         </div>
     </form>
@@ -50,8 +50,8 @@
                 <tr>
                     <th><input type="checkbox" id="selectAll" /></th> <!-- Select all checkbox -->
                     <th>Id</th>
-                    <th>Code Reference</th>
-                    <th>Invoice Number</th>
+                    <th>Code Ref</th>
+                    <th>Invoice No</th>
                     <th>Title</th>
                     <th>Created By</th>
                     <th>Created On</th>
@@ -181,7 +181,7 @@
     }
 
         .custom-button:hover {
-            background-color: darkgray; /* Change this to any color you like */
+            background-color: dimgrey; /* Change this to any color you like */
         }
 
 </style>
@@ -237,3 +237,13 @@
         }
     });
 </script>
+<script>
+    document.getElementById('clearButton').addEventListener('click', function () {
+        // Reset all input fields in the form
+        document.getElementById('filterForm').reset();
+
+        // Optionally, clear query parameters by redirecting to the base URL
+        window.location.href = '/Title/ViewTitles';
+    });
+</script>
+

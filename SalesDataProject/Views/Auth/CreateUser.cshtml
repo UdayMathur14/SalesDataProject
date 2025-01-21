@@ -4,7 +4,7 @@
 }
 
 <form asp-action="CreateUser" method="post" class="container shadow rounded p-4" style="max-width: 550px;">
-    <h2 class="text-center mb-4">Create New User</h2>
+    <h2 class="text-center mb-4" style="color:red;text-decoration:underline">Create New User</h2>
     <div class="align-items-center d-flex flex-column">
         <div class="col-md-6 mb-3">
             <label asp-for="Username" class="form-label fw-bold">Username</label>
@@ -38,7 +38,7 @@
             </div>
             <div class="form-check">
                 <input type="checkbox" asp-for="CanViewTitles" class="form-check-input" />
-                <label asp-for="CanViewTitles" class="form-check-label">Can View Titles</label>
+                <label asp-for="CanViewTitles" class="form-check-label">Access ViewTitles</label>
             </div>
         </div>
 
