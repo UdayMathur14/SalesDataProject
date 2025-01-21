@@ -8,11 +8,7 @@
 @{
     ViewData["Title"] = "Company Records";
 }
-@* <div class="d-flex justify-content-center">
-    <div class="spinner-border" role="status">
-        <span class="sr-only"></span>
-    </div>
-</div> *@
+
 <div class="container mt-3">
     @if (TempData["SuccessMessage"] != null)
     {
@@ -44,8 +40,7 @@
     }
 </style>
 
-<div class="container mt-3">
-
+<div class="container mt-4">
     <div class="header d-flex justify-content-between">
         <h2>Company Records</h2>
         <div class="buttons d-flex gap-2">
@@ -57,14 +52,16 @@
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
                 <button type="button" id="uploadButton" class="btn btn-success ml-4 mb-4">Upload Excel</button>
             </form>
-           
 
             <form asp-action="DownloadTemplate" method="get">
                 <button type="submit" class="btn btn-success">Download Template</button>
             </form>
+            <a href="@Url.Action("Index", "Home")" class="" >
+                <button style="background-color:red" type="submit" class="btn btn-success">Back</button>
+            </a>
         </div>
     </div>
-
+    <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
     <table class="table table-striped">
         <thead class="table-header">
             <tr>
@@ -94,6 +91,8 @@
             }
         </tbody>
     </table>
+    
+</div>
 </div>
 
 

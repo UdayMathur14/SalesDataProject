@@ -31,7 +31,11 @@
                 <form asp-action="ViewTitles" method="get">
                     <button type="submit" class="btn btn-primary">View Titles</button>
                 </form>
+                <a href="@Url.Action("Index", "Home")" class="">
+                    <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
+                </a>
             </div>
+
         }
     </div>
     <!-- Upload and Download Buttons Section -->
@@ -62,6 +66,7 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h5 class="card-title text-dark">Validation Results</h5>
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
                     <table class="table table-hover table-striped align-middle">
                         <thead class="table-dark">
                             <tr>
@@ -118,6 +123,7 @@
                     </tbody>
 
                     </table>
+                </div>
                 </div>
             </div>
 

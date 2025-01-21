@@ -60,6 +60,7 @@
     <!-- Display Blocked Customers -->
     <h5 class="text-secondary">Blocked Companies</h5>
     <form asp-action="UpdateCustomerStatus" method="post">
+        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
         <div id="blockedCustomersList">
             @if (Model.BlockCustomersEmailList != null && Model.BlockCustomersEmailList.Any())
             {
@@ -99,12 +100,14 @@
                 <p>No blocked emails found.</p>
             }
         </div>
+        </div>
         <button type="submit" class="btn btn-success mb-3">Change to Clean</button>
     </form>
 
 
     <!-- Display Clean Customers -->
     <h5 class="text-secondary">Clean Companies</h5>
+
     <form asp-action="UpdateCustomerStatus" method="post">
         <div id="cleanCustomersList">
             @if (Model.CleanCustomersEmailList != null && Model.CleanCustomersEmailList.Any())
