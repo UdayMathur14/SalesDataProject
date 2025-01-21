@@ -17,13 +17,17 @@ namespace SalesDataProject.Controllers
         public IActionResult Index(ValidationResultViewModel model)
         {
             var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanViewTitles"] = canAccessTitle;
+            ViewData["CanDeleteTitles"] = canDeleteTitle;
             return View(model);
         }
         public async Task<IActionResult> ViewTitles()
         {   
             var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanViewTitles"] = canAccessTitle;
+            ViewData["CanDeleteTitles"] = canDeleteTitle;
             var titles = await _context.Titles.ToListAsync();
             return View(titles);
         }
@@ -180,7 +184,9 @@ namespace SalesDataProject.Controllers
                     TempData["Error"] = "One or more rows have an empty Invoice Number. No data has been saved to the database.";
                 }
                 var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+                var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
                 ViewData["CanViewTitles"] = canAccessTitle;
+                ViewData["CanDeleteTitles"] = canDeleteTitle;
                 // Return the result to the view
                 return View("Index", result);
             }

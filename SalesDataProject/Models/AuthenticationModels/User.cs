@@ -20,5 +20,6 @@ namespace SalesDataProject.Models.AuthenticationModels
         public bool CanAccessUserManagement{ get; set; } = false;
         public bool CanAccessTitle { get; set; } = false;
         public bool CanViewTitles { get; set; } = false;
+        public bool CanDeleteTitles { get; set; } = false;
     }
 }

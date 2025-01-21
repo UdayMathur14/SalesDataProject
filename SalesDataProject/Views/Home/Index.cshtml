@@ -4,6 +4,7 @@
     var canAccessSales = Context.Session.GetString("CanAccessSales") == "True";
     var canAccessUserManagement = Context.Session.GetString("CanAccessUserManagement") == "True";
     var canAccessTitle = Context.Session.GetString("CanAccessTitle") == "True";
+    var canDeleteTitle = Context.Session.GetString("CanDeleteTitle") == "True";
 }
 @{
     ViewData["Title"] = "";

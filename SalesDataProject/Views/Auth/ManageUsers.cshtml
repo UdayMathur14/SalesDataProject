@@ -51,6 +51,7 @@
                     <th>User Management Module</th>
                     <th>Title Module</th>
                     <th>View Titles</th>
+                    <th>Delete Titles</th>
                 </tr>
             </thead>
             <tbody>
@@ -86,6 +87,11 @@
                             <input type="checkbox" name="Users[@i].CanViewTitles"
                                    value="true" @(userList[i].CanViewTitles ? "checked" : "") class="form-check-input mx-auto" />
                             <input type="hidden" name="Users[@i].CanViewTitles" value="false" />
+                        </td>
+                        <td class="text-center align-middle">
+                            <input type="checkbox" name="Users[@i].CanDeleteTitles"
+                                   value="true" @(userList[i].CanDeleteTitles ? "checked" : "") class="form-check-input mx-auto" />
+                            <input type="hidden" name="Users[@i].CanDeleteTitles" value="false" />
                         </td>
                     </tr>
                 }

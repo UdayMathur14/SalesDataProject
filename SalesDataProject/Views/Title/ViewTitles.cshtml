@@ -1,4 +1,11 @@
-﻿<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+﻿@{
+    // Simulating a variable that determines if the user has delete access.
+    // Replace this with actual logic to fetch the user's permissions (e.g., from the database or session).
+    var hasDeleteAccess = ViewData["CanDeleteTitles"]?.ToString();
+}
+
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 @model List<SalesDataProject.Models.TitleValidationViewModel>
 
@@ -45,55 +52,58 @@
     <!-- Table -->
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
         <div style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-        <table class="table table-striped table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th><input type="checkbox" id="selectAll" /></th> <!-- Select all checkbox -->
-                    <th>Id</th>
-                    <th>Code Ref</th>
-                    <th>Invoice No</th>
-                    <th>Title</th>
-                    <th>Created By</th>
-                    <th>Created On</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model != null && Model.Any())
-
-                {
-                    foreach (var record in Model)
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        @if (hasDeleteAccess=="True")
+                        {
+                            <th><input type="checkbox" id="selectAll" /></th> <!-- Select all checkbox -->
+                        }
+                        <th>Id</th>
+                        <th>Code Ref</th>
+                        <th>Invoice No</th>
+                        <th>Title</th>
+                        <th>Created By</th>
+                        <th>Created On</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
                     {
-                        <tr id="record-@record.Id">
-                            <!-- Add ID for scrolling -->
-                            <td>
-                                <input type="checkbox" name="selectedIds" value="@record.Id" />
-                            </td>
-                            <td>@record.Id</td>
-                            <td>@record.CodeReference</td>
-                            <td>@record.InvoiceNumber</td>
-                            <td>@record.Title</td>
-                            <td>@record.CREATED_BY</td>
-                            <td>@record.CREATED_ON.ToString("yyyy-MM-dd")</td>
-                            <td>@record.Status</td>
+                        foreach (var record in Model)
+                        {
+                            <tr id="record-@record.Id">
+                                @if (hasDeleteAccess == "True")
+                                {
+                                    <td>
+                                        <input type="checkbox" name="selectedIds" value="@record.Id" />
+                                    </td>
+                                }
+                                <td>@record.Id</td>
+                                <td>@record.CodeReference</td>
+                                <td>@record.InvoiceNumber</td>
+                                <td>@record.Title</td>
+                                <td>@record.CREATED_BY</td>
+                                <td>@record.CREATED_ON.ToString("yyyy-MM-dd")</td>
+                                <td>@record.Status</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center">No records found</td>
                         </tr>
                     }
-
-                }
-
-                else
-
-                {
-                    <tr>
-                        <td colspan="9" class="text-center">No records found</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                </tbody>
+            </table>
         </div>
 
-
-        <button type="submit" class="btn btn-danger mt-3">Delete Selected</button>
+        @if (hasDeleteAccess == "True")
+        {
+            <button type="submit" class="btn btn-danger mt-3">Delete Selected</button>
+        }
     </form>
 </div>
 

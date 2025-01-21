@@ -1,7 +1,9 @@
 ﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
     var canAccessTitle = ViewData["CanViewTitles"]?.ToString();
+    var canDeleteTitle = ViewData["CanDeleteTitles"]?.ToString();
     ViewBag.CanAccessTitle = "True";
+    ViewBag.CanDeleteTitle = "True";
 }
 
 @model ValidationResultViewModel
