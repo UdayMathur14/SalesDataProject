@@ -192,7 +192,7 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
-                                if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -330,7 +330,7 @@ namespace SalesDataProject.Controllers
                 var allInvalidRecords = invalidRecords.Concat(duplicateRecords).ToList();
                 if (allInvalidRecords.Any())
                 {
-                    TempData["Error"] = "Some records were invalid or duplicate.";
+                    TempData["Error"] = "Invalid or duplicate records found; Valid records saved.";
                     TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
                     return View("InvalidRecords", allInvalidRecords);
                 }

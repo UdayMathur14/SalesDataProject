@@ -80,20 +80,82 @@ namespace SalesDataProject.Controllers
                             var worksheet = workbook.Worksheet(1);
                             var lastRow = worksheet.LastRowUsed().RowNumber();
 
-                            for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
+                            // Step 1: Dictionaries to track duplicates
+                            var companyNameOccurrences = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                            var emailOccurrences = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+                            // Track unique processed data
+                            var existingCompanies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            var existingEmails = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                            // Load existing data from the database
+                            var dbCustomers = await _context.Customers
+                                .Select(c => new { c.CUSTOMER_EMAIL, c.COMPANY_NAME })
+                                .ToListAsync();
+
+                            var dbProspects = await _context.Prospects
+                                .Select(p => new { p.CUSTOMER_EMAIL, p.COMPANY_NAME, p.EMAIL_DOMAIN, p.RECORD_TYPE })
+                                .ToListAsync();
+
+                            foreach (var item in dbCustomers)
+                            {
+                                existingEmails.Add(item.CUSTOMER_EMAIL.ToLower());
+                                existingCompanies.Add(item.COMPANY_NAME.ToUpper());
+                            }
+
+                            foreach (var item in dbProspects)
+                            {
+                                existingEmails.Add(item.CUSTOMER_EMAIL.ToLower());
+                                existingCompanies.Add(item.COMPANY_NAME.ToUpper());
+                            }
+
+                            var emailDomainsWithTrueRecordType = dbProspects
+                                .Where(p => p.RECORD_TYPE)
+                                .Select(p => p.EMAIL_DOMAIN.ToLower())
+                                .ToHashSet();
+
+                            // Step 2: Process each row in the Excel file
+                            for (int row = 3; row <= lastRow; row++) // Start from the third row
+                            {
+                                var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
+                                var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                                var emailDomain = customerEmail?.Split('@').LastOrDefault()?.ToLower();
+
+                                // Increment occurrences for duplicates
+                                if (!string.IsNullOrEmpty(companyName))
+                                {
+                                    if (companyNameOccurrences.ContainsKey(companyName))
+                                        companyNameOccurrences[companyName]++;
+                                    else
+                                        companyNameOccurrences[companyName] = 1;
+                                }
+
+                                if (!string.IsNullOrEmpty(customerEmail))
+                                {
+                                    if (emailOccurrences.ContainsKey(customerEmail))
+                                        emailOccurrences[customerEmail]++;
+                                    else
+                                        emailOccurrences[customerEmail] = 1;
+                                }
+
+                                // Skip further validation for now, we handle duplicates later
+                                continue;
+                            }
+
+                            // Step 3: Process rows again and validate
+                            for (int row = 3; row <= lastRow; row++)
                             {
                                 var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
                                 var contactPerson = worksheet.Cell(row, 3).GetString();
                                 var customerNumber = worksheet.Cell(row, 4).GetString();
-                                var customerNumber2 = worksheet.Cell(row, 8).GetString();
-                                var customerNumber3 = worksheet.Cell(row, 9).GetString();
                                 var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                                 var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                                 var country = worksheet.Cell(row, 7).GetString();
-                                var category = worksheet.Cell(row, 12).GetString();
-                                var emailDomain = customerEmail?.Split('@').Last().ToLower();
+                                var category = worksheet.Cell(row, 12).GetString().ToUpper();
+                                var emailDomain = customerEmail?.Split('@').LastOrDefault()?.ToLower();
 
-                                if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
+                                // Check duplicate in the file
+                                if (companyNameOccurrences[companyName] > 1 || emailOccurrences[customerEmail] > 1)
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -101,11 +163,14 @@ namespace SalesDataProject.Controllers
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
-                                        ErrorMessage = "Invalid category."
+                                        ErrorMessage = "Duplicate record in the file."
                                     });
                                     continue;
                                 }
-                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && (customerNumber != "" || customerNumber != null))
+
+                                // Check other invalid conditions
+                                if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerEmail) ||
+                                    string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -113,13 +178,13 @@ namespace SalesDataProject.Controllers
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
-                                        ErrorMessage = "Invalid Contact Number."
+                                        ErrorMessage = "Missing mandatory fields."
                                     });
                                     continue;
                                 }
+
                                 if (!IsValidEmail(customerEmail))
                                 {
-                                    // Store invalid record
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
                                         RowNumber = row,
@@ -128,28 +193,13 @@ namespace SalesDataProject.Controllers
                                         CustomerNumber = customerNumber,
                                         ErrorMessage = "Invalid email format."
                                     });
-                                    continue; // Skip to the next row
-                                }
-                                else if (string.IsNullOrWhiteSpace(companyName) ||
-                                         string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
-                                {
-                                    invalidRecords.Add(new InvalidCustomerRecord
-                                    {
-                                        RowNumber = row,
-                                        CompanyName = companyName,
-                                        CustomerEmail = customerEmail,
-                                        CustomerNumber = customerNumber,
-                                        ErrorMessage = "Missing Mandatory Fields"
-                                    });
                                     continue;
                                 }
 
-                                // Check if email exists in Customers or Prospects table
-                                var existingCustomer = await _context.Customers.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()).Select(c => c.CREATED_BY).FirstOrDefaultAsync();
-
-                                // Check if email exists in Prospects table
-                                var existingProspect = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || (c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() && c.RECORD_TYPE == true)).Select(c => c.CREATED_BY).FirstOrDefaultAsync();
-
+                                // Blocked criteria
+                                bool isBlocked = existingCompanies.Contains(companyName)
+                                    || existingEmails.Contains(customerEmail)
+                                    || (emailDomainsWithTrueRecordType.Contains(emailDomain) && !string.IsNullOrEmpty(emailDomain));
 
                                 var customerData = new ProspectCustomer
                                 {
@@ -157,8 +207,6 @@ namespace SalesDataProject.Controllers
                                     COMPANY_NAME = companyName,
                                     CONTACT_PERSON = contactPerson,
                                     CUSTOMER_CONTACT_NUMBER1 = customerNumber,
-                                    CUSTOMER_CONTACT_NUMBER2 = worksheet.Cell(row, 8).GetString(),
-                                    CUSTOMER_CONTACT_NUMBER3 = worksheet.Cell(row, 9).GetString(),
                                     CUSTOMER_EMAIL = customerEmail,
                                     COUNTRY = country,
                                     STATE = worksheet.Cell(row, 10).GetString(),
@@ -170,29 +218,22 @@ namespace SalesDataProject.Controllers
                                     COUNTRY_CODE = countryCode,
                                     EMAIL_DOMAIN = emailDomain,
                                     CATEGORY = category,
+                                    RECORD_TYPE = isBlocked, // Mark as blocked or clean
+                                    IS_EMAIL_BLOCKED = isBlocked
                                 };
 
-                                // Apply blocking logic
-                                if (!string.IsNullOrEmpty(existingCustomer) || !string.IsNullOrEmpty(existingProspect))
+                                if (isBlocked)
                                 {
-                                    customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.IS_EMAIL_BLOCKED = true;
-
-                                    // Set BLOCKED_BY to the creator of the existing record
-                                    customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer) ? existingCustomer : existingProspect;
-
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
                                 {
-                                    customerData.RECORD_TYPE = false; // Clean
-                                    customerData.IS_EMAIL_BLOCKED = false;
                                     cleanCustomers.Add(customerData);
                                 }
-
-                                _context.Prospects.Add(customerData);
                             }
 
+                            // Step 4: Save data to database
+                            _context.Prospects.AddRange(blockedCustomers.Concat(cleanCustomers));
                             await _context.SaveChangesAsync();
                         }
                     }
@@ -203,6 +244,7 @@ namespace SalesDataProject.Controllers
                         CleanCustomers = cleanCustomers,
                         invalidCustomerRecords = invalidRecords
                     };
+
                     TempData["Success"] = "Successfully Uploaded";
                     return View("UploadResults", model);
                 }
@@ -215,6 +257,7 @@ namespace SalesDataProject.Controllers
                 return View("Index");
             }
         }
+
 
 
 

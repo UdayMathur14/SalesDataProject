@@ -14,9 +14,18 @@
         <p>@TempData["Error"]</p>
     </div>
 }
-<h2>Invalid or Duplicate Records</h2>
-<div>
-    <a id="exportLink" asp-action="ExportInvalidRecords" class="btn btn-primary">Export to Excel</a>
+<div class="header d-flex justify-content-between mb-4">
+    <h2>Invalid or Duplicate Records</h2>
+
+    <div class="buttons d-flex gap-2">
+       
+            <div>
+                <a id="exportLink" asp-action="ExportInvalidRecords" class="btn btn-primary">Export to Excel</a>
+            </div>
+            <a href="@Url.Action("ViewCustomers", "Customer")" class="">
+                <button style="background-color:red" type="submit" class="btn btn-danger">Back</button>
+            </a>
+    </div>
 </div>
 @if (Model == null || !Model.Any())
 {
@@ -24,6 +33,7 @@
 }
 else
 {
+    <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
     <table class="table table-striped">
         <thead>
             <tr>
@@ -45,6 +55,7 @@ else
             }
         </tbody>
     </table>
+    </div>
 }
 @section Scripts {
     <script type="text/javascript">

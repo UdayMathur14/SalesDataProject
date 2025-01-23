@@ -12,84 +12,103 @@
         <p>@TempData["Success"]</p>
     </div>
 }
+<div class="header d-flex justify-content-between align-items-center mb-4 p-3 shadow-sm rounded" style="background-color: #f8f9fa;">
+    <h2 class="text m-0">Mailing Outcome</h2>
+    <div class="buttons d-flex gap-2">
+        <a href="@Url.Action("ViewRecords", "SalesData")" class="text-decoration-none">
+            <button type="button" class="btn btn-danger px-4 py-2">Back</button>
+        </a>
+    </div>
+</div>
 <div class="container mt-4">
-    <h2 class="text-center mb-4">Result</h2>
+    @* <h2 class="text-center mb-4">Result</h2> *@
 
     <div class="card mb-4 shadow">
         <div class="card-body">
             <h3 class="text-secondary">Blocked Customers</h3>
-            <table class="table table-bordered">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Company Name</th>
-                        <th>Email</th>
-                        <th>Contact Number</th>
-                        <th>Blocked By</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var customer in Model.BlockedCustomers)
-                    {
+            <div style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
                         <tr>
-                            <td>@customer.COMPANY_NAME</td>
-                            <td>@customer.CUSTOMER_EMAIL</td>
-                            <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
-                            <td>@customer.BLOCKED_BY</td>
+                            <th>Company Name</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
+                            <th>Blocked By</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var customer in Model.BlockedCustomers)
+                        {
+                            <tr>
+                                <td>@customer.COMPANY_NAME</td>
+                                <td>@customer.CUSTOMER_EMAIL</td>
+                                <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
+                                <td>@customer.BLOCKED_BY</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <div class="card mb-4 shadow">
         <div class="card-body">
             <h3 class="text-secondary">Clean Customers</h3>
-            <table class="table table-bordered">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Company Name</th>
-                        <th>Email</th>
-                        <th>Contact Number</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var customer in Model.CleanCustomers)
-                    {
+            <div style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+
+                <table class="table table-bordered">
+                    <thead class="thead-light">
                         <tr>
-                            <td>@customer.COMPANY_NAME</td>
-                            <td>@customer.CUSTOMER_EMAIL</td>
-                            <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
+                            <th>Company Name</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var customer in Model.CleanCustomers)
+                        {
+                            <tr>
+                                <td>@customer.COMPANY_NAME</td>
+                                <td>@customer.CUSTOMER_EMAIL</td>
+                                <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
         </div>
     </div>
     <div class="card mb-4 shadow">
         <div class="card-body">
-            <h3 class="text-secondary">Invalid Customers Details</h3>
-            <table class="table table-bordered">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Row</th>
-                        <th>Company Name</th>
-                        <th>Email</th>
-                        <th>Contact Number</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var customer in Model.invalidCustomerRecords)
-                    {
+            <h3 class="text-secondary">Invalid Details or duplicate data</h3>
+            <div style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+
+                <table class="table table-bordered">
+                    <thead class="thead-light">
                         <tr>
-                            <td>@customer.RowNumber</td>
-                            <td>@customer.CompanyName</td>
-                            <td>@customer.CustomerEmail</td>
-                            <td>@customer.CustomerNumber</td>
+                            <th>Row</th>
+                            <th>Company Name</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
+                            <th>Error Message</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var customer in Model.invalidCustomerRecords)
+                        {
+                            <tr>
+                                <td>@customer.RowNumber</td>
+                                <td>@customer.CompanyName</td>
+                                <td>@customer.CustomerEmail</td>
+                                <td>@customer.CustomerNumber</td>
+                                <td>@customer.ErrorMessage</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <div class="text-center">
@@ -97,7 +116,7 @@
             <input type="hidden" name="BlockedCustomersJson" value="@JsonSerializer.Serialize(Model.BlockedCustomers)" />
             <input type="hidden" name="CleanCustomersJson" value="@JsonSerializer.Serialize(Model.CleanCustomers)" />
             <input type="hidden" name="InvalidCustomersJson" value="@JsonSerializer.Serialize(Model.invalidCustomerRecords)" />
-            <button id="exportLink"  type="submit" class="btn btn-success">Export to Excel</button>
+            <button id="exportLink" type="submit" class="btn btn-success">Export to Excel</button>
         </form>
     </div>
 </div>
