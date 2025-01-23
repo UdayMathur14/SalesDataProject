@@ -8,7 +8,13 @@
     ViewData["Title"] = "Assign Records";
 }
 <div class="card shadow-sm p-4 mb-2 mt-5 mb-3">
-    <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
+    <div class="d-flex justify-content-between">
+        <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
+
+        <a href="@Url.Action("ManageUsers", "Auth")" class="">
+            <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
+        </a>
+    </div>
     <form asp-action="FilterRecords" method="post">
         <div class="form-row d-flex gap-4">
             <div class="col-md-3 mb-3">

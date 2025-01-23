@@ -2,6 +2,11 @@
 @{
     ViewData["Title"] = "Create User";
 }
+<div class="d-flex justify-content-end">
+    <a href="@Url.Action("ManageUsers", "Auth")" class="">
+        <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
+    </a>
+</div>
 
 <form asp-action="CreateUser" method="post" class="container shadow rounded p-4" style="max-width: 550px;">
     <h2 class="text-center mb-4" style="color:red;text-decoration:underline">Create New User</h2>

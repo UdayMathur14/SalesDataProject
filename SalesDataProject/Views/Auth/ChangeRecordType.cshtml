@@ -9,7 +9,13 @@
     </div>
 }
 <div class="card shadow-sm p-4 mb-4 mt-5 mb-3">
-    <h4 class="mb-3" style="color:red"><I>CHANGE RECORD TYPE</I></h4>
+    <div class="d-flex justify-content-between">
+        <h4 class="mb-3" style="color:red"><I>CHANGE RECORD TYPE</I></h4>
+        <a href="@Url.Action("ManageUsers", "Auth")" class="">
+            <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
+        </a>
+    </div>
+    
     <form asp-action="ViewEmailRecords" method="post" class="form-inline">
         <div class="form-row d-flex gap-4">
             <div class="col-md-2 mb-3">
@@ -54,13 +60,16 @@
             <div class="col-md-4 mb-3 align-self-end">
                 <button type="submit" class="btn btn-primary w-90">Search</button>
             </div>
+            
+            
+
         </div>
     </form>
 
     <!-- Display Blocked Customers -->
     <h5 class="text-secondary">Blocked Companies</h5>
     <form asp-action="UpdateCustomerStatus" method="post">
-        <div style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+
         <div id="blockedCustomersList">
             @if (Model.BlockCustomersEmailList != null && Model.BlockCustomersEmailList.Any())
             {
@@ -100,7 +109,6 @@
                 <p>No blocked emails found.</p>
             }
         </div>
-        </div>
         <button type="submit" class="btn btn-success mb-3">Change to Clean</button>
     </form>
 
@@ -112,6 +120,7 @@
         <div id="cleanCustomersList">
             @if (Model.CleanCustomersEmailList != null && Model.CleanCustomersEmailList.Any())
             {
+                <div style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -142,6 +151,7 @@
                         }
                     </tbody>
                 </table>
+                </div>
             }
             else
             {
