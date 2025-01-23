@@ -93,7 +93,7 @@ namespace SalesDataProject.Controllers
                                 var category = worksheet.Cell(row, 12).GetString().ToUpper();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "SME", "UNIVERSITY", "PCT", "LAW FIRM" }.Contains(category))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -105,9 +105,7 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-
-                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) &&
-                                    !string.IsNullOrWhiteSpace(customerNumber))
+                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && !string.IsNullOrWhiteSpace(customerNumber))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -119,7 +117,6 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-
                                 if (!IsValidEmail(customerEmail))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
@@ -132,11 +129,8 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-
-                                if (string.IsNullOrWhiteSpace(companyName) ||
-                                    string.IsNullOrWhiteSpace(customerEmail) ||
-                                    string.IsNullOrWhiteSpace(countryCode) ||
-                                    string.IsNullOrWhiteSpace(country))
+                                else if (string.IsNullOrWhiteSpace(companyName) ||
+                                         string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -149,20 +143,26 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
-                                // Query existing records in Customers and Prospects tables
+                                // Check if email or company exists in Customers or Prospects table
                                 var existingCustomer = await _context.Customers
-                                    .Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() ||
-                                                c.COMPANY_NAME.ToUpper() == companyName.ToUpper() &&
-                                                c.EMAIL_DOMAIN == emailDomain)
+                                    .Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                             || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                             || c.EMAIL_DOMAIN == emailDomain)
                                     .Select(c => c.CREATED_BY)
                                     .FirstOrDefaultAsync();
 
                                 var existingProspect = await _context.Prospects
-                                    .Where(c => (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() ||
-                                                 c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
-                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
-                                    .Select(c => new { c.CREATED_BY, c.CUSTOMER_EMAIL, c.COMPANY_NAME, c.EMAIL_DOMAIN })
-                                    .ToListAsync();
+                                    .Where(c => (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                              || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                              || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
+                                              && c.CREATED_BY != username)
+                                    .Select(c => c.CREATED_BY)
+                                    .FirstOrDefaultAsync();
+
+                                // New logic: Check if the company is used by a different user
+                                var isCompanyUsedByDifferentUser = await _context.Prospects
+                                    .Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() && c.CREATED_BY != username)
+                                    .AnyAsync();
 
                                 var customerData = new ProspectCustomer
                                 {
@@ -186,49 +186,15 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if (existingProspect.Any())
+                                if (!string.IsNullOrEmpty(existingCustomer) || !string.IsNullOrEmpty(existingProspect) || isCompanyUsedByDifferentUser)
                                 {
-                                    foreach (var prospect in existingProspect)
-                                    {
-                                        if (prospect.CREATED_BY == username)
-                                        {
-                                            if (prospect.CUSTOMER_EMAIL == customerEmail && prospect.COMPANY_NAME == companyName)
-                                            {
-                                                // Scenario 1
-                                                customerData.RECORD_TYPE = true; // Blocked
-                                                customerData.BLOCKED_BY = username;
-                                                blockedCustomers.Add(customerData);
-                                                break;
-                                            }
-                                            else if (prospect.COMPANY_NAME == companyName &&
-                                                     prospect.EMAIL_DOMAIN == emailDomain &&
-                                                     prospect.CUSTOMER_EMAIL != customerEmail)
-                                            {
-                                                // Scenario 2
-                                                customerData.RECORD_TYPE = false; // Clean
-                                                cleanCustomers.Add(customerData);
-                                                _context.Prospects.Add(customerData);
-                                                break;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (prospect.CUSTOMER_EMAIL == customerEmail || prospect.EMAIL_DOMAIN == emailDomain)
-                                            {
-                                                // Scenario 3
-                                                customerData.RECORD_TYPE = true; // Blocked
-                                                customerData.BLOCKED_BY = prospect.CREATED_BY;
-                                                blockedCustomers.Add(customerData);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (!string.IsNullOrEmpty(existingCustomer))
-                                {
-                                    // Blocked by existing customer
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = existingCustomer;
+                                    customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer) ? existingCustomer : existingProspect;
+                                    if (isCompanyUsedByDifferentUser)
+                                    {
+                                        customerData.BLOCKED_BY = "Another user"; // Indicate the company was used by a different user
+                                    }
+
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
@@ -261,6 +227,7 @@ namespace SalesDataProject.Controllers
                 return View("Index");
             }
         }
+
 
 
 
