@@ -93,6 +93,14 @@ namespace SalesDataProject.Controllers
                                 var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
+                                var isCommonDomain = await _context.CommonDomains
+                           .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
+
+                                if (isCommonDomain)
+                                {
+                                    emailDomain = null; // Set to null if it is a common domain
+                                }
+
                                 if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME" , "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
