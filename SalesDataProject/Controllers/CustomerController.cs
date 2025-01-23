@@ -208,7 +208,7 @@ namespace SalesDataProject.Controllers
                                 // Add to the list of customers
                                 customersFromExcel.Add(new Customer
                                 {
-                                    CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
+                                    CUSTOMER_CODE = "1",
                                     COMPANY_NAME = companyName,
                                     CUSTOMER_EMAIL = customerEmail,
                                     CONTACT_PERSON = contactPerson,
@@ -387,7 +387,6 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("CustomerTemplate");
 
                     // Define the headers in the template
-                    worksheet.Cell(1, 1).Value = "CustomerCode";
                     worksheet.Cell(1, 2).Value = "*CompanyName";
                     worksheet.Cell(1, 3).Value = "*ContactPerson";
                     worksheet.Cell(1, 4).Value = "ContactNo1";
@@ -401,7 +400,6 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(1, 12).Value = "*Category";
 
                     // Example data
-                    worksheet.Cell(2, 1).Value = "Example(0001)";
                     worksheet.Cell(2, 2).Value = "Ennoble Ip";
                     worksheet.Cell(2, 3).Value = "Rajnish Sir";
                     worksheet.Cell(2, 4).Value = "123456789";
