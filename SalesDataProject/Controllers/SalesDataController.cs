@@ -65,8 +65,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 var username = HttpContext.Session.GetString("Username");
                 if (file != null && file.Length > 0)
                 {

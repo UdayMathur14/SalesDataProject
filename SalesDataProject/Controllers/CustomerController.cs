@@ -330,7 +330,7 @@ namespace SalesDataProject.Controllers
                 var allInvalidRecords = invalidRecords.Concat(duplicateRecords).ToList();
                 if (allInvalidRecords.Any())
                 {
-                    TempData["ErrorMessage"] = "Some records were invalid or duplicates.";
+                    TempData["Error"] = "Some records were invalid or duplicate.";
                     TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
                     return View("InvalidRecords", allInvalidRecords);
                 }

@@ -62,7 +62,11 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-                var user = _context.Users.FirstOrDefault(u => u.Username == model.Username && u.Password == model.Password);
+                var user = _context.Users
+                    .FirstOrDefault(u =>
+                        EF.Functions.Collate(u.Username, "Latin1_General_BIN") == model.Username &&
+                        EF.Functions.Collate(u.Password, "Latin1_General_BIN") == model.Password);
+
                 if (user != null)
                 {
                     HttpContext.Session.SetInt32("UserId", user.Id);
@@ -75,10 +79,9 @@ namespace SalesDataProject.Controllers
                     HttpContext.Session.SetString("CanDeleteTitles", user.CanDeleteTitles.ToString());
                     TempData["Success"] = "Successfully Login";
                     return RedirectToAction("Index", "Home");
-
                 }
 
-                TempData["Error"] = "Incorrect password. Please try again.";
+                TempData["Error"] = "Incorrect username or password. Please try again.";
                 return View(model);
             }
             catch (Exception ex)
@@ -87,6 +90,7 @@ namespace SalesDataProject.Controllers
                 return View(model);
             }
         }
+
 
         // User Management GET
         public IActionResult ManageUsers()
