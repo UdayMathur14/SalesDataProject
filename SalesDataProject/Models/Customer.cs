@@ -10,7 +10,7 @@ namespace SalesDataProject.Models
     {
         private static readonly HashSet<string> CommonDomains = new HashSet<string>
         {
-            "gmail.com", "yahoo.com", "yahoo.co.in", "outlook.com", "hotmail.com"
+             
         };
 
         public int ID { get; set; } // Primary Key, auto-incremented

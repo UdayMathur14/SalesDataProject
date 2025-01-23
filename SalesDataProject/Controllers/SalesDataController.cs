@@ -90,10 +90,10 @@ namespace SalesDataProject.Controllers
                                 var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
                                 var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                                 var country = worksheet.Cell(row, 7).GetString();
-                                var category = worksheet.Cell(row, 12).GetString().ToUpper();
+                                var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME" , "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
