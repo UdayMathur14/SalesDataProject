@@ -198,7 +198,7 @@ namespace SalesDataProject.Controllers
                                 else
                                 {
                                     customerData.RECORD_TYPE = false; // Clean
-                                    cleanCustomers.Add(customerData);s
+                                    cleanCustomers.Add(customerData);
                                     _context.Prospects.Add(customerData);
                                 }
                             }
