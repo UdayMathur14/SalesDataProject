@@ -94,14 +94,14 @@ namespace SalesDataProject.Controllers
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
                                 var isCommonDomain = await _context.CommonDomains
-                           .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
+                                    .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
 
                                 if (isCommonDomain)
                                 {
                                     emailDomain = null; // Set to null if it is a common domain
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME" , "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -172,6 +172,13 @@ namespace SalesDataProject.Controllers
                                     .Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() && c.CREATED_BY != username)
                                     .AnyAsync();
 
+                                // New logic: Check if record type is true in the Prospects table
+                                var isBlockedInProspectTable = await _context.Prospects
+                                    .Where(c => c.RECORD_TYPE == true &&
+                                                (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
+                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
+                                    .AnyAsync();
+
                                 var customerData = new ProspectCustomer
                                 {
                                     CUSTOMER_CODE = "1",
@@ -194,10 +201,18 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if (!string.IsNullOrEmpty(existingCustomer) || !string.IsNullOrEmpty(existingProspect) || isCompanyUsedByDifferentUser)
+                                if (!string.IsNullOrEmpty(existingCustomer) ||
+                                    !string.IsNullOrEmpty(existingProspect) ||
+                                    isCompanyUsedByDifferentUser ||
+                                    isBlockedInProspectTable)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer) ? existingCustomer : existingProspect;
+                                    customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer)
+                                        ? existingCustomer
+                                        : !string.IsNullOrEmpty(existingProspect)
+                                            ? existingProspect
+                                            : "Blocked by Prospect Table Rule";
+
                                     if (isCompanyUsedByDifferentUser)
                                     {
                                         customerData.BLOCKED_BY = "Another user"; // Indicate the company was used by a different user
@@ -235,6 +250,7 @@ namespace SalesDataProject.Controllers
                 return View("Index");
             }
         }
+
 
 
 
