@@ -72,6 +72,11 @@ namespace SalesDataProject.Controllers
                     var cleanCustomers = new List<ProspectCustomer>();
                     var invalidRecords = new List<InvalidCustomerRecord>();
 
+                    // Pre-fetch required data for batch processing
+                    var commonDomains = await _context.CommonDomains.Select(d => d.DomainName.ToLower()).ToListAsync();
+                    var existingCustomers = await _context.Customers.Select(c => new { c.CUSTOMER_EMAIL, c.COMPANY_NAME, c.EMAIL_DOMAIN, c.CREATED_BY }).ToListAsync();
+                    var existingProspects = await _context.Prospects.Select(c => new { c.CUSTOMER_EMAIL, c.COMPANY_NAME, c.EMAIL_DOMAIN, c.RECORD_TYPE, c.CREATED_BY }).ToListAsync();
+
                     using (var stream = new MemoryStream())
                     {
                         await file.CopyToAsync(stream);
@@ -93,14 +98,13 @@ namespace SalesDataProject.Controllers
                                 var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
-                                var isCommonDomain = await _context.CommonDomains
-                                    .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
-
-                                if (isCommonDomain)
+                                // Validate against pre-fetched common domains
+                                if (commonDomains.Contains(emailDomain))
                                 {
-                                    emailDomain = null; // Set to null if it is a common domain
+                                    emailDomain = null;
                                 }
 
+                                // Basic validation checks
                                 if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
@@ -151,33 +155,20 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
-                                // Check if email or company exists in Customers or Prospects table
-                                var existingCustomer = await _context.Customers
-                                    .Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                             || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                             || c.EMAIL_DOMAIN == emailDomain)
-                                    .Select(c => c.CREATED_BY)
-                                    .FirstOrDefaultAsync();
+                                // Check if email or company exists in pre-fetched data
+                                var isExistingCustomer = existingCustomers.Any(c =>
+                                    c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                    || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                    || c.EMAIL_DOMAIN == emailDomain);
 
-                                var existingProspect = await _context.Prospects
-                                    .Where(c => (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                              || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                              || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
-                                              && c.CREATED_BY != username)
-                                    .Select(c => c.CREATED_BY)
-                                    .FirstOrDefaultAsync();
+                                var isBlockedInProspects = existingProspects.Any(c =>
+                                    c.RECORD_TYPE == true &&
+                                    (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                     || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                     || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()));
 
-                                // New logic: Check if the company is used by a different user
-                                var isCompanyUsedByDifferentUser = await _context.Prospects
-                                    .Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() && c.CREATED_BY != username)
-                                    .AnyAsync();
-
-                                // New logic: Check if record type is true in the Prospects table
-                                var isBlockedInProspectTable = await _context.Prospects
-                                    .Where(c => c.RECORD_TYPE == true &&
-                                                (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
-                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
-                                    .AnyAsync();
+                                var isCompanyUsedByDifferentUser = existingProspects.Any(c =>
+                                    c.COMPANY_NAME.ToUpper() == companyName.ToUpper() && c.CREATED_BY != username);
 
                                 var customerData = new ProspectCustomer
                                 {
@@ -201,23 +192,10 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if (!string.IsNullOrEmpty(existingCustomer) ||
-                                    !string.IsNullOrEmpty(existingProspect) ||
-                                    isCompanyUsedByDifferentUser ||
-                                    isBlockedInProspectTable)
+                                if (isExistingCustomer || isBlockedInProspects || isCompanyUsedByDifferentUser)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer)
-                                        ? existingCustomer
-                                        : !string.IsNullOrEmpty(existingProspect)
-                                            ? existingProspect
-                                            : "Blocked by Prospect Table Rule";
-
-                                    if (isCompanyUsedByDifferentUser)
-                                    {
-                                        customerData.BLOCKED_BY = "Another user"; // Indicate the company was used by a different user
-                                    }
-
+                                    customerData.BLOCKED_BY = isExistingCustomer ? "Existing Customer" : "Prospects Table Rule";
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
@@ -250,6 +228,7 @@ namespace SalesDataProject.Controllers
                 return View("Index");
             }
         }
+
 
 
 
