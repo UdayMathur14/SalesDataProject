@@ -36,11 +36,6 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
-app.Use(async (context, next) =>
-{
-    context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 104857600; // 100 MB
-    await next.Invoke();
-});
 app.UseAuthorization();
 
 app.MapControllerRoute(
