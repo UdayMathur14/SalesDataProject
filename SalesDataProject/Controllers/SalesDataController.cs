@@ -152,18 +152,26 @@ namespace SalesDataProject.Controllers
                                 }
 
                                 // Check if email or company exists in Customers or Prospects table
+                                // Check if the company or email is already uploaded by the same user
+                                var isAlreadyUploadedByUser = await _context.Prospects
+                                    .Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                             && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                             && c.CREATED_BY == username)
+                                    .AnyAsync();
+
+                                // Check if email or company exists in Customers or Prospects table by other users
                                 var existingCustomer = await _context.Customers
-                                    .Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                             || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                             || c.EMAIL_DOMAIN == emailDomain)
+                                    .Where(c => (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                              || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                              || (emailDomain != null && c.EMAIL_DOMAIN == emailDomain)))
                                     .Select(c => c.CREATED_BY)
                                     .FirstOrDefaultAsync();
 
                                 var existingProspect = await _context.Prospects
-                                    .Where(c => (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                              || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                              || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
-                                              && c.CREATED_BY != username)
+                                    .Where(c => ((c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
+                                               || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
+                                               || (emailDomain != null && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
+                                               && c.CREATED_BY != username))
                                     .Select(c => c.CREATED_BY)
                                     .FirstOrDefaultAsync();
 
@@ -178,6 +186,7 @@ namespace SalesDataProject.Controllers
                                                 (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
                                                  c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
                                     .AnyAsync();
+
 
                                 var customerData = new ProspectCustomer
                                 {
@@ -201,17 +210,20 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if (!string.IsNullOrEmpty(existingCustomer) ||
-                                    !string.IsNullOrEmpty(existingProspect) ||
-                                    isCompanyUsedByDifferentUser ||
-                                    isBlockedInProspectTable)
+                                if (isAlreadyUploadedByUser ||
+    !string.IsNullOrEmpty(existingCustomer) ||
+    !string.IsNullOrEmpty(existingProspect) ||
+    isCompanyUsedByDifferentUser ||
+    isBlockedInProspectTable)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
                                     customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer)
                                         ? existingCustomer
                                         : !string.IsNullOrEmpty(existingProspect)
                                             ? existingProspect
-                                            : "Blocked by Prospect Table Rule";
+                                            : isAlreadyUploadedByUser
+                                                ? "Duplicate entry by the same user"
+                                                : "Blocked by Prospect Table Rule";
 
                                     if (isCompanyUsedByDifferentUser)
                                     {
