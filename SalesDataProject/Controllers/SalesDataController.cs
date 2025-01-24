@@ -98,7 +98,7 @@ namespace SalesDataProject.Controllers
 
                                 if (isCommonDomain)
                                 {
-                                    emailDomain = null; // Set to null if it is a common domain
+                                    emailDomain = ""; // Set to null if it is a common domain
                                 }
 
                                 if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
@@ -151,43 +151,22 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
-                                // Check if email or company exists in Customers or Prospects table
-                                // Check if the company or email is already uploaded by the same user
-                                var isAlreadyUploadedByUser = await _context.Prospects
-                                    .Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                             && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                             && c.CREATED_BY == username)
-                                    .AnyAsync();
+                            
+                                var isAlreadyUploadedByOther = await _context.Prospects.Where(c =>((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() ||c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())&& c.CREATED_BY != username)).AnyAsync();
 
-                                // Check if email or company exists in Customers or Prospects table by other users
-                                var existingCustomer = await _context.Customers
-                                    .Where(c => (c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                              || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                              || (emailDomain != null && c.EMAIL_DOMAIN == emailDomain)))
-                                    .Select(c => c.CREATED_BY)
-                                    .FirstOrDefaultAsync();
+                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower()==customerEmail.ToLower()).AnyAsync();
 
-                                var existingProspect = await _context.Prospects
-                                    .Where(c => ((c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()
-                                               || c.COMPANY_NAME.ToUpper() == companyName.ToUpper()
-                                               || (emailDomain != null && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
-                                               && c.CREATED_BY != username))
-                                    .Select(c => c.CREATED_BY)
-                                    .FirstOrDefaultAsync();
-
-                                // New logic: Check if the company is used by a different user
-                                var isCompanyUsedByDifferentUser = await _context.Prospects
-                                    .Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() && c.CREATED_BY != username)
-                                    .AnyAsync();
+                                
 
                                 // New logic: Check if record type is true in the Prospects table
                                 var isBlockedInProspectTable = await _context.Prospects
                                     .Where(c => c.RECORD_TYPE == true &&
                                                 (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
-                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()))
+                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()
+                                                 || c.CUSTOMER_EMAIL.ToLower()==customerEmail.ToLower()))
                                     .AnyAsync();
 
-
+                               
                                 var customerData = new ProspectCustomer
                                 {
                                     CUSTOMER_CODE = "1",
@@ -210,32 +189,16 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if (isAlreadyUploadedByUser ||
-    !string.IsNullOrEmpty(existingCustomer) ||
-    !string.IsNullOrEmpty(existingProspect) ||
-    isCompanyUsedByDifferentUser ||
-    isBlockedInProspectTable)
+                                if ((isAlreadyUploadedByOther) ||isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = !string.IsNullOrEmpty(existingCustomer)
-                                        ? existingCustomer
-                                        : !string.IsNullOrEmpty(existingProspect)
-                                            ? existingProspect
-                                            : isAlreadyUploadedByUser
-                                                ? "Duplicate entry by the same user"
-                                                : "Blocked by Prospect Table Rule";
-
-                                    if (isCompanyUsedByDifferentUser)
-                                    {
-                                        customerData.BLOCKED_BY = "Another user"; // Indicate the company was used by a different user
-                                    }
-
+                                    customerData.BLOCKED_BY = "uday";
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
                                 {
                                     customerData.RECORD_TYPE = false; // Clean
-                                    cleanCustomers.Add(customerData);
+                                    cleanCustomers.Add(customerData);s
                                     _context.Prospects.Add(customerData);
                                 }
                             }
