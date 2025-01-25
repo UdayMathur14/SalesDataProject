@@ -80,6 +80,9 @@ namespace SalesDataProject.Controllers
                             var worksheet = workbook.Worksheet(1);
                             var lastRow = worksheet.LastRowUsed().RowNumber();
 
+                            var emailSet = new HashSet<string>();
+                            var duplicateEmails = new HashSet<string>();
+
                             for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
                             {
                                 var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
@@ -99,6 +102,17 @@ namespace SalesDataProject.Controllers
                                 if (isCommonDomain)
                                 {
                                     emailDomain = "NULL"; // Set to null if it is a common domain
+                                }
+                                if (!string.IsNullOrWhiteSpace(customerEmail))
+                                {
+                                    if (emailSet.Contains(customerEmail))
+                                    {
+                                        duplicateEmails.Add(customerEmail); // Mark as duplicate
+                                    }
+                                    else
+                                    {
+                                        emailSet.Add(customerEmail); // Add to the set
+                                    }
                                 }
 
                                 if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
@@ -125,7 +139,7 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if (!IsValidEmail(customerEmail))
+                                if (!IsValidEmail(customerEmail) || duplicateEmails.Contains(customerEmail))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -133,7 +147,7 @@ namespace SalesDataProject.Controllers
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
-                                        ErrorMessage = "Invalid email format."
+                                        ErrorMessage = duplicateEmails.Contains(customerEmail) ? "Duplicate email within the file." : "Invalid email format."
                                     });
                                     continue;
                                 }
