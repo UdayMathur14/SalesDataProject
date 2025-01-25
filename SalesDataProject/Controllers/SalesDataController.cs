@@ -211,10 +211,10 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if ((isAlreadyUploadedByOther) ||isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
+                                if (isAlreadyUploadedByOther ||isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = "";
+                                    customerData.BLOCKED_BY = "Another User";
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
@@ -511,14 +511,7 @@ namespace SalesDataProject.Controllers
                 }
                 else
                 {
-                    // Fetch both blocked and clean customers created by the current user, based on the selected date
-
-                    //filteredCustomers = await _context.Prospects
-                    //    .Where(c => c.CREATED_BY == username &&
-                    //                (model.SelectedDate == null ||
-                    //                 (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
-                    //    .ToListAsync();
-                    // model.BlockedCustomers = filteredCustomers; // Uncomment if you want to use this list for both
+                  
 
                     //for blocked one 
                     filteredBlockedCustomers = await _context.Prospects
