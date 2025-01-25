@@ -98,7 +98,7 @@ namespace SalesDataProject.Controllers
 
                                 if (isCommonDomain)
                                 {
-                                    emailDomain = ""; // Set to null if it is a common domain
+                                    emailDomain = "NULL"; // Set to null if it is a common domain
                                 }
 
                                 if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
@@ -150,9 +150,15 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-
-                            
-                                var isAlreadyUploadedByOther = await _context.Prospects.Where(c =>((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() ||c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())&& c.CREATED_BY != username)).AnyAsync();
+                                bool isAlreadyUploadedByOther = false;
+                                if (emailDomain == "NULL")
+                                {
+                                     isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                }
+                                else
+                                {
+                                     isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                }
 
                                 var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower()==customerEmail.ToLower()).AnyAsync();
 
@@ -192,7 +198,7 @@ namespace SalesDataProject.Controllers
                                 if ((isAlreadyUploadedByOther) ||isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = "uday";
+                                    customerData.BLOCKED_BY = "";
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
