@@ -151,6 +151,8 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
                                 bool isAlreadyUploadedByOther = false;
+
+                                var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
                                 if (emailDomain == "NULL")
                                 {
                                      isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();

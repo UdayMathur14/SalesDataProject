@@ -150,6 +150,15 @@ namespace SalesDataProject.Controllers
                                 var customerNumber2 = worksheet.Cell(row, 8).GetString();
                                 var customerNumber3 = worksheet.Cell(row, 9).GetString();
                                 var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
+                                var emailDomain = customerEmail?.Split('@').Last().ToLower();
+
+                                var isCommonDomain = await _context.CommonDomains
+                                    .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
+
+                                if (isCommonDomain)
+                                {
+                                    emailDomain = "-"; // Set to null if it is a common domain
+                                }
 
                                 // Validation
                                 if (!IsValidEmail(customerEmail))
@@ -223,7 +232,7 @@ namespace SalesDataProject.Controllers
                                     CREATED_ON = DateTime.UtcNow,
                                     MODIFIED_BY = username,
                                     MODIFIED_ON = DateTime.UtcNow,
-                                    EMAIL_DOMAIN = customerEmail,
+                                    EMAIL_DOMAIN = emailDomain,
                                     CATEGORY = category
                                 });
                             }
