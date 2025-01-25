@@ -23,37 +23,59 @@ namespace SalesDataProject.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
-            if (canAccessCustomer != "True")
+            try
             {
-                // If not authorized, redirect to home or another page
+                var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
+                if (canAccessCustomer != "True")
+                {
+                    // If not authorized, redirect to home or another page
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                var countries = await _context.Countries.ToListAsync();
+                var phoneCodes = await _context.Countries.Select(c => c.CountryCode).Distinct().ToListAsync();
+
+                // Pass countries and phone codes separately to the view
+                ViewBag.Countries = new SelectList(countries, "CountryName", "CountryName");
+                ViewBag.CountryCodes = new SelectList(phoneCodes);
+                return View();
+            }
+            catch (Exception ex)
+            {
+
                 return RedirectToAction("Login", "Auth");
             }
-
-            var countries = await _context.Countries.ToListAsync();
-            var phoneCodes = await _context.Countries.Select(c => c.CountryCode).Distinct().ToListAsync();
-
-            // Pass countries and phone codes separately to the view
-            ViewBag.Countries = new SelectList(countries, "CountryName", "CountryName");
-            ViewBag.CountryCodes = new SelectList(phoneCodes);
-            return View();
         }
         public async Task<IActionResult> ViewCustomers(Customer model)
         {
-            var Customers = await _context.Customers.ToListAsync();
-            return View(Customers);
+            try
+            {
+                var Customers = await _context.Customers.ToListAsync();
+                return View(Customers);
+            }
+            catch (Exception ex)
+            {
 
+                return RedirectToAction("Login", "Auth");
+            }
         }
         public IActionResult ShowInvalidRecords()
         {
-            if (TempData["InvalidRecords"] != null)
-            {
-                var recordsJson = TempData["InvalidRecords"].ToString();
-                var invalidRecords = JsonConvert.DeserializeObject<List<Customer>>(recordsJson);
-                return View("InvalidRecords", invalidRecords); // Specify the view name if it's not the default
-            }
+            try {
+                if (TempData["InvalidRecords"] != null)
+                {
+                    var recordsJson = TempData["InvalidRecords"].ToString();
+                    var invalidRecords = JsonConvert.DeserializeObject<List<Customer>>(recordsJson);
+                    return View("InvalidRecords", invalidRecords); // Specify the view name if it's not the default
+                }
 
-            return RedirectToAction("Index"); // Redirect to a fallback if no data is available
+                return RedirectToAction("Index"); // Redirect to a fallback if no data is available
+            }
+            catch (Exception ex)
+            {
+
+                return RedirectToAction("Login", "Auth");
+            }
         }
 
 

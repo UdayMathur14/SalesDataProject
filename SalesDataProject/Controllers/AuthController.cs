@@ -25,34 +25,70 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult AddRecord()
         {
-            var domains = _context.CommonDomains.ToList();
-            return View(domains);
+            try
+            {
+                var domains = _context.CommonDomains.ToList();
+                return View(domains);
+            }
+            catch (Exception ex)
+            {
+
+                return RedirectToAction("Login", "Auth");
+            }
+
         }
         public async Task<IActionResult> AssignRecords()
         {
-            var users = await _context.Users.ToListAsync();
-            ViewBag.Users = new SelectList(users, "Username", "Username");
-
-            var model = new AssignToViewModel
+            try
             {
-                RecordsList = new List<ProspectCustomer>()
-            };
+                var users = await _context.Users.ToListAsync();
+                ViewBag.Users = new SelectList(users, "Username", "Username");
 
-            return View(model);
-        }
-        public async Task<IActionResult> ChangeRecordType(UploadResultViewModel model)
-        {
-            if (HttpContext.Session.GetString("CanAccessSales") != "True")
+                var model = new AssignToViewModel
+                {
+                    RecordsList = new List<ProspectCustomer>()
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
             {
-                // If not authorized, redirect to home or another page
+                var model = new AssignToViewModel
+                {
+                    RecordsList = new List<ProspectCustomer>()
+                };
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
                 return RedirectToAction("Login", "Auth");
             }
-            var users = await _context.Users.ToListAsync();
 
-            // Pass the list of users to the view using ViewBag
-            ViewBag.Users = new SelectList(users, "Username", "Username");
+        }
+            
 
-            return View(model);
+
+        
+        public async Task<IActionResult> ChangeRecordType(UploadResultViewModel model)
+        {
+            try
+            {
+
+
+                if (HttpContext.Session.GetString("CanAccessSales") != "True")
+                {
+                    // If not authorized, redirect to home or another page
+                    return RedirectToAction("Login", "Auth");
+                }
+                var users = await _context.Users.ToListAsync();
+
+                // Pass the list of users to the view using ViewBag
+                ViewBag.Users = new SelectList(users, "Username", "Username");
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+
+                return RedirectToAction("Login", "Auth");
+            }
 
         }
 

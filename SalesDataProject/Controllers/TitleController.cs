@@ -16,20 +16,35 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult Index(ValidationResultViewModel model)
         {
-            var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
-            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
-            ViewData["CanViewTitles"] = canAccessTitle;
-            ViewData["CanDeleteTitles"] = canDeleteTitle;
-            return View(model);
+            try {
+                var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+                var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+                ViewData["CanViewTitles"] = canAccessTitle;
+                ViewData["CanDeleteTitles"] = canDeleteTitle;
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+
+                return RedirectToAction("Login", "Auth");
+            }
         }
         public async Task<IActionResult> ViewTitles()
-        {   
-            var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
-            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
-            ViewData["CanViewTitles"] = canAccessTitle;
-            ViewData["CanDeleteTitles"] = canDeleteTitle;
-            var titles = await _context.Titles.ToListAsync();
-            return View(titles);
+        {
+            try
+            {
+                var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+                var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+                ViewData["CanViewTitles"] = canAccessTitle;
+                ViewData["CanDeleteTitles"] = canDeleteTitle;
+                var titles = await _context.Titles.ToListAsync();
+                return View(titles);
+            }
+            catch (Exception ex)
+            {
+
+                return RedirectToAction("Login", "Auth");
+            }
         }
 
         [HttpPost]

@@ -21,42 +21,64 @@ namespace SalesDataProject.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
-            if (canAccessCustomer != "True")
+            try
             {
-                // If not authorized, redirect to login page
+                var canAccessCustomer = HttpContext.Session.GetString("CanAccessCustomer");
+                if (canAccessCustomer != "True")
+                {
+                    // If not authorized, redirect to login page
+                    return RedirectToAction("Login", "Auth");
+                }
+
+                // Fetch the users from the database
+                return View();
+            }
+             catch (Exception ex)
+            {
+
                 return RedirectToAction("Login", "Auth");
             }
-
-            // Fetch the users from the database
-            return View();
         }
 
 
         public IActionResult UploadResults(UploadResultViewModel model)
         {
-            if (HttpContext.Session.GetString("CanAccessSales") != "True")
+            try
             {
-                // If not authorized, redirect to home or another page
+                if (HttpContext.Session.GetString("CanAccessSales") != "True")
+                {
+                    // If not authorized, redirect to home or another page
+                    return RedirectToAction("Login", "Auth");
+                }
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+
                 return RedirectToAction("Login", "Auth");
             }
-            return View(model);
-
         }
         public async Task<IActionResult> ViewRecords(UploadResultViewModel model)
         {
-            if (HttpContext.Session.GetString("CanAccessSales") != "True")
+            try
             {
-                // If not authorized, redirect to home or another page
+                if (HttpContext.Session.GetString("CanAccessSales") != "True")
+                {
+                    // If not authorized, redirect to home or another page
+                    return RedirectToAction("Login", "Auth");
+                }
+                var users = await _context.Users.ToListAsync();
+
+                // Pass the list of users to the view using ViewBag
+                ViewBag.Users = new SelectList(users, "Username", "Username");
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+
                 return RedirectToAction("Login", "Auth");
             }
-            var users = await _context.Users.ToListAsync();
-
-            // Pass the list of users to the view using ViewBag
-            ViewBag.Users = new SelectList(users, "Username", "Username");
-
-            return View(model);
-
         }
       
 
