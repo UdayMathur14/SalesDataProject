@@ -420,7 +420,7 @@ namespace SalesDataProject.Controllers
 
                 foreach (var record in recordsToAssign)
                 {
-                    //record.ASSIGNED_TO = UserName; // Assuming there is an `ASSIGNED_TO` field in the model
+                    record.CREATED_BY = UserName; // Assuming there is an `ASSIGNED_TO` field in the model
                     //record.UPDATED_ON = DateTime.Now;
                 }
 

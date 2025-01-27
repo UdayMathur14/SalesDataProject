@@ -76,31 +76,6 @@
         </form>
     </div>
 
-    <div class="header card shadow-sm p-4 mb-5">
-        <h2 class="text-center mb-4">Upload Event Data</h2>
-
-        <form asp-action="UploadSalesDataEvent" method="post" enctype="multipart/form-data" class="header d-flex justify-content-between align-items-center mb-3 gap-3">
-            <div class="col-md-3">
-                <label for="eventName" class="form-label">Event Name</label>
-                <input type="text" class="form-control" id="eventName" name="EventName" required>
-            </div>
-
-            <div class="col-md-3">
-                <label for="eventDate" class="form-label">Event Date</label>
-                <input type="date" class="form-control" id="eventDate" name="EventDate" required>
-            </div>
-
-            <div class="col-md-3">
-                <label for="excelFile" class="form-label">Upload Excel File</label>
-                <input type="file" class="form-control" id="excelFile" name="file" accept=".xlsx" required>
-            </div>
-
-            <div class="col-md-3">
-                @* <a asp-action="DownloadTemplate" class="btn btn-warning">Download Template</a> *@
-                <button type="submit" class="btn btn-primary mt-4">Upload</button>
-            </div>
-        </form>
-    </div>
     <div class="card shadow-sm p-4">
         @if (Model.BlockedCustomers != null && Model.BlockedCustomers.Any())
         {
@@ -160,6 +135,31 @@
             </table>
             </div>
         }
+    </div>
+    <div class="header d-flex justify-content-between align-items-center mb-3 mt-lg-5">
+        <h3 class="text-center mb-4 ">Upload Event Details</h3>
+
+        <form asp-action="UploadSalesDataEvent" method="post" enctype="multipart/form-data" class="header d-flex justify-content-between align-items-center mb-3 gap-3">
+            <div class="col-md-3">
+                <label for="eventName" class="form-label">Event Name</label>
+                <input type="text" class="form-control" id="eventName" name="EventName" required>
+            </div>
+
+            <div class="col-md-3">
+                <label for="eventDate" class="form-label">Event Date</label>
+                <input type="date" class="form-control" id="eventDate" name="EventDate" required>
+            </div>
+
+            <div class="col-md-3">
+                <label for="excelFile" class="form-label">Upload Excel File</label>
+                <input type="file" class="form-control" id="excelFile" name="file" accept=".xlsx" required>
+            </div>
+
+            <div class="col-md-3">
+                @* <a asp-action="DownloadTemplate" class="btn btn-warning">Download Template</a> *@
+                <button type="submit" class="btn btn-primary mt-4">Upload</button>
+            </div>
+        </form>
     </div>
 </div>
 

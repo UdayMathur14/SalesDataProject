@@ -229,7 +229,7 @@ namespace SalesDataProject.Controllers
                                     MODIFIED_ON = DateTime.Now,
                                     COUNTRY_CODE = countryCode,
                                     EMAIL_DOMAIN = emailDomain,
-                                    CATEGORY = category
+                                    CATEGORY = category,
                                 };
 
                                 // Apply blocking logic

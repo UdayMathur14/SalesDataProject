@@ -74,7 +74,7 @@ namespace SalesDataProject.Models
                 _emailDomain = CommonDomains.Contains(domain) ? null : domain;
             }
         }
-        public string EVENT_NAME { get; set; }
-
+        public string? EVENT_NAME { get; set; }
+        
     }
 }
