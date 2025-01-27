@@ -229,7 +229,7 @@ namespace SalesDataProject.Controllers
                                     MODIFIED_ON = DateTime.Now,
                                     COUNTRY_CODE = countryCode,
                                     EMAIL_DOMAIN = emailDomain,
-                                    CATEGORY = category,
+                                    CATEGORY = category
                                 };
 
                                 // Apply blocking logic
@@ -276,7 +276,198 @@ namespace SalesDataProject.Controllers
 
 
 
+        [HttpPost]
+        public async Task<IActionResult> UploadSalesDataEvent(IFormFile file, string eventName, DateTime eventDate)
+        {
+            try
+            {
+                var username = HttpContext.Session.GetString("Username");
+                if (file != null && file.Length > 0)
+                {
+                    var blockedCustomers = new List<ProspectCustomer>();
+                    var cleanCustomers = new List<ProspectCustomer>();
+                    var invalidRecords = new List<InvalidCustomerRecord>();
 
+                    using (var stream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(stream);
+                        using (var workbook = new XLWorkbook(stream))
+                        {
+                            var worksheet = workbook.Worksheet(1);
+                            var lastRow = worksheet.LastRowUsed().RowNumber();
+
+                            var emailSet = new HashSet<string>();
+                            var duplicateEmails = new HashSet<string>();
+
+                            for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
+                            {
+                                var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
+                                var contactPerson = worksheet.Cell(row, 3).GetString();
+                                var customerNumber = worksheet.Cell(row, 4).GetString();
+                                var customerNumber2 = worksheet.Cell(row, 8).GetString();
+                                var customerNumber3 = worksheet.Cell(row, 9).GetString();
+                                var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                                var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
+                                var country = worksheet.Cell(row, 7).GetString();
+                                var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
+                                var emailDomain = customerEmail?.Split('@').Last().ToLower();
+
+                                var isCommonDomain = await _context.CommonDomains
+                                    .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
+
+                                if (isCommonDomain)
+                                {
+                                    emailDomain = "NULL"; // Set to null if it is a common domain
+                                }
+                                if (!string.IsNullOrWhiteSpace(customerEmail))
+                                {
+                                    if (emailSet.Contains(customerEmail))
+                                    {
+                                        duplicateEmails.Add(customerEmail); // Mark as duplicate
+                                    }
+                                    else
+                                    {
+                                        emailSet.Add(customerEmail); // Add to the set
+                                    }
+                                }
+
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = customerNumber,
+                                        ErrorMessage = "Invalid category."
+                                    });
+                                    continue;
+                                }
+                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && !string.IsNullOrWhiteSpace(customerNumber))
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = customerNumber,
+                                        ErrorMessage = "Invalid Contact Number."
+                                    });
+                                    continue;
+                                }
+                                if (!IsValidEmail(customerEmail) || duplicateEmails.Contains(customerEmail))
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = customerNumber,
+                                        ErrorMessage = duplicateEmails.Contains(customerEmail) ? "Duplicate email within the file." : "Invalid email format."
+                                    });
+                                    continue;
+                                }
+                                else if (string.IsNullOrWhiteSpace(companyName) ||
+                                         string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = customerNumber,
+                                        ErrorMessage = "Missing Mandatory Fields"
+                                    });
+                                    continue;
+                                }
+                                bool isAlreadyUploadedByOther = false;
+
+                                var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
+                                if (emailDomain == "NULL")
+                                {
+                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                }
+                                else
+                                {
+                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                }
+
+                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
+
+
+
+                                // New logic: Check if record type is true in the Prospects table
+                                var isBlockedInProspectTable = await _context.Prospects
+                                    .Where(c => c.RECORD_TYPE == true &&
+                                                (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
+                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()
+                                                 || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))
+                                    .AnyAsync();
+
+
+                                var customerData = new ProspectCustomer
+                                {
+                                    CUSTOMER_CODE = "1",
+                                    COMPANY_NAME = companyName,
+                                    CONTACT_PERSON = contactPerson,
+                                    CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                                    CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+                                    CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
+                                    CUSTOMER_EMAIL = customerEmail,
+                                    COUNTRY = country,
+                                    STATE = worksheet.Cell(row, 10).GetString(),
+                                    CITY = worksheet.Cell(row, 11).GetString(),
+                                    CREATED_ON = eventDate,
+                                    CREATED_BY = username,
+                                    MODIFIED_BY = username,
+                                    MODIFIED_ON = DateTime.Now,
+                                    COUNTRY_CODE = countryCode,
+                                    EMAIL_DOMAIN = emailDomain,
+                                    CATEGORY = category,
+                                    EVENT_NAME = eventName,
+                                };
+
+                                // Apply blocking logic
+                                if (isAlreadyUploadedByOther || isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
+                                {
+                                    customerData.RECORD_TYPE = true; // Blocked
+                                    customerData.BLOCKED_BY = "Another User";
+                                    blockedCustomers.Add(customerData);
+                                }
+                                else
+                                {
+                                    customerData.RECORD_TYPE = false; // Clean
+                                    cleanCustomers.Add(customerData);
+                                    _context.Prospects.Add(customerData);
+                                }
+                            }
+
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+                    var model = new UploadResultViewModel
+                    {
+                        BlockedCustomers = blockedCustomers,
+                        CleanCustomers = cleanCustomers,
+                        invalidCustomerRecords = invalidRecords
+                    };
+                    TempData["Success"] = "Successfully Uploaded";
+                    return View("UploadResults", model);
+                }
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                var model = new UploadResultViewModel
+                {
+
+                };
+                TempData["message"] = "An unexpected error occurred. Please try again.";
+                return View("ViewRecords", model);
+            }
+        }
 
 
         private bool IsValidEmail(string email)
@@ -407,7 +598,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
 
                 using (var workbook = new XLWorkbook())
                 {
@@ -573,135 +763,7 @@ namespace SalesDataProject.Controllers
 
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> UpdateCustomerStatus(List<int> BlockedCustomerIds, List<int> CleanCustomerIds)
-        //{
-        //    if (BlockedCustomerIds.Count == 0 && CleanCustomerIds.Count == 0)
-        //    {
-        //        return RedirectToAction("ViewRecords");
-        //    }
-        //    // Change blocked customers to clean
-        //    if (BlockedCustomerIds != null && BlockedCustomerIds.Any())
-        //    {
-        //        var blockedCustomers = await _context.Prospects
-        //            .Where(c => BlockedCustomerIds.Contains(c.ID))
-        //            .ToListAsync();
-
-        //        foreach (var customer in blockedCustomers)
-        //        {
-        //            customer.IS_EMAIL_BLOCKED = false; // Change to clean
-        //            customer.RECORD_TYPE = false;
-        //        }
-
-        //        await _context.SaveChangesAsync();
-        //        TempData["messagesuccess"] = "Successfully cleaned selected customers.";
-        //    }
-
-        //    // Change clean customers to blocked
-        //    if (CleanCustomerIds != null && CleanCustomerIds.Any())
-        //    {
-        //        var cleanCustomers = await _context.Prospects
-        //            .Where(c => CleanCustomerIds.Contains(c.ID))
-        //            .ToListAsync();
-
-        //        foreach (var customer in cleanCustomers)
-        //        {
-        //            customer.IS_EMAIL_BLOCKED = true; // Change to blocked
-        //            customer.RECORD_TYPE = true;
-        //        }
-        //        await _context.SaveChangesAsync();
-        //        TempData["messagesuccess"] = "Successfully blocked selected customers.";
-
-        //    }
-
-        //    // Redirect back to the ViewEmailRecords action with the selected RecordType and SelectedDate
-        //    return RedirectToAction("ViewRecords"); // Adjust as needed
-        //}
-
-        //[HttpPost]
-        //public async Task<IActionResult> ViewEmailRecords(string RecordType, DateTime? SelectedDate,string category, string? UserName)
-        //{
-        //    var username = HttpContext.Session.GetString("Username");
-
-        //    var model = new UploadResultViewModel
-        //    {
-        //        BlockCustomersEmailList = new List<ProspectCustomer>(),
-        //        CleanCustomersEmailList = new List<ProspectCustomer>(),
-        //        SelectedDate = SelectedDate,
-        //        RecordType = RecordType,
-        //        BlockedCustomers = new List<ProspectCustomer>(),
-        //        CleanCustomers = new List<ProspectCustomer>()
-        //    };
-
-        //    // Parse the RecordType to determine if it's clean or blocked
-        //    bool isClean = RecordType == "Clean";
-        //    bool isBlocked = RecordType == "Blocked";
-
-        //    // If both record type and selected date are not provided
-        //    if (string.IsNullOrEmpty(RecordType) && !SelectedDate.HasValue)
-        //    {
-        //        return View("ViewRecords", model); // Pass the empty model to the view
-        //    }
-
-        //    // Blocked records: RecordType == 0 and IS_EMAIL_BLOCKED == true
-        //    if (isBlocked)
-        //    {
-        //        model.BlockCustomersEmailList = await _context.Prospects
-        //            .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
-        //                        (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
-        //            .ToListAsync();
-        //        if (model.BlockCustomersEmailList.Any())
-        //        {
-        //            TempData["messagesuccess"] = "Record Found Succesfully";
-        //        }
-        //        else
-        //        {
-        //            TempData["message"] = "No record Found";
-        //        }
-        //    }
-        //    // Clean records: RecordType == 0 and IS_EMAIL_BLOCKED == false
-        //    else if (isClean)
-        //    {
-        //        model.CleanCustomersEmailList = await _context.Prospects
-        //            .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
-        //                        (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
-        //            .ToListAsync();
-        //        if (model.CleanCustomersEmailList.Any())
-        //        {
-        //            TempData["messagesuccess"] = "Record Found Successfully";
-        //        }
-        //        else
-        //        {
-        //            TempData["message"] = "No Record Found";
-        //        }
-
-        //    }
-        //    // If no specific record type is selected, show both Blocked and Clean records for the given date
-        //    else
-        //    {
-        //        model.BlockCustomersEmailList = await _context.Prospects
-        //            .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
-        //                        (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
-        //            .ToListAsync();
-
-        //        model.CleanCustomersEmailList = await _context.Prospects
-        //            .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
-        //                        (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
-        //            .ToListAsync();
-
-        //        if(model.BlockCustomersEmailList.Any() || model.CleanCustomersEmailList.Any())
-        //        {
-        //            TempData["messagesuccess"] = "Records found Successfully";
-        //        }
-        //        else
-        //        {
-        //            TempData["message"] = "No Record found";
-        //        }
-
-        //    }
-
-        //    return View("ViewRecords", model); // Return the view with the populated UploadResultViewModel
-        //}
+        
 
     }
 }
