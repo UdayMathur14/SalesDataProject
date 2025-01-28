@@ -7,6 +7,12 @@
 @{
     ViewData["Title"] = "Assign Records";
 }
+@if (TempData["message"] != null)
+{
+    <div class="error-message" id="errorMessage">
+        <p>@TempData["message"]</p>
+    </div>
+}
 <div class="card shadow-sm p-4 mb-2 mt-5 mb-3">
     <div class="d-flex justify-content-between">
         <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>

@@ -156,5 +156,33 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <style>
+        .error-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: lightgreen; /* Softer red for a less intense tone */
+            color: black;
+            padding: 10px 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: opacity 0.3s ease-out;
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    <script>
+        // Automatically hide the error message after 5 seconds
+        setTimeout(() => {
+            const errorMessage = document.getElementById('errorMessage');
+            if (errorMessage) {
+                errorMessage.style.display = 'none';
+            }
+        }, 1500);
+    </script>
 </body>
 </html>
