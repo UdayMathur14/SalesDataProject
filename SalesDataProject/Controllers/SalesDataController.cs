@@ -663,6 +663,76 @@ namespace SalesDataProject.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult DownloadTemplate1()
+        {
+            try
+            {
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("EventTemplate");
+
+                    worksheet.Cell(1, 2).Value = "*CompanyName";
+                    worksheet.Cell(1, 3).Value = "*ContactPerson";
+                    worksheet.Cell(1, 4).Value = "ContactNo1";
+                    worksheet.Cell(1, 5).Value = "*Email";
+                    worksheet.Cell(1, 6).Value = "*CountryCode";
+                    worksheet.Cell(1, 7).Value = "*Country";
+                    worksheet.Cell(1, 8).Value = "ContactNo2";
+                    worksheet.Cell(1, 9).Value = "ContactNo3";
+                    worksheet.Cell(1, 10).Value = "State";
+                    worksheet.Cell(1, 11).Value = "City";
+                    worksheet.Cell(1, 12).Value = "*Category";
+
+                    // Example data
+
+                    worksheet.Cell(2, 2).Value = "Ennoble Ip";
+                    worksheet.Cell(2, 3).Value = "Rajnish Sir";
+                    worksheet.Cell(2, 4).Value = "123456789";
+                    worksheet.Cell(2, 5).Value = "ennobleip@gmail.com";
+                    worksheet.Cell(2, 6).Value = "+91";
+                    worksheet.Cell(2, 7).Value = "INDIA";
+                    worksheet.Cell(2, 8).Value = "9876543210";
+                    worksheet.Cell(2, 9).Value = "9876543210";
+                    worksheet.Cell(2, 10).Value = "DELHI";
+                    worksheet.Cell(2, 11).Value = "NEW DELHI";
+                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT";
+
+                    // Adjust column widths to fit content
+                    worksheet.Columns().AdjustToContents();
+
+                    // Optionally, apply styles to the header row for better visibility
+                    worksheet.Columns().AdjustToContents();
+
+                    // Optionally, apply styles to the header row for better visibility
+                    var headerRow = worksheet.Range("A1:L1");
+                    headerRow.Style.Font.Bold = true;
+                    headerRow.Style.Font.FontColor = XLColor.Red;
+                    headerRow.Style.Fill.BackgroundColor = XLColor.Yellow;
+                    headerRow.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+                    headerRow.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+                    headerRow.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+                    headerRow.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+
+                    var row = worksheet.Range("A2:L2");
+                    row.Style.Font.FontColor = XLColor.Black;
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EventTemplate.xlsx");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                return View("ViewRecords");
+            }
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> ViewRecord(UploadResultViewModel model)
