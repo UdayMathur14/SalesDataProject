@@ -426,7 +426,7 @@ namespace SalesDataProject.Controllers
 
                 await _context.SaveChangesAsync();
 
-                TempData["messagesuccess"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}.";
+                TempData["message"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}.";
                 return RedirectToAction("AssignRecords");
             }
             catch (Exception ex)
