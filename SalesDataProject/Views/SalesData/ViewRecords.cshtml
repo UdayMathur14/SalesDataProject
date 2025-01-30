@@ -16,7 +16,7 @@
     </div>
 }
 <div class="container mt-4">
-    <div class="header d-flex justify-content-between align-items-center mb-3">
+    <div class="header d-flex justify-content-between align-items-center mb-3" style="border:1px dotted blue">
         <h4 class="mb-3 " style="color:green"><i>Validate Lead Data</i></h4>
         <div class="buttons d-flex gap-3">
             
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="header card shadow-sm p-4 mb-5">
+    <div class="header card shadow-sm p-4 mb-5" style="border:1px dotted green">
         <h4 class="mb-3" style="color:darkblue"><i>VIEW LEAD DATA</i></h4>
         <form asp-action="ViewRecord" method="post">
             <div class="row g-3">
@@ -76,7 +76,7 @@
         </form>
     </div>
 
-    <div class="card shadow-sm p-4">
+    <div class="card shadow-sm p-4" style="border:1px solid black">
         @if (Model.BlockedCustomers != null && Model.BlockedCustomers.Any())
         {
             <h4 class="mb-3 text-danger">Blocked Customers</h4>
@@ -99,7 +99,7 @@
                             <td>@customer.COMPANY_NAME</td>
                             <td>@customer.CUSTOMER_EMAIL</td>
                             <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
-                            <td>@customer.CREATED_ON</td>
+                            <td>@(customer.CREATED_ON != null ? customer.CREATED_ON.Value.ToString("yyyy-MM-dd") : "")</td>
                         </tr>
                     }
                 </tbody>
@@ -128,7 +128,7 @@
                             <td>@customer.COMPANY_NAME</td>
                             <td>@customer.CUSTOMER_EMAIL</td>
                             <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
-                            <td>@customer.CREATED_ON</td>
+                            <td>@(customer.CREATED_ON != null ? customer.CREATED_ON.Value.ToString("yyyy-MM-dd") : "")</td>
                         </tr>
                     }
                 </tbody>
@@ -136,10 +136,10 @@
             </div>
         }
     </div>
-    <div class="header align-items-center mb-3 mt-lg-5">
+    <div class="header align-items-center mb-3 mt-lg-5" style="border:1px dotted red">
         <h4 class="mb-4" style="color:black"><i>Upload Event Contacts</i></h4>
 
-        <form asp-action="UploadSalesDataEvent" method="post" enctype="multipart/form-data" class="header d-flex justify-content-between align-items-center mb-3 gap-3">
+        <form asp-action="UploadSalesDataEvent" method="post" enctype="multipart/form-data" class="header d-flex justify-content-between align-items-center mb-3 gap-3" >
             <div class="col-md-3">
                 <label for="eventName" class="form-label">Event Name</label>
                 <input type="text" class="form-control" id="eventName" name="EventName" required>
