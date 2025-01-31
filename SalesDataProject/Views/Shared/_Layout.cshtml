@@ -114,6 +114,7 @@
                             </a>
                         </li>
                     </ul>
+
                     <div class="d-flex align-items-center gap-3">
                         <!-- Circle Icon -->
                         <div class="circle bg-primary d-flex justify-content-center align-items-center">
@@ -140,8 +141,12 @@
         </nav>
     </header>
 
+    
 
     <div class="container">
+       @*  <div class="spinner-border spinner-border-5xl" role="status">
+            <span class="sr-only"></span>
+        </div> *@
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -174,6 +179,24 @@
             display: flex;
             align-items: center;
         }
+
+      /*   .container {
+            position: relative;
+        }
+
+        .spinner-border {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 1050; /* Ensures it stays above other content */
+        }
+
+        main {
+            filter: blur(5px); /* Adjust the blur intensity as needed */
+            pointer-events: none; /* Prevent interactions while blurred */
+            user-select: none; /* Prevent text selection */
+        } */
+
     </style>
     <script>
         // Automatically hide the error message after 5 seconds
