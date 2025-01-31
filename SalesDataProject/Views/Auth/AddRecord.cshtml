@@ -98,8 +98,50 @@
         }
 
         // Trigger file upload dialog on button click
-        const uploadButton = document.getElementById("uploadButton");
-        const fileUpload = document.getElementById("fileUpload");
-        uploadButton.addEventListener("click", () => fileUpload.click());
+    //     const uploadButton = document.getElementById("uploadButton");
+    // const fileUpload = document.getElementById("fileUpload");
+    // const uploadForm = document.getElementById("uploadForm");
+
+    // uploadButton.addEventListener("click", () => fileUpload.click());
+
+    // fileUpload.addEventListener("change", () => {
+    //     if (fileUpload.files.length > 0) {
+    //         uploadForm.submit(); // Submit form after selecting a file
+    //     }
+    // });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadButton = document.getElementById('uploadButton');
+        const fileUpload = document.getElementById('fileUpload');
+        const uploadForm = document.getElementById('uploadForm');
+        /* const categorySelectDropdown = document.getElementById('categorySelectDropdown'); */ // Category dropdown
+        /* const hiddenCategoryInput = document.getElementById('categorySelectHidden'); */ // Hidden input for category
+
+        if (uploadButton && fileUpload && uploadForm ) {
+
+            // Set hidden category input value when category changes
+            // categorySelectDropdown.addEventListener('change', function () {
+            //     hiddenCategoryInput.value = categorySelectDropdown.value;
+            //     // Reset border color if category is selected
+            //     categorySelectDropdown.style.borderColor = '';
+            // });
+
+            uploadButton.addEventListener('click', function () {
+                // Check if category is selected
+
+                    // Proceed with file upload if category is selected
+                    fileUpload.click();
+
+            });
+
+            fileUpload.addEventListener('change', function () {
+                if (fileUpload.files.length > 0) {
+                    // Submit the form only if a file is uploaded
+                    uploadForm.submit();
+                }
+            });
+        }
     });
 </script>
