@@ -24,26 +24,25 @@
                 </div>
         }
     </div>
-    <div class="header d-flex justify-content-between">
-        <h2 style="color:black" class="text-center">Title Validation</h2>
+    <div class="header d-flex justify-content-between align-items-center p-3 bg-light shadow rounded mb-3">
+        <h2 class="text-dark m-0 text-center flex-grow-1"><i>Title Validation</i></h2>
 
-        @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
-        {
-            <div class="d-flex justify-content-end mb-3 gap-2">
-                <form asp-action="ViewTitles" method="get">
-                    <button type="submit" class="btn btn-warning">View Titles</button>
-                </form>
-                <a href="@Url.Action("Index", "Home")" class="">
-                    <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
-                </a>
-            </div>
-
-        }
-    </div>
+    @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
+    {
+        <div class="d-flex flex-wrap justify-content-end">
+            <form asp-action="ViewTitles" method="get">
+                    <button type="submit" class="btn btn-warning fw-bold px-3"><i>View Titles</i></button>
+            </form>
+            <a href="@Url.Action("Index", "Home")" class="ms-2">
+                <button type="button" class="btn fw-bold px-3" style="background-color: red; color: white;">Back</button>
+            </a>
+        </div>
+    }
+</div>
     <!-- Upload and Download Buttons Section -->
     <div class="card shadow-sm mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
-            <h4 class="text-secondary"><i>Upload Titles</i></h4>
+            <h4 class="" style="color:brown"><i>Upload Titles</i></h4>
             <div class="d-flex gap-2">
                 <!-- Upload Excel -->
                 <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
