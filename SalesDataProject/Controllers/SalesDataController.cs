@@ -747,86 +747,72 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 var filteredBlockedCustomers = new List<ProspectCustomer>();
                 var filteredCleanCustomers = new List<ProspectCustomer>();
                 var username = HttpContext.Session.GetString("Username");
                 var category = model.Category;
-               
+                var eventName = model.Event; // Get selected Event Name from model
 
                 var filteredCustomers = new List<ProspectCustomer>();
 
                 if (model.RecordType == "Blocked")
                 {
-                    // Fetch blocked customers (RECORD_TYPE = 1) created by the current user, based on the selected date
                     filteredCustomers = await _context.Prospects
                         .Where(c => c.RECORD_TYPE == true &&
-                                    c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    c.CREATED_BY == username &&
+                                    (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) && // Event filter
                                     (model.SelectedDate == null ||
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
-                    if (!filteredCustomers.Any())
-                    {
-                        TempData["message"] = "No Record Found";
-                    }
-                    else
-                    {
-                        TempData["messagesuccess"] = "Successfully Record Found";
-                    }
+
+                    TempData["message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
 
                     model.BlockedCustomers = filteredCustomers;
                 }
                 else if (model.RecordType == "Clean")
                 {
-                    // Fetch clean customers (RECORD_TYPE = 0) created by the current user, based on the selected date
                     filteredCustomers = await _context.Prospects
                         .Where(c => c.RECORD_TYPE == false &&
-                                    c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    c.CREATED_BY == username &&
+                                    (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) && // Event filter
                                     (model.SelectedDate == null ||
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
-                    if (!filteredCustomers.Any())
-                    {
-                        TempData["message"] = "No Record Found";
-                    }
-                    else
-                    {
-                        TempData["messagesuccess"] = "Successfully Record Found";
-                    }
+
+                    TempData["message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
+
                     model.CleanCustomers = filteredCustomers;
                 }
                 else
                 {
-
-
-                    //for blocked one 
                     filteredBlockedCustomers = await _context.Prospects
                         .Where(c => c.RECORD_TYPE == true &&
-                                    c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    c.CREATED_BY == username &&
+                                    (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) && // Event filter
                                     (model.SelectedDate == null ||
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
+
                     filteredCleanCustomers = await _context.Prospects
                         .Where(c => c.RECORD_TYPE == false &&
-                                    c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    c.CREATED_BY == username &&
+                                    (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                                    (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) && // Event filter
                                     (model.SelectedDate == null ||
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
-                    if (!filteredBlockedCustomers.Any() && !filteredCleanCustomers.Any())
-                    {
-                        TempData["message"] = "No Record Found";
-                    }
-                    else
-                    {
-                        TempData["messagesuccess"] = "Successfully Record Found";
-                    }
+
+                    TempData["message"] = (filteredBlockedCustomers.Any() || filteredCleanCustomers.Any())
+                                            ? "Successfully Record Found"
+                                            : "No Record Found";
+
                     model.CleanCustomers = filteredCleanCustomers;
                     model.BlockedCustomers = filteredBlockedCustomers;
                 }
 
-
-                // Populate the view model with the filtered data
                 return View("ViewRecords", model);
             }
             catch (Exception ex)
@@ -835,6 +821,7 @@ namespace SalesDataProject.Controllers
                 return View("ViewRecords", model);
             }
         }
+
 
 
 
