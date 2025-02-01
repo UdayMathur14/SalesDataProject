@@ -48,7 +48,7 @@
                     <div class="form-group">
                         <label for="RecordType" class="form-label">Select Record Type:</label>
                         <select asp-for="RecordType" class="form-select form-control-sm">
-                            <option value="">--Select--</option>
+                            <option value="">--Select Type--</option>
                             <option value="Blocked">Blocked</option>
                             <option value="Clean">Clean</option>
                         </select>
@@ -58,7 +58,7 @@
                     <div class="form-group">
                         <label for="Category" class="form-label">Select Category:</label>
                         <select asp-for="Category" class="form-select form-control-sm">
-                            <option value="">--Select--</option>
+                            <option value="">--Select Category--</option>
                             <option value="UNIVERSITY">University</option>
                             <option value="SME">SME</option>
                             <option value="CORPORATE">Corporate</option>
@@ -66,6 +66,14 @@
                             <option value="PCT">PCT</option>
                         </select>
                     </div>
+                </div>
+                <div class="col-md-3">
+                <div class="form-group">
+                        <label for="Event" class="form-label">Select Event</label>
+                        <select asp-for="Event" asp-items="ViewBag.EventNames" class="form-select form-control-sm">
+                        <option value="">-- Select Event --</option>
+                    </select>
+                </div>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">
@@ -76,7 +84,7 @@
         </form>
     </div>
 
-    <div class="card shadow-sm p-4" style="border:1px solid brown">
+    <div class="card shadow-sm p-4" style="border:1px dotted white">
         @if (Model.BlockedCustomers != null && Model.BlockedCustomers.Any())
         {
             <h4 class="mb-3 text-danger">Blocked Customers</h4>

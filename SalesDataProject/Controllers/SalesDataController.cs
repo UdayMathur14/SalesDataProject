@@ -33,7 +33,7 @@ namespace SalesDataProject.Controllers
                 // Fetch the users from the database
                 return View();
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
 
                 return RedirectToAction("Login", "Auth");
@@ -60,6 +60,7 @@ namespace SalesDataProject.Controllers
         }
         public async Task<IActionResult> ViewRecords(UploadResultViewModel model)
         {
+            var username = HttpContext.Session.GetString("Username");
             try
             {
                 if (HttpContext.Session.GetString("CanAccessSales") != "True")
@@ -67,6 +68,13 @@ namespace SalesDataProject.Controllers
                     // If not authorized, redirect to home or another page
                     return RedirectToAction("Login", "Auth");
                 }
+                var eventNames = _context.Prospects
+            .Where(pc => pc.CREATED_BY == username && !string.IsNullOrEmpty(pc.EVENT_NAME))
+            .Select(pc => pc.EVENT_NAME)
+            .Distinct()
+            .ToList();
+
+                ViewBag.EventNames = new SelectList(eventNames);
                 var users = await _context.Users.ToListAsync();
 
                 // Pass the list of users to the view using ViewBag
@@ -80,7 +88,7 @@ namespace SalesDataProject.Controllers
                 return RedirectToAction("Login", "Auth");
             }
         }
-      
+
 
         [HttpPost]
         public async Task<IActionResult> UploadSalesData(IFormFile file, string selectedCategory)
@@ -188,29 +196,29 @@ namespace SalesDataProject.Controllers
                                 }
                                 bool isAlreadyUploadedByOther = false;
 
-                                var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
+                                var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
                                 if (emailDomain == "NULL")
                                 {
-                                     isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
                                 }
                                 else
                                 {
-                                     isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
                                 }
 
-                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower()==customerEmail.ToLower()).AnyAsync();
+                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
 
-                                
+
 
                                 // New logic: Check if record type is true in the Prospects table
                                 var isBlockedInProspectTable = await _context.Prospects
                                     .Where(c => c.RECORD_TYPE == true &&
                                                 (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
                                                  c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()
-                                                 || c.CUSTOMER_EMAIL.ToLower()==customerEmail.ToLower()))
+                                                 || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))
                                     .AnyAsync();
 
-                               
+
                                 var customerData = new ProspectCustomer
                                 {
                                     CUSTOMER_CODE = "1",
@@ -233,7 +241,7 @@ namespace SalesDataProject.Controllers
                                 };
 
                                 // Apply blocking logic
-                                if (isAlreadyUploadedByOther ||isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
+                                if (isAlreadyUploadedByOther || isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
                                 {
                                     customerData.RECORD_TYPE = true; // Blocked
                                     customerData.BLOCKED_BY = "Another User";
@@ -267,7 +275,7 @@ namespace SalesDataProject.Controllers
             {
                 var model = new UploadResultViewModel
                 {
-                    
+
                 };
                 TempData["message"] = "An unexpected error occurred. Please try again.";
                 return View("ViewRecords", model);
@@ -616,7 +624,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(1, 12).Value = "*Category";
 
                     // Example data
-                    
+
                     worksheet.Cell(2, 2).Value = "Ennoble Ip";
                     worksheet.Cell(2, 3).Value = "Rajnish Sir";
                     worksheet.Cell(2, 4).Value = "123456789";
@@ -745,10 +753,7 @@ namespace SalesDataProject.Controllers
                 var filteredCleanCustomers = new List<ProspectCustomer>();
                 var username = HttpContext.Session.GetString("Username");
                 var category = model.Category;
-                //if (model.RecordType == null)
-                //{
-                //    return View("ViewRecords", model);
-                //}
+               
 
                 var filteredCustomers = new List<ProspectCustomer>();
 
@@ -793,7 +798,7 @@ namespace SalesDataProject.Controllers
                 }
                 else
                 {
-                  
+
 
                     //for blocked one 
                     filteredBlockedCustomers = await _context.Prospects
@@ -833,7 +838,7 @@ namespace SalesDataProject.Controllers
 
 
 
-        
+
 
     }
 }
