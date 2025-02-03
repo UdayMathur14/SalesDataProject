@@ -3,6 +3,13 @@
 *@
 @{
 }
+
+@if (TempData["message"] != null)
+{
+    <div class="error-message" id="errorMessage">
+        <p>@TempData["message"]</p>
+    </div>
+}
 @model List<CommonDomains>
 
 <div class="container mt-4">

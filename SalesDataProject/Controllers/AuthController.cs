@@ -32,7 +32,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
 
@@ -602,7 +601,9 @@ namespace SalesDataProject.Controllers
 
                     }
                 }
-                return View(AddRecord);
+                TempData["message"] = "Successfully Uploaded";
+                return RedirectToAction(nameof(AddRecord));
+
             }
             catch (Exception ex)
             {
