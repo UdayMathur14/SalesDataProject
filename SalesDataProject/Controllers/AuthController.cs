@@ -3,6 +3,7 @@ using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SalesDataProject.Models;
 using SalesDataProject.Models.AuthenticationModels;
 using System.Text.RegularExpressions;
@@ -468,13 +469,11 @@ namespace SalesDataProject.Controllers
             }
         }
 
-
+        [HttpPost]
         public async Task<IActionResult> UploadRecord(IFormFile file)
         {
             try
             {
-
-
                 var username = HttpContext.Session.GetString("Username");
                 if (file == null || file.Length == 0)
                 {
@@ -550,7 +549,7 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
+                            if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "LAW FIRM", "SME", "UNIVERSITY", "University", "PCT" }.Contains(category?.ToUpperInvariant()))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord
                                 {
@@ -601,6 +600,7 @@ namespace SalesDataProject.Controllers
 
                     }
                 }
+                TempData["InvalidRecords"] = JsonConvert.SerializeObject(invalidRecords);
                 TempData["message"] = "Successfully Uploaded";
                 return RedirectToAction(nameof(AddRecord));
 

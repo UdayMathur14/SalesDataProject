@@ -2,6 +2,9 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    var invalidRecords = TempData["InvalidRecords"] != null
+        ? Newtonsoft.Json.JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(TempData["InvalidRecords"].ToString())
+        : new List<InvalidCustomerRecord>();
 }
 
 @if (TempData["message"] != null)
@@ -10,6 +13,7 @@
         <p>@TempData["message"]</p>
     </div>
 }
+
 @model List<CommonDomains>
 
 <div class="container mt-4">
@@ -34,6 +38,33 @@
         </div>
     </div>
 
+    @if (invalidRecords.Any())
+    {
+        <h3>Invalid Records</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Row No</th>
+                    <th>Company Name</th>
+                    <th>Email</th>
+                    <th>Customer Number</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var record in invalidRecords)
+                {
+                    <tr>
+                        <td>@record.RowNumber</td>
+                        <td>@record.CompanyName</td>
+                        <td>@record.CustomerEmail</td>
+                        <td>@record.CustomerNumber</td>
+                        <td>@record.ErrorMessage</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
     <!-- Manage Domains Section -->
     <div class="manage-domains-section border p-4 rounded shadow-sm">
         <h4 class="mb-4">Manage Common Domains</h4>
