@@ -366,9 +366,13 @@ namespace SalesDataProject.Controllers
                 {
                     recordsQuery = recordsQuery.Where(r => r.CATEGORY == Category && !r.RECORD_TYPE && r.CREATED_BY == UserName);
                 }
-                if (!string.IsNullOrEmpty(UserName))
+                else if (!string.IsNullOrEmpty(UserName) && string.IsNullOrEmpty(Category))
                 {
                     recordsQuery = recordsQuery.Where(r => !r.RECORD_TYPE && r.CREATED_BY == UserName);
+                }
+                else if (!string.IsNullOrEmpty(Category) && string.IsNullOrEmpty(UserName))
+                {
+                    recordsQuery = recordsQuery.Where(r => !r.RECORD_TYPE && r.CREATED_BY == UserName && r.CATEGORY == Category);
                 }
 
                 var model = new AssignToViewModel
@@ -392,8 +396,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 if (string.IsNullOrEmpty(UserName))
                 {
                     TempData["message"] = "Please select a user to assign records.";
@@ -413,7 +415,8 @@ namespace SalesDataProject.Controllers
                 else
                 {
                     TempData["message"] = "No records selected for assignment.";
-                    return RedirectToAction("AssignTo");
+                    return RedirectToAction("AssignRecords", "Auth");
+
                 }
 
                 var recordsToAssign = await recordsQuery.ToListAsync();
@@ -432,7 +435,7 @@ namespace SalesDataProject.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] = "An unexpected error occurred. Please try again.";
-                return View();
+                return View(AssignRecords);
             }
         }
 
@@ -441,8 +444,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 if (string.IsNullOrEmpty(domainName))
                 {
                     TempData["Error"] = "Domain name cannot be empty.";
