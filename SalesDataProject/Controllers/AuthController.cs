@@ -41,12 +41,20 @@ namespace SalesDataProject.Controllers
         {
             try
             {
+                // Fetch the users for the dropdown
                 var users = await _context.Users.ToListAsync();
                 ViewBag.Users = new SelectList(users, "Username", "Username");
 
+                // Fetch the assignment history to display it in the UI
+                var assignmentHistoryRecords = await _context.AssignmentHistory
+                    .OrderByDescending(h => h.ASSIGNED_ON)  // Sort by the most recent
+                    .ToListAsync();
+
+                // Create a view model with both the prospect customer records and the assignment history
                 var model = new AssignToViewModel
                 {
-                    RecordsList = new List<ProspectCustomer>()
+                    RecordsList = new List<ProspectCustomer>(),  // Initial empty list, populated later
+                    AssignmentHistoryList = assignmentHistoryRecords
                 };
 
                 return View(model);
@@ -60,12 +68,12 @@ namespace SalesDataProject.Controllers
                 TempData["Error"] = "An unexpected error occurred. Please try again.";
                 return RedirectToAction("Login", "Auth");
             }
-
         }
-            
 
 
-        
+
+
+
         public async Task<IActionResult> ChangeRecordType(UploadResultViewModel model)
         {
             try
@@ -394,6 +402,8 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Assign(int[] RecordIds, string UserName, bool assignAll)
         {
+            var loginuser = HttpContext.Session.GetString("Username");
+
             try
             {
                 if (string.IsNullOrEmpty(UserName))
@@ -402,40 +412,56 @@ namespace SalesDataProject.Controllers
                     return RedirectToAction("AssignRecords");
                 }
 
-                IQueryable<ProspectCustomer> recordsQuery = _context.Prospects.AsQueryable();
-
-                if (assignAll)
-                {
-                    recordsQuery = recordsQuery.Where(r => !r.IS_EMAIL_BLOCKED);
-                }
-                else if (RecordIds != null && RecordIds.Length > 0)
-                {
-                    recordsQuery = recordsQuery.Where(r => RecordIds.Contains(r.ID));
-                }
-                else
+                if (RecordIds == null || RecordIds.Length == 0)
                 {
                     TempData["message"] = "No records selected for assignment.";
-                    return RedirectToAction("AssignRecords", "Auth");
-
+                    return RedirectToAction("AssignRecords");
                 }
 
-                var recordsToAssign = await recordsQuery.ToListAsync();
+                // Fetch records from the ProspectCustomer table
+                var recordsToAssign = await _context.Prospects
+                    .Where(r => RecordIds.Contains(r.ID))
+                    .ToListAsync();
+
+                if (recordsToAssign.Count == 0)
+                {
+                    TempData["message"] = "No matching records found.";
+                    return RedirectToAction("AssignRecords");
+                }
+
+                // Update the CREATED_BY field in ProspectCustomer
+               
+
+                // Prepare assignment records for history tracking
+                var assignmentList = recordsToAssign.Select(record => new AssignmentHistory
+                {
+                    COMPANY_NAME = record.COMPANY_NAME,
+                    EMAIL_ID = record.CUSTOMER_EMAIL,
+                    ASSIGNED_TO = UserName,
+                    ASSIGNED_BY = loginuser,
+                    CREATED_BY = record.CREATED_BY, // Ensure CREATED_BY is updated to selected UserName
+                    ASSIGNED_ON = DateTime.UtcNow
+                }).ToList();
 
                 foreach (var record in recordsToAssign)
                 {
-                    record.CREATED_BY = UserName; // Assuming there is an `ASSIGNED_TO` field in the model
-                    //record.UPDATED_ON = DateTime.Now;
+                    record.CREATED_BY = UserName; // Updating CREATED_BY to the selected UserName
                 }
 
+                // Save changes to ProspectCustomer
                 await _context.SaveChangesAsync();
 
-                TempData["message"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}.";
+                // Insert assignment records into history table
+                await _context.AssignmentHistory.AddRangeAsync(assignmentList);
+                await _context.SaveChangesAsync();
+
+                TempData["message"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}, and CREATED_BY updated.";
                 return RedirectToAction("AssignRecords");
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "An unexpected error occurred. Please try again.";
-                return View(AssignRecords);
+                return RedirectToAction("AssignRecords");
             }
         }
 

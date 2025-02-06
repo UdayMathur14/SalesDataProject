@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Country> Countries { get; set; }
     public DbSet<CommonDomains> CommonDomains { get; set; }
     public DbSet<TitleValidationViewModel> Titles { get; set; }
+    public DbSet<AssignmentHistory> AssignmentHistory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

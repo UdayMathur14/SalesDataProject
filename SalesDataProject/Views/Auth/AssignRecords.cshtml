@@ -113,7 +113,44 @@
             </div>
         </form>
     </div>
+
+    <div class="custom-table" id="assignmentHistoryList">
+        <h5 class="text-secondary mt-5">Assignment History</h5>
+        @if (Model.AssignmentHistoryList != null && Model.AssignmentHistoryList.Any())
+        {
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Assigned To</th>
+                            <th>Assigned By</th>
+                            <th>Assigned On</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var history in Model.AssignmentHistoryList)
+                        {
+                            <tr>
+                                <td>@history.COMPANY_NAME</td>
+                                <td>@history.ASSIGNED_TO</td>
+                                <td>@history.ASSIGNED_BY</td>
+                                <td>@history.ASSIGNED_ON</td>
+                                <td>@history.EMAIL_ID</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p>No assignment history found.</p>
+        }
     </div>
+</div>
+  
 
 <script>
     function toggleSelectAll(checkbox) {
