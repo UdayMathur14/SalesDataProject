@@ -121,16 +121,19 @@ namespace SalesDataProject.Controllers
                     HttpContext.Session.SetString("CanAccessTitle", user.CanAccessTitle.ToString());
                     HttpContext.Session.SetString("CanViewTitles", user.CanViewTitles.ToString());
                     HttpContext.Session.SetString("CanDeleteTitles", user.CanDeleteTitles.ToString());
-                    TempData["Success"] = "Successfully Login";
+                    TempData["Message"] = "Successfully Login";
+                    TempData["MessageType"] = "Success";
                     return RedirectToAction("Index", "Home");
                 }
 
-                TempData["Error"] = "Incorrect username or password. Please try again.";
+                TempData["Message"] = "Incorrect username or password. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View(model);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View(model);
             }
         }

@@ -4,15 +4,15 @@
 @{
     ViewData["Title"] = "Login";
 }
-
-@if (TempData["Error"] != null)
-{
-    <div class="error-message" id="errorMessage">
-        <p>@TempData["Error"]</p>
-    </div>
-}
 <!-- Views/Auth/Login.cshtml -->
 @model SalesDataProject.Models.AuthenticationModels.User
+@if (TempData["Message"] != null)
+{
+    <div class="alert-message @(TempData["MessageType"] == "Error" ? "error" : "success")" id="alertMessage" role="alert">
+        <p>@TempData["Message"]</p>
+        <button class="close-btn" onclick="closeAlertMessage()">×</button>
+    </div>
+}
 
 <div style="display: flex; overflow: hidden !important; height: 100%">
     <!-- First Div for Image or Background -->
@@ -41,34 +41,6 @@
 </div>
 
 <style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: #f44336; /* Softer red for a less intense tone */
-        color: #ffffff;
-        padding: 10px 10px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-        transition: background-color 0.3s ease;
-    }
-</style>
-
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 2000);
-</script>
-<style>
     .custom-button {
         padding-block: 10px;
         padding-inline: 18px;
@@ -80,8 +52,73 @@
         transition: background-color 0.3s ease;
     }
 
-        .custom-button:hover {
-            background-color: darkgray; /* Change this to any color you like */
-        }
+    .custom-button:hover {
+       background-color: darkgray; /* Change this to any color you like */
+    }
 
 </style>
+
+<style>
+    .alert-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        color: #ffffff;
+        padding: 12px 16px; /* Ensure equal padding */
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        opacity: 1;
+        display: flex; /* Ensures items (text + button) align properly */
+        align-items: center; /* Vertically centers text and button */
+        justify-content: space-between; /* Pushes text left, button right */
+        transition: opacity 0.5s ease-out, transform 0.3s ease-in-out;
+        transform: translateY(0);
+        min-width: 250px; /* Ensures width consistency */
+        max-width: 400px;
+    }
+
+        .alert-message p {
+            margin: 0; /* Removes extra spacing */
+            flex-grow: 1; /* Allows text to take available space */
+        }
+
+        .alert-message.fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+    .error {
+        background-color: #d32f2f; /* Red for error */
+    }
+
+    .success {
+        background-color: #4CAF50; /* Green for success */
+    }
+
+    .close-btn {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 20px;
+        cursor: pointer;
+        margin-left: 10px;
+        padding: 0 5px; /* Ensures button size consistency */
+    }
+
+</style>
+
+<script>
+    function closeAlertMessage() {
+        const alertMessage = document.getElementById('alertMessage');
+        if (alertMessage) {
+            alertMessage.classList.add('fade-out');
+            setTimeout(() => alertMessage.style.display = 'none', 500);
+        }
+    }
+
+    // Auto-hide after 5 seconds with smooth fade-out
+    setTimeout(closeAlertMessage, 5000);
+</script>
