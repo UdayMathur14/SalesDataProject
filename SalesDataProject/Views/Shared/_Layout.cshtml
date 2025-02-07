@@ -13,54 +13,26 @@
             transition: all 0.1s ease-in-out !important;
         }
 
-            .navbar-nav .nav-link:hover {
-                color: red !important; /* Bootstrap primary color */
-                text-decoration: underline !important;
-            }
+        .navbar-nav .nav-link:hover {
+            color: red !important; /* Bootstrap primary color */
+            text-decoration: underline !important;
+        }
     </style>
     <style>
-       
-
-        /* Navbar styles */
-        header {
-            background-color: #f8f9fa; /* Light background */
-        }
-
-        .navbar {
-            transition: background-color 0.3s ease; /* Smooth transition for background color */
-        }
-
-            .navbar:hover {
-                background-color: #e2e6ea; /* Change background color on hover */
-            }
-
-        .nav-link {
-            transition: color 0.3s ease; /* Smooth transition for text color */
-        }
-
-            .nav-link:hover {
-                color: #007bff; /* Change text color on hover */
-            }
-
-        .navbar-brand {
-            font-size: 1.5rem; /* Increase the brand size */
-            font-weight: bold; /* Make the brand text bold */
-        }
-
         .circle {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: #007bff; /* Bootstrap Primary Color */
+            background-color: black !important; /* Bootstrap Primary Color */
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
         }
 
-            .circle:hover {
-                background-color: #0056b3; /* Darker shade for hover effect */
-            }
+        .circle:hover {
+            background-color: #0056b3; /* Darker shade for hover effect */
+        }
 
     </style>
 
@@ -72,7 +44,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 justify-content-start align-items-center gap-4">
                         <li class="nav-item">
-                            <a class="nav-link text-primary fw-bold fst-italic fs-5 text-uppercase"
+                            <a class="nav-link fw-bold fst-italic fs-5 text-uppercase"
                                asp-area="" asp-controller="Home" asp-action="Index">
                                 Dashboard
                             </a>
@@ -105,10 +77,7 @@
         </nav>
     </header>
 
-    
-
     <div class="container">
-      
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
