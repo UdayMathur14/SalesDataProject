@@ -456,12 +456,13 @@ namespace SalesDataProject.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["message"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}, and CREATED_BY updated.";
-                return RedirectToAction("AssignRecords");
+                return RedirectToAction("AssignRecords", "Auth");
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "An unexpected error occurred. Please try again.";
-                return RedirectToAction("AssignRecords");
+                return RedirectToAction("AssignRecords", "Auth");
+
             }
         }
 
