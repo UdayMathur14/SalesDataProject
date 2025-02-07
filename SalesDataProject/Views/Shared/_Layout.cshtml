@@ -19,43 +19,7 @@
             }
     </style>
     <style>
-        /* Success alert styles */
-        .alert-success-custom {
-            background-color: #e7f9ee; /* Light green background */
-            border-color: #c3e6cb; /* Darker green border */
-            color: #155724; /* Dark green text */
-            padding: 15px; /* Padding for better spacing */
-            border-radius: 5px; /* Rounded corners */
-            font-weight: bold; /* Bold text */
-        }
-
-            .alert-success-custom .close {
-                color: #e7f9ee; /* Close button color */
-                opacity: 0.5; /* Slightly transparent */
-            }
-
-                .alert-success-custom .close:hover {
-                    opacity: 0.75; /* Change opacity on hover */
-                }
-
-        /* Failure alert styles */
-        .alert-failure-custom {
-            background-color: #f8d7da; /* Light red background */
-            color: #721c24; /* Dark red text */
-            border-color: #f5c6cb; /* Light red border */
-            padding: 15px; /* Padding for better spacing */
-            border-radius: 5px; /* Rounded corners */
-            font-weight: bold; /* Bold text */
-        }
-
-            .alert-failure-custom .close {
-                color: #721c24; /* Close button color */
-                opacity: 0.5; /* Slightly transparent */
-            }
-
-                .alert-failure-custom .close:hover {
-                    opacity: 0.75; /* Change opacity on hover */
-                }
+       
 
         /* Navbar styles */
         header {
@@ -144,9 +108,7 @@
     
 
     <div class="container">
-       @*  <div class="spinner-border spinner-border-5xl" role="status">
-            <span class="sr-only"></span>
-        </div> *@
+      
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -161,52 +123,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    <style>
-        .error-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: lightgreen; /* Softer red for a less intense tone */
-            color: black;
-            padding: 10px 10px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            transition: opacity 0.3s ease-out;
-            opacity: 0.95;
-            display: flex;
-            align-items: center;
-        }
-
-     
-
-    </style>
-    <script>
-        // Automatically hide the error message after 5 seconds
-        setTimeout(() => {
-            const errorMessage = document.getElementById('errorMessage');
-            if (errorMessage) {
-                errorMessage.style.display = 'none';
-            }
-        }, 2500);
-    </script>
+    
+    
 </body>
 </html>
-@* /*    .container {
-            position: relative;
-        }
-
-        .spinner-border {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            z-index: 1050; /* Ensures it stays above other content */
-        }
-
-        main {
-            filter: blur(5px); /* Adjust the blur intensity as needed */
-            pointer-events: none; /* Prevent interactions while blurred */
-            user-select: none; /* Prevent text selection */
-        }  */ *@
