@@ -191,12 +191,14 @@ namespace SalesDataProject.Controllers
                     {
                         _context.Titles.AddRange(cleanRecordsToSave);
                         await _context.SaveChangesAsync();
-                        TempData["messagesuccess"] = "Successfully Saved";
+                        TempData["Message"] = "Successfully Saved";
+                        TempData["MessageType"] = "Success";
                     }
                 }
                 else
                 {
-                    TempData["Error"] = "One or more rows have an empty Invoice Number. No data has been saved to the database.";
+                    TempData["Message"] = "One or more rows have an empty Invoice Number. No data has been saved to the database.";
+                    TempData["MessageType"] = "Error";
                 }
                 var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
                 var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
@@ -207,7 +209,8 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";\
+                TempData["MessageType"] = "Error";
                 return View("Index");
             }
         }
@@ -257,13 +260,16 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
+                        TempData["Message"] = "Succesfully downloaded";
+                        TempData["MessageType"] = "Error";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UploadTitles.xlsx");
                     }
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("Index");
             }
         }
@@ -280,42 +286,6 @@ namespace SalesDataProject.Controllers
             return cleanedTitle.ToLower(); // Convert to lowercase for uniformity
         }
 
-        //[HttpPost]
-        //public IActionResult InsertCleanTitles(string cleanTitles)
-        //{
-        //    // Check if the hidden input value is null or empty
-        //    if (!string.IsNullOrEmpty(cleanTitles))
-        //    {
-        //        // Deserialize the JSON array into a list of strings
-        //        var titlesList = JsonSerializer.Deserialize<List<string>>(cleanTitles);
-
-        //        if (titlesList != null && titlesList.Any())
-        //        {
-        //            // Iterate through each title and save it to the database
-        //            foreach (var title in titlesList)
-        //            {
-        //                var newTitle = new TitleValidationViewModel
-        //                {
-        //                    RowNumber = 1, // Example row number; adjust as needed
-        //                    Title = title, // Add the title
-        //                    Status = "Clean",  // Add the current timestamp
-        //                    CREATED_ON = DateOnly.FromDateTime(DateTime.Now)
-        //                };
-
-        //                // Add the title to the database context
-        //                _context.Titles.Add(newTitle);
-        //            }
-
-        //            // Save changes to the database
-        //            _context.SaveChanges();
-        //        }
-        //    }
-        //    TempData["messagesuccess"] = "Successfully Uploaded";
-        //    // Redirect to the Index page after insertion
-        //    return RedirectToAction("Index");
-        //}
-
-
         [HttpPost]
         public async Task<IActionResult> DeleteSelected(List<int> selectedIds)
         {
@@ -325,7 +295,8 @@ namespace SalesDataProject.Controllers
 
                 if (selectedIds == null || !selectedIds.Any())
                 {
-                    TempData["Error"] = "No records selected for deletion.";
+                    TempData["Message"] = "No records selected for deletion.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction("ViewTitles");
                 }
 
@@ -335,18 +306,21 @@ namespace SalesDataProject.Controllers
                 {
                     _context.Titles.RemoveRange(titlesToDelete);
                     await _context.SaveChangesAsync();
-                    TempData["messagesuccess"] = "Selected records deleted successfully.";
+                    TempData["Message"] = "Selected records deleted successfully.";
+                    TempData["MessageType"] = "Success";
                 }
                 else
                 {
-                    TempData["Error"] = "No matching records found for deletion.";
+                    TempData["Message"] = "No matching records found for deletion.";
+                    TempData["MessageType"] = "Success";
                 }
 
                 return RedirectToAction("ViewTitles");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction("ViewTitles");
             }
         }

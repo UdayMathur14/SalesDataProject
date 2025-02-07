@@ -6,12 +6,7 @@
 }
 
 @model SalesDataProject.Models.UploadResultViewModel
-@if (TempData["Success"] != null)
-{
-    <div class="error-message" id="errorMessage">
-        <p>@TempData["Success"]</p>
-    </div>
-}
+
 <div class="header d-flex justify-content-between align-items-center mb-4 p-3 shadow-sm rounded" style="background-color: #f8f9fa;">
     <h2 class="text m-0">Mailing Outcome</h2>
     <div class="buttons d-flex gap-2">
@@ -137,33 +132,8 @@
         color: #495057;
     }
 </style>
-<style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: lightgreen; /* Softer red for a less intense tone */
-        color: black;
-        padding: 10px 10px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-    }
-</style>
 
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 2000);
-</script>
+
 
 @section Scripts {
     <script type="text/javascript">

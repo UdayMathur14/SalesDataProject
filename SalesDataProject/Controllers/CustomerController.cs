@@ -99,12 +99,14 @@ namespace SalesDataProject.Controllers
                 if (existingCustomer != null || existingSalesCustomer!=null)
                 {
                     ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Email already exists.");
-                    TempData["ErrorMessage"] = "This customer Email already exists.";
+                    TempData["Message"] = "This customer Email already exists.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(Index));
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Customer has been successfully created.";
+                TempData["Message"] = "Customer has been successfully created.";
+                TempData["MessageType"] = "Success";
                 return RedirectToAction(nameof(ViewCustomers));
             }
             catch (DbUpdateException ex)
@@ -113,14 +115,16 @@ namespace SalesDataProject.Controllers
                 if (ex.InnerException is SqlException sqlEx && sqlEx.Number == 2627) // 2627 is the SQL error code for unique constraint violation
                 {
                     ModelState.AddModelError("CUSTOMER_CODE", "This customer code already exists.");
-                    TempData["ErrorMessage"] = "This customer code already exists.";
+                    TempData["Message"] = "This customer code already exists.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(Index));
                 }
                 else
                 {
                     // Handle other types of exceptions as necessary
                     ModelState.AddModelError(string.Empty, "An error occurred while saving the customer.");
-                    TempData["ErrorMessage"] = "An error occurred while saving the customer.";
+                    TempData["Message"] = "An error occurred while saving the customer.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -139,7 +143,8 @@ namespace SalesDataProject.Controllers
                 var username = HttpContext.Session.GetString("Username");
                 if (file == null || file.Length == 0)
                 {
-                    TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
+                    TempData["Message"] = "File is empty. Please upload a valid Excel file.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(ViewCustomers));
                 }
 
@@ -353,7 +358,8 @@ namespace SalesDataProject.Controllers
                 }
                 catch (Exception ex)
                 {
-                    TempData["ErrorMessage"] = $"Error processing file: {ex.Message}";
+                    TempData["Message"] = $"Error processing file: {ex.Message}";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(ViewCustomers));
                 }
 
@@ -361,17 +367,19 @@ namespace SalesDataProject.Controllers
                 var allInvalidRecords = invalidRecords.Concat(duplicateRecords).ToList();
                 if (allInvalidRecords.Any())
                 {
-                    TempData["Error"] = "Invalid or duplicate records found; Valid records saved.";
+                    TempData["Message"] = "Invalid or duplicate records found; Valid records saved.";
+                    TempData["MessageType"] = "Error";
                     TempData["InvalidRecords"] = JsonConvert.SerializeObject(allInvalidRecords);
                     return View("InvalidRecords", allInvalidRecords);
                 }
 
-                TempData["SuccessMessage"] = "File uploaded successfully.";
+                TempData["Message"] = "File uploaded successfully.";
+                TempData["MessageType"] = "Success";
                 return RedirectToAction(nameof(ViewCustomers));
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
                 return RedirectToAction(nameof(ViewCustomers));
             }
         }
@@ -464,13 +472,15 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
+                        TempData["MessageType"] = "Success";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CustomerTemplate.xlsx");
                     }
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction(nameof(ViewCustomers));
             }
 
@@ -486,7 +496,8 @@ namespace SalesDataProject.Controllers
             var invalidRecordsJson = TempData["InvalidRecords"] as string;
             if (string.IsNullOrEmpty(invalidRecordsJson))
             {
-                TempData["ErrorMessage"] = "No data available for export.";
+                TempData["Message"] = "No data available for export.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -526,16 +537,18 @@ namespace SalesDataProject.Controllers
                 {
                     workbook.SaveAs(stream);
                     stream.Position = 0;
-                    TempData["SuccessMessage"] = "Customer template has been successfully created.";
-                    // Return the Excel file as a downloadable file
-                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
+                    TempData["Message"] = "Customer template has been successfully created.";
+                        TempData["MessageType"] = "Success";
+                        // Return the Excel file as a downloadable file
+                        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
                 }
             }
-
+            
         }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction(nameof(ViewCustomers));
             }
         }

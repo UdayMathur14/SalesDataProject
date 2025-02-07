@@ -9,18 +9,6 @@
 
 @model List<SalesDataProject.Models.TitleValidationViewModel>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger" id="errorMessage">
-        @TempData["Error"]
-    </div>
-}
-@if (TempData["messagesuccess"] != null)
-{
-     <div class="error-message collor" id="errorMessage">
-     <p>@TempData["messagesuccess"]</p>
-     </div>
-}
 <div class="container mt-4">
     <h2 class="mb-4"></h2>
     <div class="row align-items-center mb-4">
@@ -116,69 +104,9 @@
             $('input[name="selectedIds"]').prop('checked', this.checked);
         });
     });
-</script>
-<style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: red; /* Softer red for a less intense tone */
-        color: black;
-        padding: 10px 12px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-    }
 
-        .error-message.collor {
-            background-color: greenyellow;
-        }
 
-    #categorySelectDropdown {
-        border: 2px solid green;
-    }
-</style>
 
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 2500);
-</script>
-<style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: #f44336; /* Softer red for a less intense tone */
-        color: #ffffff;
-        padding: 10px 10px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-        transition: background-color 0.3s ease;
-    }
-</style>
-
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 7000);
 </script>
 <style>
     .custom-button {
@@ -198,41 +126,9 @@
 
 </style>
 
-<style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: red; /* Softer red for a less intense tone */
-        color: black;
-        padding: 10px 12px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-    }
 
-        .error-message.collor {
-            background-color: greenyellow;
-        }
 
-    #categorySelectDropdown {
-        border: 2px solid green;
-    }
-</style>
 
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 6000);
-</script>
 
 <script>
     // Scroll to the filtered record

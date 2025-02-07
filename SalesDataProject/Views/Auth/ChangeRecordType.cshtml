@@ -2,12 +2,7 @@
 @{
     ViewData["Title"] = "Change Record Type";
 }
-@if (TempData["messagesuccess"] != null)
-{
-    <div class="error-message collor" id="errorMessage">
-        <p>@TempData["messagesuccess"]</p>
-    </div>
-}
+
 <div class="card shadow-sm p-4 mb-4 mt-5 mb-3">
     <div class="d-flex justify-content-between">
         <h4 class="mb-3" style="color:red"><I>CHANGE RECORD TYPE</I></h4>
@@ -173,37 +168,8 @@
     }
 </script>
 <style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: red; /* Softer red for a less intense tone */
-        color: black;
-        padding: 10px 12px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-    }
-
-        .error-message.collor {
-            background-color: greenyellow;
-        }
-
     #categorySelectDropdown {
         border: 2px solid green;
     }
 </style>
 
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 2500);
-</script>

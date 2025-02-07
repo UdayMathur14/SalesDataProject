@@ -7,13 +7,6 @@
         : new List<InvalidCustomerRecord>();
 }
 
-@if (TempData["message"] != null)
-{
-    <div class="error-message" id="errorMessage">
-        <p>@TempData["message"]</p>
-    </div>
-}
-
 @model List<CommonDomains>
 
 <div class="container mt-4">
@@ -115,39 +108,6 @@
         </table>
     </div>
 </div>
-
-<!-- JavaScript Section -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Hide the error message after 2 seconds
-        const errorMessage = document.getElementById("errorMessage");
-        if (errorMessage) {
-            setTimeout(() => {
-                errorMessage.style.display = "none";
-            }, 2000);
-        }
-
-        // Hide the success message after 2 seconds
-        const successMessage = document.getElementById("successMessage");
-        if (successMessage) {
-            setTimeout(() => {
-                successMessage.style.display = "none";
-            }, 2000);
-        }
-
-        // Trigger file upload dialog on button click
-    //     const uploadButton = document.getElementById("uploadButton");
-    // const fileUpload = document.getElementById("fileUpload");
-    // const uploadForm = document.getElementById("uploadForm");
-
-    // uploadButton.addEventListener("click", () => fileUpload.click());
-
-    // fileUpload.addEventListener("change", () => {
-    //     if (fileUpload.files.length > 0) {
-    //         uploadForm.submit(); // Submit form after selecting a file
-    //     }
-    // });
-</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

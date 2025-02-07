@@ -65,14 +65,11 @@ namespace SalesDataProject.Controllers
                 {
                     RecordsList = new List<ProspectCustomer>()
                 };
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction("Login", "Auth");
             }
         }
-
-
-
-
 
         public async Task<IActionResult> ChangeRecordType(UploadResultViewModel model)
         {
@@ -168,18 +165,19 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
                 if (ModelState.IsValid)
                 {
                     _context.Users.Add(model);
                     _context.SaveChanges();
-                    TempData["success"] = "Succesfully Created";
+                    TempData["Message"] = "Succesfully Created";
+                    TempData["MessageType"] = "Success";
                     return RedirectToAction("ManageUsers");
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View(model);
             }
             return View(model);
@@ -191,8 +189,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 foreach (var user in Users)
                 {
                     // Fetch the existing user from the database (replace with your data context)
@@ -216,12 +212,15 @@ namespace SalesDataProject.Controllers
                 _context.SaveChanges();
 
                 // Redirect or return a view after updating
-                TempData["success"] = "Updated Succesfully";
+                TempData["Message"] = "Updated Succesfully";
+                TempData["MessageType"] = "Success";
                 return RedirectToAction("ManageUsers");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
+                
                 return View();
             }
         }
@@ -248,7 +247,8 @@ namespace SalesDataProject.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                TempData["messagesuccess"] = "Successfully cleaned selected companies.";
+                TempData["Message"] = "Successfully cleaned selected companies.";
+                TempData["MessageType"] = "Success";
             }
 
             // Change clean customers to blocked
@@ -264,7 +264,8 @@ namespace SalesDataProject.Controllers
                     customer.RECORD_TYPE = true;
                 }
                 await _context.SaveChangesAsync();
-                TempData["messagesuccess"] = "Successfully blocked selected companies.";
+                TempData["Message"] = "Successfully blocked selected companies.";
+                TempData["MessageType"] = "Success";
 
             }
 
@@ -302,11 +303,13 @@ namespace SalesDataProject.Controllers
                         .ToListAsync();
                     if (model.BlockCustomersEmailList.Any())
                     {
-                        TempData["messagesuccess"] = "Record Found Succesfully";
+                        TempData["Message"] = "Record Found Succesfully";
+                        TempData["MessageType"] = "Success";
                     }
                     else
                     {
-                        TempData["message"] = "No record Found";
+                        TempData["Message"] = "No record Found";
+                        TempData["MessageType"] = "Error";
                     }
                 }
                 // Clean records: RecordType == 0 and IS_EMAIL_BLOCKED == false
@@ -318,11 +321,13 @@ namespace SalesDataProject.Controllers
                         .ToListAsync();
                     if (model.CleanCustomersEmailList.Any())
                     {
-                        TempData["messagesuccess"] = "Record Found Successfully";
+                        TempData["Message"] = "Record Found Successfully";
+                        TempData["MessageType"] = "Success";
                     }
                     else
                     {
-                        TempData["message"] = "No Record Found";
+                        TempData["Message"] = "No Record Found";
+                        TempData["MessageType"] = "Error";
                     }
 
                 }
@@ -341,11 +346,13 @@ namespace SalesDataProject.Controllers
 
                     if (model.BlockCustomersEmailList.Any() || model.CleanCustomersEmailList.Any())
                     {
-                        TempData["messagesuccess"] = "Records found Successfully";
+                        TempData["Message"] = "Records found Successfully";
+                        TempData["MessageType"] = "Success";
                     }
                     else
                     {
-                        TempData["message"] = "No Record found";
+                        TempData["Message"] = "No Record found";
+                        TempData["MessageType"] = "Error";
                     }
 
                 }
@@ -357,7 +364,8 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View();
             }
         }
@@ -391,12 +399,14 @@ namespace SalesDataProject.Controllers
                     RecordsList = await recordsQuery.ToListAsync()
                 };
 
-                TempData["message"] = model.RecordsList.Any() ? "Records Found" : "No Records Found";
+                TempData["Message"] = model.RecordsList.Any() ? "Records Found" : "No Records Found";
+                TempData["MessageType"] = "Success";
                 return View("AssignRecords", model);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View();
             }
         }
@@ -411,13 +421,15 @@ namespace SalesDataProject.Controllers
             {
                 if (string.IsNullOrEmpty(UserName))
                 {
-                    TempData["message"] = "Please select a user to assign records.";
+                    TempData["Message"] = "Please select a user to assign records.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction("AssignRecords");
                 }
 
                 if (RecordIds == null || RecordIds.Length == 0)
                 {
-                    TempData["message"] = "No records selected for assignment.";
+                    TempData["Message"] = "No records selected for assignment.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction("AssignRecords");
                 }
 
@@ -428,7 +440,8 @@ namespace SalesDataProject.Controllers
 
                 if (recordsToAssign.Count == 0)
                 {
-                    TempData["message"] = "No matching records found.";
+                    TempData["Message"] = "No matching records found.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction("AssignRecords");
                 }
 
@@ -458,12 +471,14 @@ namespace SalesDataProject.Controllers
                 await _context.AssignmentHistory.AddRangeAsync(assignmentList);
                 await _context.SaveChangesAsync();
 
-                TempData["message"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}, and CREATED_BY updated.";
+                TempData["Message"] = $"{recordsToAssign.Count} records successfully assigned to {UserName}, and CREATED_BY updated.";
+                TempData["MessageType"] = "Success";
                 return RedirectToAction("AssignRecords", "Auth");
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction("AssignRecords", "Auth");
 
             }
@@ -476,13 +491,15 @@ namespace SalesDataProject.Controllers
             {
                 if (string.IsNullOrEmpty(domainName))
                 {
-                    TempData["Error"] = "Domain name cannot be empty.";
+                    TempData["Message"] = "Domain name cannot be empty.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(AddRecord));
                 }
 
                 if (_context.CommonDomains.Any(d => d.DomainName == domainName))
                 {
-                    TempData["Error"] = "This domain already exists.";
+                    TempData["Message"] = "This domain already exists.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(AddRecord));
                 }
 
@@ -490,12 +507,14 @@ namespace SalesDataProject.Controllers
                 _context.CommonDomains.Add(domain);
                 _context.SaveChanges();
 
-                TempData["Success"] = "Domain added successfully!";
+                TempData["Message"] = "Domain added successfully!";
+                TempData["MessageType"] = "Success";
                 return RedirectToAction(nameof(AddRecord));
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View();
             }
         }
@@ -508,7 +527,8 @@ namespace SalesDataProject.Controllers
                 var username = HttpContext.Session.GetString("Username");
                 if (file == null || file.Length == 0)
                 {
-                    TempData["ErrorMessage"] = "File is empty. Please upload a valid Excel file.";
+                    TempData["Message"] = "File is empty. Please upload a valid Excel file.";
+                    TempData["MessageType"] = "Error";
                     return RedirectToAction(nameof(AddRecord));
                 }
 
@@ -632,14 +652,16 @@ namespace SalesDataProject.Controllers
                     }
                 }
                 TempData["InvalidRecords"] = JsonConvert.SerializeObject(invalidRecords);
-                TempData["message"] = "Successfully Uploaded";
+                TempData["Message"] = "Successfully Uploaded";
+                TempData["MessageType"] = "Success";
                 return RedirectToAction(nameof(AddRecord));
 
             }
             catch (Exception ex)
             {
 
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View();
             }
         }
@@ -702,17 +724,21 @@ namespace SalesDataProject.Controllers
                     var row = worksheet.Range("A2:L2");
                     row.Style.Font.FontColor = XLColor.Black;
 
+
                     using (var stream = new MemoryStream())
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
+                        TempData["Message"] = "Succesfully Downloaded";
+                        TempData["MessageType"] = "Success";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AddRecordTemplate.xlsx");
                     }
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View();
             }
         }
@@ -746,7 +772,8 @@ namespace SalesDataProject.Controllers
 
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return false;
             }
 
@@ -762,7 +789,8 @@ namespace SalesDataProject.Controllers
                 HttpContext.Session.Clear();
 
                 // Set a success message using TempData (optional)
-                TempData["Success"] = "You have been logged out successfully.";
+                TempData["MessageType"] = "Success";
+                TempData["Message"] = "You have been logged out successfully.";
 
                 // Redirect to the login page or any desired page
                 return RedirectToAction("Login", "Auth");
@@ -770,7 +798,8 @@ namespace SalesDataProject.Controllers
             catch (Exception ex)
             {
                 // Handle any unexpected errors
-                TempData["Error"] = "An error occurred while logging out. Please try again.";
+                TempData["Message"] = "An error occurred while logging out. Please try again.";
+                TempData["MessageType"] = "Error";
                 return RedirectToAction("Index", "Home");
             }
         }

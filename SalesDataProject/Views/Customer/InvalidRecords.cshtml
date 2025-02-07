@@ -8,12 +8,7 @@
     ViewData["Title"] = "Invalid Records";
 }
 
-@if (TempData["Error"] != null)
-{
-    <div class="error-message" id="errorMessage">
-        <p>@TempData["Error"]</p>
-    </div>
-}
+
 <div class="header d-flex justify-content-between mb-4">
     <h2>Invalid or Duplicate Records</h2>
 
@@ -66,31 +61,3 @@ else
         });
     </script>
 }
-<style>
-    .error-message {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: red; /* Softer red for a less intense tone */
-        color: #ffffff;
-        padding: 10px 10px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        transition: opacity 0.4s ease-out;
-        opacity: 0.95;
-        transition: background-color 0.3s ease;
-    }
-</style>
-
-<script>
-    // Automatically hide the error message after 5 seconds
-    setTimeout(() => {
-        const errorMessage = document.getElementById('errorMessage');
-        if (errorMessage) {
-            errorMessage.style.display = 'none';
-        }
-    }, 3500);
-</script>

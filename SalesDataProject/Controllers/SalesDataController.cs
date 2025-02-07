@@ -265,7 +265,8 @@ namespace SalesDataProject.Controllers
                         CleanCustomers = cleanCustomers,
                         invalidCustomerRecords = invalidRecords
                     };
-                    TempData["Success"] = "Successfully Uploaded";
+                    TempData["Message"] = "Successfully Uploaded";
+                    TempData["MessageType"] = "Success";
                     return View("UploadResults", model);
                 }
 
@@ -277,7 +278,8 @@ namespace SalesDataProject.Controllers
                 {
 
                 };
-                TempData["message"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("ViewRecords", model);
             }
         }
@@ -460,7 +462,8 @@ namespace SalesDataProject.Controllers
                         CleanCustomers = cleanCustomers,
                         invalidCustomerRecords = invalidRecords
                     };
-                    TempData["Success"] = "Successfully Uploaded";
+                    TempData["Message"] = "Successfully Uploaded";
+                    TempData["MessageType"] = "Success";
                     return View("UploadResults", model);
                 }
 
@@ -473,6 +476,7 @@ namespace SalesDataProject.Controllers
 
                 };
                 TempData["message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("ViewRecords", model);
             }
         }
@@ -596,7 +600,8 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["message"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("ViewRecords");
             }
         }
@@ -660,13 +665,16 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
+                        TempData["Message"] = "succesfully downloaded";
+                        TempData["MessageType"] = "Error";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingTemplate.xlsx");
                     }
                 }
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("ViewRecords");
             }
         }
@@ -736,7 +744,8 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("ViewRecords");
             }
         }
@@ -766,7 +775,9 @@ namespace SalesDataProject.Controllers
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
 
-                    TempData["message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
+                    TempData["Message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
+                    
+                    TempData["MessageType"] = "Success";
 
                     model.BlockedCustomers = filteredCustomers;
                 }
@@ -781,7 +792,9 @@ namespace SalesDataProject.Controllers
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
 
-                    TempData["message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
+                    TempData["Message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
+                    
+                    TempData["MessageType"] = "Success";
 
                     model.CleanCustomers = filteredCustomers;
                 }
@@ -805,9 +818,11 @@ namespace SalesDataProject.Controllers
                                      (c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == model.SelectedDate.Value.Date)))
                         .ToListAsync();
 
-                    TempData["message"] = (filteredBlockedCustomers.Any() || filteredCleanCustomers.Any())
+                    TempData["Message"] = (filteredBlockedCustomers.Any() || filteredCleanCustomers.Any())
                                             ? "Successfully Record Found"
                                             : "No Record Found";
+                    
+                    TempData["MessageType"] = "Success";
 
                     model.CleanCustomers = filteredCleanCustomers;
                     model.BlockedCustomers = filteredBlockedCustomers;
@@ -817,15 +832,11 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                TempData["MessageType"] = "Error";
                 return View("ViewRecords", model);
             }
         }
-
-
-
-
-
 
     }
 }
