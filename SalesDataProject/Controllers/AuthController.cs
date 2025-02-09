@@ -125,13 +125,13 @@ namespace SalesDataProject.Controllers
 
                 TempData["Message"] = "Incorrect username or password. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View(model);
+                return View();
             }
             catch (Exception ex)
             {
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View(model);
+                return View();
             }
         }
 

@@ -209,7 +209,7 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Message"] = "An unexpected error occurred. Please try again.";\
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return View("Index");
             }
