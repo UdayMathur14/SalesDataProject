@@ -111,14 +111,12 @@
 </style>
 
 <script>
-    function closeAlertMessage() {
-        const alertMessage = document.getElementById('alertMessage');
-        if (alertMessage) {
-            alertMessage.classList.add('fade-out');
-            setTimeout(() => alertMessage.style.display = 'none', 500);
-        }
-    }
+    function showSpinner() {
+        let overlay = document.getElementById("spinner-overlay");
+        overlay.style.display = "flex"; // Show overlay
 
-    // Auto-hide after 5 seconds with smooth fade-out
-    setTimeout(closeAlertMessage, 3000);
+        setTimeout(() => {
+            overlay.style.display = "none"; // Hide after 3 seconds
+        }, 3000);
+    }
 </script>

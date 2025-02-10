@@ -138,8 +138,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 var username = HttpContext.Session.GetString("Username");
                 if (file == null || file.Length == 0)
                 {
@@ -212,8 +210,6 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-
-
                                 if (string.IsNullOrWhiteSpace(companyName) ||
                                     string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(category))
                                 {
@@ -470,7 +466,6 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CustomerTemplate.xlsx");
                     }
                 }
@@ -536,9 +531,8 @@ namespace SalesDataProject.Controllers
                     workbook.SaveAs(stream);
                     stream.Position = 0;
                     TempData["Message"] = "Customer template has been successfully created.";
-                        TempData["MessageType"] = "Success";
-                        // Return the Excel file as a downloadable file
-                        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
+                    TempData["MessageType"] = "Success";
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
                 }
             }
             

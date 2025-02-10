@@ -9,8 +9,6 @@
     ViewData["Title"] = "Company Records";
 }
 
-
-
 <style>
     .table-header{
         background-color: darkslateblue;
@@ -30,10 +28,10 @@
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
                 <button type="button" id="uploadButton" class="btn btn-success ml-4 mb-4">Upload Excel</button>
             </form>
-            <form asp-action="DownloadTemplate" method="get" onsubmit="showSpinner()">
-                <button type="submit" class="btn btn-success">Download Template</button>
+            <form>
+                <button type="submit" class="btn btn-success" id="downloadBtn">Download Template</button>
             </form>
-
+            
             <a href="@Url.Action("Index", "Home")" class="" >
                 <button style="background-color:red" type="submit" class="btn btn-success">Back</button>
             </a>
@@ -101,12 +99,41 @@
 
 <script>
     function showSpinner() {
-        let spinner = document.getElementById("spinner");
-        spinner.style.display = "block"; // Show spinner
+        let overlay = document.getElementById("spinner-overlay");
+        overlay.style.display = "flex"; // Show the overlay
 
-        setTimeout(() => {
-            spinner.style.display = "none"; // Hide after 3 seconds
-        }, 3000);
+        // Do NOT hide the spinner automatically; let it disappear when the request completes
+    }
+
+    // Optional: Hide overlay manually (if needed)
+    function hideSpinner() {
+        let overlay = document.getElementById("spinner-overlay");
+        overlay.style.display = "none";
     }
 </script>
 
+<script>
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        // Show loader
+        document.getElementById("spinner-overlay").style.display = "flex";
+
+        fetch('/Customer/DownloadTemplate', { method: 'GET' }) // Replace with your actual controller
+            .then(response => response.blob()) // Convert response to Blob
+            .then(blob => {
+                // Hide loader
+                document.getElementById("spinner-overlay").style.display = "none";
+
+                // Create a temporary link element
+                let link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = "CustomerTemplate.xlsx"; // Set the file name
+                document.body.appendChild(link);
+                link.click(); // Trigger the download
+                document.body.removeChild(link); // Remove the link after download
+            })
+            .catch(error => {
+                document.getElementById("spinner-overlay").style.display = "none";
+                alert("Error downloading file: " + error);
+            });
+    });
+</script>
