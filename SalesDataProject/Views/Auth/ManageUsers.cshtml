@@ -6,95 +6,98 @@
 @{
     ViewData["Title"] = "ManageUsers";
 }
+<div class="container">
+    <div class="header d-flex justify-content-between">
+        <h2 style="color:black" class="text-center">Manage Users Permissions</h2>
 
-<div class="header d-flex justify-content-between">
-<h2 style="color:black" class="text-center">Manage Users Permissions</h2>
+        <div class="d-flex justify-content-end mb-3 gap-2">
+            <form asp-action="AddRecord" method="get">
+                <button type="submit" class="btn btn-dark">Add Record/Domain</button>
+            </form>
+            <form asp-action="AssignRecords" method="get">
+                <button type="submit" class="btn btn-primary">Assign Record</button>
+            </form>
+            <form asp-action="ChangeRecordType" method="get">
+                <button type="submit" class="btn btn-warning">Change Record</button>
+            </form>
+            <form asp-action="CreateUser" method="get">
+                <button type="submit" class="btn btn-danger">Create User</button>
+            </form>
 
-    <div class="d-flex justify-content-end mb-3 gap-2">
-        <form asp-action="AddRecord" method="get">
-            <button type="submit" class="btn btn-dark">Add Record/Domain</button>
-        </form>
-        <form asp-action="AssignRecords" method="get">
-            <button type="submit" class="btn btn-primary">Assign Record</button>
-        </form>
-        <form asp-action="ChangeRecordType" method="get">
-            <button type="submit" class="btn btn-warning">Change Record</button>
-        </form>
-        <form asp-action="CreateUser" method="get">
-            <button type="submit" class="btn btn-danger">Create User</button>
-        </form>
-
-        <a href="@Url.Action("Index", "Home")" class="">
-            <button style="background-color:red;height:40px;width:60px;color:white" type="submit" class="btn btn-danger">Back</button>
+            <a href="@Url.Action("Index", "Home")" class="">
+                <button style="background-color:red;height:40px;width:60px;color:white" type="submit" class="btn btn-danger">Back</button>
             </a>
-        
-        
+
+
+        </div>
     </div>
+    <form asp-action="UpdateUserAccess" method="post">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="table-dark">
+                    <!-- Changed from thead-dark to table-dark -->
+                    <tr>
+                        <th>Username</th>
+                        <th>Customer Module</th>
+                        <th>Mailing Data Module</th>
+                        <th>User Management Module</th>
+                        <th>Title Module</th>
+                        <th>View Titles</th>
+                        <th>Delete Titles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < userList.Count; i++)
+                    {
+                        <tr>
+                            <td class="align-middle">
+                                @userList[i].Username
+                                <input type="hidden" name="Users[@i].Username" value="@userList[i].Username" />
+                            </td>
+                            <td class="text-center align-middle">
+                                <input type="checkbox" name="Users[@i].CanAccessCustomer"
+                                       value="true" @(userList[i].CanAccessCustomer ? "checked" : "") class="form-check-input mx-auto" />
+                                <input type="hidden" name="Users[@i].CanAccessCustomer" value="false" />
+                            </td>
+                            <td class="text-center align-middle">
+                                <input type="checkbox" name="Users[@i].CanAccessSales"
+                                       value="true" @(userList[i].CanAccessSales ? "checked" : "") class="form-check-input mx-auto" />
+                                <input type="hidden" name="Users[@i].CanAccessSales" value="false" />
+                            </td>
+                            <td class="text-center align-middle">
+                                <input type="checkbox" name="Users[@i].CanAccessUserManagement"
+                                       value="true" @(userList[i].CanAccessUserManagement ? "checked" : "") class="form-check-input mx-auto" />
+                                <input type="hidden" name="Users[@i].CanAccessUserManagement" value="false" />
+                            </td>
+
+                            <td class="text-center align-middle">
+                                <input type="checkbox" name="Users[@i].CanAccessTitle"
+                                       value="true" @(userList[i].CanAccessTitle ? "checked" : "") class="form-check-input mx-auto" />
+                                <input type="hidden" name="Users[@i].CanAccessTitle" value="false" />
+                            </td>
+                            <td class="text-center align-middle">
+                                <input type="checkbox" name="Users[@i].CanViewTitles"
+                                       value="true" @(userList[i].CanViewTitles ? "checked" : "") class="form-check-input mx-auto" />
+                                <input type="hidden" name="Users[@i].CanViewTitles" value="false" />
+                            </td>
+                            <td class="text-center align-middle">
+                                <input type="checkbox" name="Users[@i].CanDeleteTitles"
+                                       value="true" @(userList[i].CanDeleteTitles ? "checked" : "") class="form-check-input mx-auto" />
+                                <input type="hidden" name="Users[@i].CanDeleteTitles" value="false" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success">Update Access</button>
+        </div>
+    </form>
+
 </div>
 
-<form asp-action="UpdateUserAccess" method="post">
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered table-hover">
-            <thead class="table-dark">
-                <!-- Changed from thead-dark to table-dark -->
-                <tr>
-                    <th>Username</th>
-                    <th>Customer Module</th>
-                    <th>Mailing Data Module</th>
-                    <th>User Management Module</th>
-                    <th>Title Module</th>
-                    <th>View Titles</th>
-                    <th>Delete Titles</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 0; i < userList.Count; i++)
-                {
-                    <tr>
-                        <td class="align-middle">
-                            @userList[i].Username
-                            <input type="hidden" name="Users[@i].Username" value="@userList[i].Username" />
-                        </td>
-                        <td class="text-center align-middle">
-                            <input type="checkbox" name="Users[@i].CanAccessCustomer"
-                                   value="true" @(userList[i].CanAccessCustomer ? "checked" : "") class="form-check-input mx-auto" />
-                            <input type="hidden" name="Users[@i].CanAccessCustomer" value="false" />
-                        </td>
-                        <td class="text-center align-middle">
-                            <input type="checkbox" name="Users[@i].CanAccessSales"
-                                   value="true" @(userList[i].CanAccessSales ? "checked" : "") class="form-check-input mx-auto" />
-                            <input type="hidden" name="Users[@i].CanAccessSales" value="false" />
-                        </td>
-                        <td class="text-center align-middle">
-                            <input type="checkbox" name="Users[@i].CanAccessUserManagement"
-                                   value="true" @(userList[i].CanAccessUserManagement ? "checked" : "") class="form-check-input mx-auto" />
-                            <input type="hidden" name="Users[@i].CanAccessUserManagement" value="false" />
-                        </td>
-                        
-                        <td class="text-center align-middle">
-                            <input type="checkbox" name="Users[@i].CanAccessTitle"
-                                   value="true" @(userList[i].CanAccessTitle ? "checked" : "") class="form-check-input mx-auto" />
-                            <input type="hidden" name="Users[@i].CanAccessTitle" value="false" />
-                        </td>
-                        <td class="text-center align-middle">
-                            <input type="checkbox" name="Users[@i].CanViewTitles"
-                                   value="true" @(userList[i].CanViewTitles ? "checked" : "") class="form-check-input mx-auto" />
-                            <input type="hidden" name="Users[@i].CanViewTitles" value="false" />
-                        </td>
-                        <td class="text-center align-middle">
-                            <input type="checkbox" name="Users[@i].CanDeleteTitles"
-                                   value="true" @(userList[i].CanDeleteTitles ? "checked" : "") class="form-check-input mx-auto" />
-                            <input type="hidden" name="Users[@i].CanDeleteTitles" value="false" />
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <div class="text-center mt-4">
-        <button type="submit" class="btn btn-success">Update Access</button>
-    </div>
-</form>
+
 
 <style>
     h2 {

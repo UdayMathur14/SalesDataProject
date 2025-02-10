@@ -8,92 +8,19 @@
     ViewData["Title"] = "Assign Records";
 }
 
-<div class="card shadow-sm p-4 mb-2 mt-5 mb-3">
-    <div class="d-flex justify-content-between">
-        <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
+<div class="container">
+    <div class="card shadow-sm p-4 mb-2 mt-5 mb-3">
+        <div class="d-flex justify-content-between">
+            <h4 class="mb-3" style="color:red"><i>Assign Company Records</i></h4>
 
-        <a href="@Url.Action("ManageUsers", "Auth")" class="">
-            <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
-        </a>
-    </div>
-    <form asp-action="FilterRecords" method="post">
-        <div class="form-row d-flex gap-4">
-            <div class="col-md-3 mb-3">
-                <label for="UserName" class="font-weight-bold">Select User:</label>
-                <select asp-for="UserName" class="form-select form-control-sm">
-                    <option value="">--Select--</option>
-                    @if (ViewBag.Users != null)
-                    {
-                        foreach (var user in ViewBag.Users as SelectList)
-                        {
-                            <option value="@user.Value">@user.Text</option>
-                        }
-                    }
-                </select>
-            </div>
-            <div class="col-md-3 mb-2">
-                <label for="Category" class="font-weight-bold">Select Category:</label>
-                <select id="Category" name="Category" class="form-select form-control-sm">
-                    <option value="">--Select--</option>
-                    <option value="UNIVERSITY">University</option>
-                    <option value="SME">SME</option>
-                    <option value="CORPORATE">Corporate</option>
-                    <option value="LAWFIRM">Law Firm</option>
-                    <option value="PCT">PCT</option>
-                </select>
-            </div>
-
-            <div class="col-md-2 mb-3 align-self-end">
-                <button type="submit" class="btn btn-primary">Search</button>
-            </div>
+            <a href="@Url.Action("ManageUsers", "Auth")" class="">
+                <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
+            </a>
         </div>
-    </form>
-
-    <!-- Display Company Records -->
-    <div class="custom-table" id="companyRecordsList">
-        <h5 class="text-secondary">Available Records</h5>
-        <form asp-action="Assign" method="post">
-            @if (Model.RecordsList != null && Model.RecordsList.Any())
-            {
-                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-                    <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>
-                                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" />
-                                </th>
-                                <th>Category</th>
-                                <th>Company Name</th>
-                                <th>Contact Number</th>
-                                <th>Email</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var record in Model.RecordsList)
-                            {
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" name="RecordIds" value="@record.ID" />
-                                    </td>
-                                    <td>@record.CATEGORY</td>
-                                    <td>@record.COMPANY_NAME</td>
-                                    <td>@record.CUSTOMER_CONTACT_NUMBER1</td>
-                                    <td>@record.CUSTOMER_EMAIL</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <p>No records found for the selected criteria.</p>
-            }
-
-            <div class="text-center mt-2 d-flex justify-content-center gap-3">
-                <button type="submit" class="btn btn-success mt-4" name="assignAll" value="false" style="height: 40px !important">Assign Records</button>
+        <form asp-action="FilterRecords" method="post">
+            <div class="form-row d-flex gap-4">
                 <div class="col-md-3 mb-3">
-                    <label for="UserName" class="font-weight-bold"></label>
+                    <label for="UserName" class="font-weight-bold">Select User:</label>
                     <select asp-for="UserName" class="form-select form-control-sm">
                         <option value="">--Select--</option>
                         @if (ViewBag.Users != null)
@@ -105,48 +32,124 @@
                         }
                     </select>
                 </div>
+                <div class="col-md-3 mb-2">
+                    <label for="Category" class="font-weight-bold">Select Category:</label>
+                    <select id="Category" name="Category" class="form-select form-control-sm">
+                        <option value="">--Select--</option>
+                        <option value="UNIVERSITY">University</option>
+                        <option value="SME">SME</option>
+                        <option value="CORPORATE">Corporate</option>
+                        <option value="LAWFIRM">Law Firm</option>
+                        <option value="PCT">PCT</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mb-3 align-self-end">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
             </div>
         </form>
-    </div>
 
-    <div class="custom-table" id="assignmentHistoryList">
-        <h5 class="text-secondary mt-5">Assignment History</h5>
-        @if (Model.AssignmentHistoryList != null && Model.AssignmentHistoryList.Any())
-        {
-            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-                <table class="table table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>Company Name</th>
-                            <th>Assigned To</th>
-                            <th>Assigned By</th>
-                            <th>Created By</th>
-                            <th>Assigned On</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var history in Model.AssignmentHistoryList)
-                        {
+        <!-- Display Company Records -->
+        <div class="custom-table" id="companyRecordsList">
+            <h5 class="text-secondary">Available Records</h5>
+            <form asp-action="Assign" method="post">
+                @if (Model.RecordsList != null && Model.RecordsList.Any())
+                {
+                    <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" />
+                                    </th>
+                                    <th>Category</th>
+                                    <th>Company Name</th>
+                                    <th>Contact Number</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var record in Model.RecordsList)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="RecordIds" value="@record.ID" />
+                                        </td>
+                                        <td>@record.CATEGORY</td>
+                                        <td>@record.COMPANY_NAME</td>
+                                        <td>@record.CUSTOMER_CONTACT_NUMBER1</td>
+                                        <td>@record.CUSTOMER_EMAIL</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p>No records found for the selected criteria.</p>
+                }
+
+                <div class="text-center mt-2 d-flex justify-content-center gap-3">
+                    <button type="submit" class="btn btn-success mt-4" name="assignAll" value="false" style="height: 40px !important">Assign Records</button>
+                    <div class="col-md-3 mb-3">
+                        <label for="UserName" class="font-weight-bold"></label>
+                        <select asp-for="UserName" class="form-select form-control-sm">
+                            <option value="">--Select--</option>
+                            @if (ViewBag.Users != null)
+                            {
+                                foreach (var user in ViewBag.Users as SelectList)
+                                {
+                                    <option value="@user.Value">@user.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="custom-table" id="assignmentHistoryList">
+            <h5 class="text-secondary mt-5">Assignment History</h5>
+            @if (Model.AssignmentHistoryList != null && Model.AssignmentHistoryList.Any())
+            {
+                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                    <table class="table table-striped mb-0">
+                        <thead>
                             <tr>
-                                <td>@history.COMPANY_NAME</td>
-                                <td>@history.ASSIGNED_TO</td>
-                                <td>@history.ASSIGNED_BY</td>
-                                <td>@history.CREATED_BY</td>
-                                <td>@history.ASSIGNED_ON</td>
-                                <td>@history.EMAIL_ID</td>
+                                <th>Company Name</th>
+                                <th>Assigned To</th>
+                                <th>Assigned By</th>
+                                <th>Created By</th>
+                                <th>Assigned On</th>
+                                <th>Email</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <p>No assignment history found.</p>
-        }
+                        </thead>
+                        <tbody>
+                            @foreach (var history in Model.AssignmentHistoryList)
+                            {
+                                <tr>
+                                    <td>@history.COMPANY_NAME</td>
+                                    <td>@history.ASSIGNED_TO</td>
+                                    <td>@history.ASSIGNED_BY</td>
+                                    <td>@history.CREATED_BY</td>
+                                    <td>@history.ASSIGNED_ON</td>
+                                    <td>@history.EMAIL_ID</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p>No assignment history found.</p>
+            }
+        </div>
     </div>
 </div>
+
   
 
 <script>

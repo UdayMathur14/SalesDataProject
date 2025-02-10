@@ -17,7 +17,7 @@
     {
         <div class="d-flex flex-wrap justify-content-end">
             <form asp-action="ViewTitles" method="get">
-                    <button type="submit" class="btn btn-warning fw-bold px-3"><i>View Titles</i></button>
+                <button type="submit" class="btn btn-warning fw-bold px-3"><i>View Titles</i></button>
             </form>
             <a href="@Url.Action("Index", "Home")" class="ms-2">
                 <button type="button" class="btn fw-bold px-3" style="background-color: red; color: white;">Back</button>
@@ -38,10 +38,13 @@
                     </button>
                 </form>
                 <!-- Download Template -->
-                <form asp-action="DownloadTemplate" method="get">
+                @* <form asp-action="DownloadTemplate" method="get">
                     <button type="submit" class="btn btn-success btn-md">
                         <i class="bi bi-file-earmark-arrow-down"></i> Download Template
                     </button>
+                </form> *@
+                <form>
+                    <button type="submit" class="btn btn-success btn-md bi bi-file-earmark-arrow-down" id="downloadBtn">Download Template</button>
                 </form>
             </div>
         </div>
@@ -137,18 +140,19 @@
             });
         }
     });
+    function showSpinner() {
+        document.getElementById("spinner-overlay").style.display = "flex";
+    }
 
-    // document.getElementById("insertForm").addEventListener("submit", function (e) {
-    //     e.preventDefault();
-    //     var cleanTitles = @Html.Raw(Json.Serialize(Model?.CleanTitles?.Select(c => c.Title) ?? new List<string>()));
+    function hideSpinner() {
+        document.getElementById("spinner-overlay").style.display = "none";
+    }
 
-    //     if (cleanTitles && cleanTitles.length > 0) {
-    //         document.getElementById("cleanTitles").value = JSON.stringify(cleanTitles);
-    //         e.target.submit();
-    //     } else {
-    //         alert("No clean titles to insert.");
-    //     }
-    // });
+    // Hide the loader when the page is fully loaded (after form submission)
+    window.addEventListener('load', function () {
+        hideSpinner();
+    });
+    
 </script>
 
 <style>
@@ -205,14 +209,38 @@
 </style>
 
 <style>
-
-
-        .error-message.collor {
-            background-color: greenyellow;
-        }
+     .error-message.collor {
+        background-color: greenyellow;
+     }
 
     #categorySelectDropdown {
         border: 2px solid green;
     }
 </style>
+
+<script>
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        // Show loader
+        document.getElementById("spinner-overlay").style.display = "flex";
+
+        fetch('/SalesData/DownloadTemplate', { method: 'GET' }) // Replace with your actual controller
+            .then(response => response.blob()) // Convert response to Blob
+            .then(blob => {
+                // Hide loader
+                document.getElementById("spinner-overlay").style.display = "none";
+
+                // Create a temporary link element
+                let link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = "UploadTitles.xlsx"; // Set the file name
+                document.body.appendChild(link);
+                link.click(); // Trigger the download
+                document.body.removeChild(link); // Remove the link after download
+            })
+            .catch(error => {
+                document.getElementById("spinner-overlay").style.display = "none";
+                alert("Error downloading file: " + error);
+            });
+    });
+</script>
 
