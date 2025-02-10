@@ -13,7 +13,6 @@ namespace SalesDataProject.Controllers
     public class AuthController : Controller
     {
         private readonly AppDbContext _context;
-
         public AuthController(AppDbContext context)
         {
             _context = context;
@@ -75,8 +74,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 if (HttpContext.Session.GetString("CanAccessSales") != "True")
                 {
                     // If not authorized, redirect to home or another page
@@ -91,7 +88,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
 
@@ -183,7 +179,6 @@ namespace SalesDataProject.Controllers
             return View(model);
         }
 
-
         [HttpPost]
         public IActionResult UpdateUserAccess(List<User> Users)
         {
@@ -207,7 +202,6 @@ namespace SalesDataProject.Controllers
                         _context.Update(existingUser);
                     }
                 }
-
                 // Commit all changes at once
                 _context.SaveChanges();
 
@@ -224,7 +218,6 @@ namespace SalesDataProject.Controllers
                 return View();
             }
         }
-
 
         [HttpPost]
         public async Task<IActionResult> UpdateCustomerStatus(List<int> BlockedCustomerIds, List<int> CleanCustomerIds)
@@ -268,7 +261,6 @@ namespace SalesDataProject.Controllers
                 TempData["MessageType"] = "Success";
 
             }
-
             // Redirect back to the ViewEmailRecords action with the selected RecordType and SelectedDate
             return RedirectToAction("ChangeRecordType"); // Adjust as needed
         }
@@ -370,7 +362,6 @@ namespace SalesDataProject.Controllers
             }
         }
 
-
         [HttpPost]
         public async Task<IActionResult> FilterRecords(string Category, string UserName)
         {
@@ -410,7 +401,6 @@ namespace SalesDataProject.Controllers
                 return View();
             }
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Assign(int[] RecordIds, string UserName, bool assignAll)
@@ -655,11 +645,9 @@ namespace SalesDataProject.Controllers
                 TempData["Message"] = "Successfully Uploaded";
                 TempData["MessageType"] = "Success";
                 return RedirectToAction(nameof(AddRecord));
-
             }
             catch (Exception ex)
             {
-
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return View();
@@ -758,6 +746,7 @@ namespace SalesDataProject.Controllers
                 return false;
             }
         }
+
         public bool IsValidPhoneNumber(string customerNumber)
         {
             try
@@ -769,15 +758,12 @@ namespace SalesDataProject.Controllers
                 // Check if the customer number matches the regex pattern
                 return regex.IsMatch(customerNumber);
             }
-
             catch (Exception ex)
             {
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return false;
             }
-
-
         }
 
         [HttpPost]
@@ -803,6 +789,5 @@ namespace SalesDataProject.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
-
     }
 }

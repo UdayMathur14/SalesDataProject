@@ -14,12 +14,10 @@ namespace SalesDataProject.Controllers
     public class CustomerController : Controller
     {
         private readonly AppDbContext _context;
-
         public CustomerController(AppDbContext context)
         {
             _context = context;
         }
-
 
         public async Task<IActionResult> Index()
         {
@@ -42,7 +40,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -55,13 +52,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
         public IActionResult ShowInvalidRecords()
         {
-            try {
+            try
+            {
                 if (TempData["InvalidRecords"] != null)
                 {
                     var recordsJson = TempData["InvalidRecords"].ToString();
@@ -73,7 +70,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -83,7 +79,6 @@ namespace SalesDataProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Customer customer)
         {
-
             var username = HttpContext.Session.GetString("Username");
             customer.CREATED_BY = username;
             customer.MODIFIED_BY = username;
@@ -94,9 +89,9 @@ namespace SalesDataProject.Controllers
             {
                 // Attempt to add the new customer to the context
                 _context.Customers.Add(customer);
-                var existingCustomer = _context.Customers.FirstOrDefault(c =>c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower()  || c.COMPANY_NAME.ToUpper() == c.COMPANY_NAME.ToUpper());
-                var existingSalesCustomer = _context.Prospects.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == customer.COMPANY_NAME.ToUpper()|| (c.EMAIL_DOMAIN.ToLower() == c.EMAIL_DOMAIN.ToLower() && c.RECORD_TYPE == true));
-                if (existingCustomer != null || existingSalesCustomer!=null)
+                var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == c.COMPANY_NAME.ToUpper());
+                var existingSalesCustomer = _context.Prospects.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == customer.COMPANY_NAME.ToUpper() || (c.EMAIL_DOMAIN.ToLower() == c.EMAIL_DOMAIN.ToLower() && c.RECORD_TYPE == true));
+                if (existingCustomer != null || existingSalesCustomer != null)
                 {
                     ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Email already exists.");
                     TempData["Message"] = "This customer Email already exists.";
@@ -129,9 +124,6 @@ namespace SalesDataProject.Controllers
                 }
             }
         }
-
-
-
 
         [HttpPost]
         public async Task<IActionResult> UploadExcel(IFormFile file)
@@ -379,9 +371,6 @@ namespace SalesDataProject.Controllers
                 return RedirectToAction(nameof(ViewCustomers));
             }
         }
-
-
-
         // Helper method to validate email format
         private bool IsValidEmail(string email)
         {
@@ -458,7 +447,6 @@ namespace SalesDataProject.Controllers
                     headerRow.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
                     headerRow.Style.Border.RightBorder = XLBorderStyleValues.Thin;
 
-
                     var row = worksheet.Range("A2:L2");
                     row.Style.Font.FontColor = XLColor.Black;
 
@@ -479,64 +467,63 @@ namespace SalesDataProject.Controllers
 
         }
 
-
         [HttpGet]
         public IActionResult ExportInvalidRecords()
         {
-            try {
-            
-            // Retrieve the invalid records from TempData
-            var invalidRecordsJson = TempData["InvalidRecords"] as string;
-            if (string.IsNullOrEmpty(invalidRecordsJson))
+            try
             {
-                TempData["Message"] = "No data available for export.";
-                TempData["MessageType"] = "Error";
-                return RedirectToAction(nameof(Index));
-            }
-
-            var invalidRecords = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(invalidRecordsJson);
-
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("InvalidRecords");
-
-                // Adding headers
-                worksheet.Cell(1, 1).Value = "Excel Row";
-                worksheet.Cell(1, 2).Value = "Company Name";
-                worksheet.Cell(1, 3).Value = "Customer Email";
-                worksheet.Cell(1, 4).Value = "Customer Number";
-                worksheet.Cell(1, 5).Value = "Error Message";
-
-                // Populating data
-                for (int i = 0; i < invalidRecords.Count; i++)
+                // Retrieve the invalid records from TempData
+                var invalidRecordsJson = TempData["InvalidRecords"] as string;
+                if (string.IsNullOrEmpty(invalidRecordsJson))
                 {
-                    var record = invalidRecords[i];
-                    worksheet.Cell(i + 2, 1).Value = record.RowNumber;
-                    worksheet.Cell(i + 2, 2).Value = record.CompanyName;
-                    worksheet.Cell(i + 2, 3).Value = record.CustomerEmail;
-                    worksheet.Cell(i + 2, 4).Value = record.CustomerNumber;
-                    worksheet.Cell(i + 2, 5).Value = record.ErrorMessage;
+                    TempData["Message"] = "No data available for export.";
+                    TempData["MessageType"] = "Error";
+                    return RedirectToAction(nameof(Index));
                 }
 
-                worksheet.Columns().AdjustToContents();
+                var invalidRecords = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(invalidRecordsJson);
 
-                // Optionally, apply styles to the header row for better visibility
-                var headerRow = worksheet.Range("A1:L1");
-                headerRow.Style.Font.Bold = true;
-                headerRow.Style.Font.FontColor = XLColor.White;
-                headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
-
-                using (var stream = new MemoryStream())
+                using (var workbook = new XLWorkbook())
                 {
-                    workbook.SaveAs(stream);
-                    stream.Position = 0;
-                    TempData["Message"] = "Customer template has been successfully created.";
-                    TempData["MessageType"] = "Success";
-                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
+                    var worksheet = workbook.Worksheets.Add("InvalidRecords");
+
+                    // Adding headers
+                    worksheet.Cell(1, 1).Value = "Excel Row";
+                    worksheet.Cell(1, 2).Value = "Company Name";
+                    worksheet.Cell(1, 3).Value = "Customer Email";
+                    worksheet.Cell(1, 4).Value = "Customer Number";
+                    worksheet.Cell(1, 5).Value = "Error Message";
+
+                    // Populating data
+                    for (int i = 0; i < invalidRecords.Count; i++)
+                    {
+                        var record = invalidRecords[i];
+                        worksheet.Cell(i + 2, 1).Value = record.RowNumber;
+                        worksheet.Cell(i + 2, 2).Value = record.CompanyName;
+                        worksheet.Cell(i + 2, 3).Value = record.CustomerEmail;
+                        worksheet.Cell(i + 2, 4).Value = record.CustomerNumber;
+                        worksheet.Cell(i + 2, 5).Value = record.ErrorMessage;
+                    }
+
+                    worksheet.Columns().AdjustToContents();
+
+                    // Optionally, apply styles to the header row for better visibility
+                    var headerRow = worksheet.Range("A1:L1");
+                    headerRow.Style.Font.Bold = true;
+                    headerRow.Style.Font.FontColor = XLColor.White;
+                    headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        stream.Position = 0;
+                        TempData["Message"] = "Customer template has been successfully created.";
+                        TempData["MessageType"] = "Success";
+                        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
+                    }
                 }
+
             }
-            
-        }
             catch (Exception ex)
             {
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
@@ -544,6 +531,7 @@ namespace SalesDataProject.Controllers
                 return RedirectToAction(nameof(ViewCustomers));
             }
         }
+
         public async Task<IActionResult> Countryget()
         {
             var countries = await _context.Countries
@@ -558,15 +546,10 @@ namespace SalesDataProject.Controllers
             // Check if the countries list is null or empty
             if (countries == null || !countries.Any())
             {
-                // Handle the case when no countries are returned, maybe log an error
-                // or set a default message.
+                
             }
-
             ViewData["CountryList"] = countries;  // Set the countries to ViewData
             return View();
         }
-
-
-
     }
 }

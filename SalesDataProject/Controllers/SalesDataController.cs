@@ -12,7 +12,6 @@ namespace SalesDataProject.Controllers
     public class SalesDataController : Controller
     {
         private readonly AppDbContext _context;
-
         public SalesDataController(AppDbContext context)
         {
             _context = context;
@@ -29,13 +28,11 @@ namespace SalesDataProject.Controllers
                     // If not authorized, redirect to login page
                     return RedirectToAction("Login", "Auth");
                 }
-
                 // Fetch the users from the database
                 return View();
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -54,10 +51,10 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
+
         public async Task<IActionResult> ViewRecords(UploadResultViewModel model)
         {
             var username = HttpContext.Session.GetString("Username");
@@ -84,7 +81,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -208,8 +204,6 @@ namespace SalesDataProject.Controllers
 
                                 var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
 
-
-
                                 // New logic: Check if record type is true in the Prospects table
                                 var isBlockedInProspectTable = await _context.Prospects
                                     .Where(c => c.RECORD_TYPE == true &&
@@ -217,7 +211,6 @@ namespace SalesDataProject.Controllers
                                                  c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()
                                                  || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))
                                     .AnyAsync();
-
 
                                 var customerData = new ProspectCustomer
                                 {
@@ -254,7 +247,6 @@ namespace SalesDataProject.Controllers
                                     _context.Prospects.Add(customerData);
                                 }
                             }
-
                             await _context.SaveChangesAsync();
                         }
                     }
@@ -269,7 +261,6 @@ namespace SalesDataProject.Controllers
                     TempData["MessageType"] = "Success";
                     return View("UploadResults", model);
                 }
-
                 return View();
             }
             catch (Exception ex)
@@ -404,8 +395,6 @@ namespace SalesDataProject.Controllers
 
                                 var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
 
-
-
                                 // New logic: Check if record type is true in the Prospects table
                                 var isBlockedInProspectTable = await _context.Prospects
                                     .Where(c => c.RECORD_TYPE == true &&
@@ -413,7 +402,6 @@ namespace SalesDataProject.Controllers
                                                  c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()
                                                  || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))
                                     .AnyAsync();
-
 
                                 var customerData = new ProspectCustomer
                                 {
@@ -451,7 +439,6 @@ namespace SalesDataProject.Controllers
                                     _context.Prospects.Add(customerData);
                                 }
                             }
-
                             await _context.SaveChangesAsync();
                         }
                     }
@@ -513,8 +500,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 var blockedCustomers = JsonConvert.DeserializeObject<List<Customer>>(BlockedCustomersJson);
                 var cleanCustomers = JsonConvert.DeserializeObject<List<Customer>>(CleanCustomersJson);
                 var invalidCustomers = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(InvalidCustomersJson);
@@ -683,7 +668,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
                 using (var workbook = new XLWorkbook())
                 {
                     var worksheet = workbook.Worksheets.Add("EventTemplate");
@@ -838,6 +822,5 @@ namespace SalesDataProject.Controllers
                 return View("ViewRecords", model);
             }
         }
-
     }
 }

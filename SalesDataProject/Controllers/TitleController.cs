@@ -9,7 +9,6 @@ namespace SalesDataProject.Controllers
     public class TitleController : Controller
     {
         private readonly AppDbContext _context;
-
         public TitleController(AppDbContext context)
         {
             _context = context;
@@ -25,7 +24,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -42,7 +40,6 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-
                 return RedirectToAction("Login", "Auth");
             }
         }
@@ -68,7 +65,6 @@ namespace SalesDataProject.Controllers
 
                 using (var package = new ExcelPackage(file.OpenReadStream()))
                 {
-
                     var worksheet = package.Workbook.Worksheets[0];
                     var rowCount = worksheet.Dimension.Rows;
 
@@ -169,7 +165,6 @@ namespace SalesDataProject.Controllers
                         }
                     }
                 }
-
                 // Save only clean records to the database if all rows have valid InvoiceNumbers
                 if (!hasInvalidInvoiceNumber)
                 {
@@ -215,9 +210,6 @@ namespace SalesDataProject.Controllers
             }
         }
 
-
-
-
         [HttpGet]
         public IActionResult DownloadTemplate()
         {
@@ -237,7 +229,6 @@ namespace SalesDataProject.Controllers
                     //worksheet.Cell(2, 2).Value = "Ex1234";
                     //worksheet.Cell(2, 3).Value = "UploadTitle";
                     //worksheet.Cell(2, 4).Value = "2025";
-                    
 
                     // Set the column width specifically for the "Title" column
                     worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
@@ -245,8 +236,6 @@ namespace SalesDataProject.Controllers
                     // Optionally, adjust the other columns to fit content
                     worksheet.Column(1).AdjustToContents();
                     worksheet.Column(2).AdjustToContents();
-
-                   
 
                     // Optionally, apply styles to the header row for better visibility
                     var headerRow = worksheet.Range("A1:D1");
@@ -260,8 +249,6 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        TempData["Message"] = "Succesfully downloaded";
-                        TempData["MessageType"] = "Error";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UploadTitles.xlsx");
                     }
                 }
@@ -273,7 +260,6 @@ namespace SalesDataProject.Controllers
                 return View("Index");
             }
         }
-
 
         private string CleanTitle(string title)
         {
@@ -291,8 +277,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 if (selectedIds == null || !selectedIds.Any())
                 {
                     TempData["Message"] = "No records selected for deletion.";
@@ -325,7 +309,6 @@ namespace SalesDataProject.Controllers
             }
         }
 
-
         public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterTitle)
         {
             // Pass filters back to the view
@@ -352,10 +335,7 @@ namespace SalesDataProject.Controllers
             }
 
             var model = await query.ToListAsync();
-
             return View("ViewTitles", model);
         }
-
-
     }
 }
