@@ -668,8 +668,6 @@ namespace SalesDataProject.Controllers
                         TempData["MessageType"] = "Success";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingTemplate.xlsx");
                     }
-                    TempData["Message"] = "Succesfully Downloaded";
-                    TempData["MessageType"] = "Success";
                 }
             }
             catch (Exception ex)

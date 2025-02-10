@@ -189,6 +189,21 @@
         setTimeout(closeAlertMessage, 2500);
     </script>
 
+    <script>
+        function showSpinner() {
+            let overlay = document.getElementById("spinner-overlay");
+            overlay.style.display = "flex"; // Show the overlay
+
+            // Do NOT hide the spinner automatically; let it disappear when the request completes
+        }
+
+        // Optional: Hide overlay manually (if needed)
+        function hideSpinner() {
+            let overlay = document.getElementById("spinner-overlay");
+            overlay.style.display = "none";
+        }
+    </script>
+
 
 </body>
 </html>

@@ -7,14 +7,16 @@
     <div class="header d-flex justify-content-between align-items-center mb-3" style="border:1px dotted blue">
         <h4 class="mb-3 " style="color:green"><i>Validate Lead Data</i></h4>
         <div class="buttons d-flex gap-3">
-            
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
                 <input type="hidden" id="categorySelectHidden" name="selectedCategory" value="" /> <!-- Hidden input for category -->
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
-                <button type="button" id="uploadButton" class="btn btn-outline-primary">Upload Excel</button>
+                <button type="button" id="uploadButton" class="btn btn-primary">Upload Excel</button>
             </form>
-            <form asp-action="DownloadTemplate" method="get">
+            @* <form asp-action="DownloadTemplate" method="get">
                 <button type="submit" class="btn btn-outline-success">Download Template</button>
+            </form> *@
+            <form>
+                <button type="submit" class="btn btn-success" id="downloadBtn">Download Template</button>
             </form>
             <a href="@Url.Action("Index", "Home")" class="">
                 <button style="background-color:red;width:4px" type="submit" class="btn btn-danger">Back</button>
@@ -181,35 +183,36 @@
         const uploadButton = document.getElementById('uploadButton');
         const fileUpload = document.getElementById('fileUpload');
         const uploadForm = document.getElementById('uploadForm');
-        /* const categorySelectDropdown = document.getElementById('categorySelectDropdown'); */ // Category dropdown
-        /* const hiddenCategoryInput = document.getElementById('categorySelectHidden'); */ // Hidden input for category
 
-        if (uploadButton && fileUpload && uploadForm ) {
-
-            // Set hidden category input value when category changes
-            // categorySelectDropdown.addEventListener('change', function () {
-            //     hiddenCategoryInput.value = categorySelectDropdown.value;
-            //     // Reset border color if category is selected
-            //     categorySelectDropdown.style.borderColor = '';
-            // });
+        if (uploadButton && fileUpload && uploadForm) {
 
             uploadButton.addEventListener('click', function () {
-                // Check if category is selected
-                
-                    // Proceed with file upload if category is selected
-                    fileUpload.click();
-                
+                fileUpload.click();
             });
 
             fileUpload.addEventListener('change', function () {
                 if (fileUpload.files.length > 0) {
-                    // Submit the form only if a file is uploaded
+                    showSpinner(); // Show loader
                     uploadForm.submit();
                 }
             });
         }
     });
+
+    function showSpinner() {
+        document.getElementById("spinner-overlay").style.display = "flex";
+    }
+
+    function hideSpinner() {
+        document.getElementById("spinner-overlay").style.display = "none";
+    }
+
+    // Hide the loader when the page is fully loaded (after form submission)
+    window.addEventListener('load', function () {
+        hideSpinner();
+    });
 </script>
+
 
 
 <style>
@@ -257,13 +260,38 @@
     }
 </style>
 <style>
-
-        .error-message.collor {
-            background-color: greenyellow;
-        }
+     .error-message.collor {
+         background-color: greenyellow;
+     }
 
     #categorySelectDropdown {
         border: 2px solid green;
     }
 </style>
+
+<script>
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        // Show loader
+        document.getElementById("spinner-overlay").style.display = "flex";
+
+        fetch('/SalesData/DownloadTemplate', { method: 'GET' }) // Replace with your actual controller
+            .then(response => response.blob()) // Convert response to Blob
+            .then(blob => {
+                // Hide loader
+                document.getElementById("spinner-overlay").style.display = "none";
+
+                // Create a temporary link element
+                let link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = "MailingTemplate.xlsx"; // Set the file name
+                document.body.appendChild(link);
+                link.click(); // Trigger the download
+                document.body.removeChild(link); // Remove the link after download
+            })
+            .catch(error => {
+                document.getElementById("spinner-overlay").style.display = "none";
+                alert("Error downloading file: " + error);
+            });
+    });
+</script>
 
