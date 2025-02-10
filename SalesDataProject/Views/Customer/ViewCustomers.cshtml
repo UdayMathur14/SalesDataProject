@@ -74,27 +74,39 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Get the button and input elements
         const uploadButton = document.getElementById('uploadButton');
         const fileUpload = document.getElementById('fileUpload');
         const uploadForm = document.getElementById('uploadForm');
 
-        // Check if the elements exist to avoid null errors
         if (uploadButton && fileUpload && uploadForm) {
-            // Trigger the file input when the button is clicked
             uploadButton.addEventListener('click', function () {
                 fileUpload.click();
             });
 
-            // Automatically submit the form when a file is selected
             fileUpload.addEventListener('change', function () {
                 if (fileUpload.files.length > 0) {
+                    showSpinner(); // Show loader
                     uploadForm.submit();
                 }
             });
         }
     });
+
+    function showSpinner() {
+        document.getElementById("spinner-overlay").style.display = "flex";
+    }
+
+    function hideSpinner() {
+        document.getElementById("spinner-overlay").style.display = "none";
+    }
+
+    // Automatically hide spinner when the page reloads (after request completes)
+    window.addEventListener('load', function () {
+        hideSpinner();
+    });
 </script>
+
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 
 <script>
