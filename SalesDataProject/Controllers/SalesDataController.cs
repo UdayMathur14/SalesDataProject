@@ -475,7 +475,7 @@ namespace SalesDataProject.Controllers
                 {
 
                 };
-                TempData["message"] = "An unexpected error occurred. Please try again.";
+                TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return View("ViewRecords", model);
             }
@@ -611,7 +611,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
                 using (var workbook = new XLWorkbook())
                 {
                     var worksheet = workbook.Worksheets.Add("CustomerTemplate");
@@ -665,10 +664,12 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        TempData["Message"] = "succesfully downloaded";
-                        TempData["MessageType"] = "Error";
+                        TempData["Message"] = "Succesfully Downloaded";
+                        TempData["MessageType"] = "Success";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingTemplate.xlsx");
                     }
+                    TempData["Message"] = "Succesfully Downloaded";
+                    TempData["MessageType"] = "Success";
                 }
             }
             catch (Exception ex)
@@ -738,6 +739,8 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
+                        TempData["Message"] = "Succesfully Downloaded";
+                        TempData["MessageType"] = "Success";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EventTemplate.xlsx");
                     }
                 }

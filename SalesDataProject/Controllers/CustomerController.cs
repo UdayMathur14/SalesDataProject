@@ -419,8 +419,6 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-
-
                 using (var workbook = new XLWorkbook())
                 {
                     var worksheet = workbook.Worksheets.Add("CustomerTemplate");
@@ -472,6 +470,7 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
+                        TempData["Message"] = "Successfully Downloaded";
                         TempData["MessageType"] = "Success";
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CustomerTemplate.xlsx");
                     }

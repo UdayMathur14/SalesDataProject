@@ -15,7 +15,6 @@
     .table-header{
         background-color: darkslateblue;
         color: white;
-        }
     }
 </style>
 
@@ -31,10 +30,10 @@
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
                 <button type="button" id="uploadButton" class="btn btn-success ml-4 mb-4">Upload Excel</button>
             </form>
-
-            <form asp-action="DownloadTemplate" method="get">
+            <form asp-action="DownloadTemplate" method="get" onsubmit="showSpinner()">
                 <button type="submit" class="btn btn-success">Download Template</button>
             </form>
+
             <a href="@Url.Action("Index", "Home")" class="" >
                 <button style="background-color:red" type="submit" class="btn btn-success">Back</button>
             </a>
@@ -99,4 +98,15 @@
     });
 </script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+<script>
+    function showSpinner() {
+        let spinner = document.getElementById("spinner");
+        spinner.style.display = "block"; // Show spinner
+
+        setTimeout(() => {
+            spinner.style.display = "none"; // Hide after 3 seconds
+        }, 3000);
+    }
+</script>
 
