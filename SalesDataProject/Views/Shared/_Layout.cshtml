@@ -76,19 +76,20 @@
     <div class="container">
         @if (TempData["Message"] != null)
         {
-            <div class="alert-message @(TempData["MessageType"] == "Error" ? "error" : "success")" id="alertMessage" role="alert">
+            <div class="alert-message @(TempData["MessageType"] == "Error" ? "error" : "success")"
+                 id="alertMessage" role="alert">
                 <p>@TempData["Message"]</p>
                 <button class="close-btn" onclick="closeAlertMessage()">×</button>
             </div>
         }
-        <main role="main" class="pb-3">
-
-            <div id="spinner" class="spinner-border m-3" role="status" style="display: none;">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            @RenderBody()
-        </main>
     </div>
+    <main role="main" class="pb-3">
+        <div id="spinner" class="spinner-border m-3" role="status" style="display: none;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        @RenderBody()
+    </main>
+
 
     <footer class="border-top footer text-muted">
         <div class="container">
@@ -153,16 +154,15 @@
     </style>
 
     <script>
-        function closeAlertMessage() {
+            function closeAlertMessage() {
             const alertMessage = document.getElementById('alertMessage');
             if (alertMessage) {
                 alertMessage.classList.add('fade-out');
-                setTimeout(() => alertMessage.style.display = 'none', 300);
+                setTimeout(() => alertMessage.style.display = 'none', 500); // Wait for fade-out to complete
             }
         }
-
-        // Auto-hide after 5 seconds with smooth fade-out
-        setTimeout(closeAlertMessage, 3500);
+        setTimeout(closeAlertMessage, 4000);
     </script>
+
 </body>
 </html>
