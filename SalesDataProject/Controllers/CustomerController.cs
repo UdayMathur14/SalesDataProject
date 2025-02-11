@@ -517,8 +517,7 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         stream.Position = 0;
-                        TempData["Message"] = "Customer template has been successfully created.";
-                        TempData["MessageType"] = "Success";
+                       
                         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "InvalidRecords.xlsx");
                     }
                 }

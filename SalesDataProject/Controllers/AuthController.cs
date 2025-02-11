@@ -775,8 +775,8 @@ namespace SalesDataProject.Controllers
                 HttpContext.Session.Clear();
 
                 // Set a success message using TempData (optional)
-                TempData["MessageType"] = "Success";
                 TempData["Message"] = "You have been logged out successfully.";
+                TempData["MessageType"] = "Success";
 
                 // Redirect to the login page or any desired page
                 return RedirectToAction("Login", "Auth");

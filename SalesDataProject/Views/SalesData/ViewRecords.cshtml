@@ -269,7 +269,7 @@
     }
 </style>
 
-<script>
+@* <script>
     document.getElementById("downloadBtn").addEventListener("click", function () {
         // Show loader
         document.getElementById("spinner-overlay").style.display = "flex";
@@ -291,6 +291,42 @@
             .catch(error => {
                 document.getElementById("spinner-overlay").style.display = "none";
                 alert("Error downloading file: " + error);
+            });
+    });
+</script> *@
+<script>
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+        let spinner = document.getElementById("spinner-overlay");
+
+        // Show loader
+        spinner.style.display = "flex";
+
+        fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' }) // Prevent caching
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Server responded with " + response.status);
+                }
+                return response.blob(); // Convert response to Blob
+            })
+            .then(blob => {
+                // Hide loader
+                spinner.style.display = "none";
+
+                // Create a temporary link element
+                let link = document.createElement("a");
+                link.href = window.URL.createObjectURL(blob);
+                link.download = "MailingTemplate.xlsx"; // Set the file name
+                document.body.appendChild(link);
+                link.click(); // Trigger the download
+                document.body.removeChild(link); // Remove the link after download
+            })
+            .catch(error => {
+                // Hide loader
+                spinner.style.display = "none";
+
+                // Retry mechanism on first failure
+                console.error("Download failed:", error);
+                alert("Server is not responding .Please try again.");
             });
     });
 </script>
