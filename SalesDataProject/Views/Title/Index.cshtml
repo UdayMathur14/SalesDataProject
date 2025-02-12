@@ -219,28 +219,54 @@
 </style>
 
 <script>
-    document.getElementById("downloadBtn").addEventListener("click", function () {
-        // Show loader
-        document.getElementById("spinner-overlay").style.display = "flex";
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the download button
+        const downloadBtn = document.getElementById("downloadBtn");
+        if (!downloadBtn) {
+            console.error("Download button not found in the DOM.");
+            return;
+        }
 
-        fetch('/SalesData/DownloadTemplate', { method: 'GET' }) // Replace with your actual controller
-            .then(response => response.blob()) // Convert response to Blob
-            .then(blob => {
-                // Hide loader
-                document.getElementById("spinner-overlay").style.display = "none";
+        downloadBtn.addEventListener("click", function (event) {
+            // Prevent any default behavior (e.g., if inside a form)
+            event.preventDefault();
 
-                // Create a temporary link element
-                let link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.download = "UploadTitles.xlsx"; // Set the file name
-                document.body.appendChild(link);
-                link.click(); // Trigger the download
-                document.body.removeChild(link); // Remove the link after download
-            })
-            .catch(error => {
-                document.getElementById("spinner-overlay").style.display = "none";
-                alert("Error downloading file: " + error);
-            });
+            // Get the spinner element
+            const spinner = document.getElementById("spinner-overlay");
+            if (!spinner) {
+                console.error("Spinner overlay element not found!");
+                return;
+            }
+
+            // Show the loader
+            spinner.style.display = "flex";
+
+            // Fetch the file from the server
+            fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server responded with " + response.status);
+                    }
+                    return response.blob(); // Convert response to Blob
+                })
+                .then(blob => {
+                    // Hide the loader
+                    spinner.style.display = "none";
+
+                    // Create a temporary link element to trigger the download
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "UploadTitles.xlsx"; // Set the file name
+                    document.body.appendChild(link);
+                    link.click(); // Trigger the download
+                    document.body.removeChild(link); // Clean up the temporary link
+                })
+                .catch(error => {
+                    // Hide the loader if an error occurs
+                    spinner.style.display = "none";
+                    console.error("Error downloading file:", error);
+                    alert("Error downloading file: " + error.message);
+                });
+        });
     });
 </script>
-

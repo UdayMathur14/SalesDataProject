@@ -269,76 +269,104 @@
 </style>
 
 <script>
-    document.getElementById("downloadBtn").addEventListener("click", function () {
-        let spinner = document.getElementById("spinner-overlay");
+    document.addEventListener("DOMContentLoaded", function () {
+        // Attach click event after DOM is loaded
+        const downloadBtn = document.getElementById("downloadBtn");
+        if (!downloadBtn) {
+            console.error("Please try again!");
+            return;
+        }
 
-        // Show loader
-        spinner.style.display = "flex";
+        downloadBtn.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
 
-        fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' }) // Prevent caching
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Server responded with " + response.status);
-                }
-                return response.blob(); // Convert response to Blob
-            })
-            .then(blob => {
-                // Hide loader
-                spinner.style.display = "none";
+            const spinner = document.getElementById("spinner-overlay");
+            if (!spinner) {
+                console.error("Spinner overlay element not found!");
+                return;
+            }
 
-                // Create a temporary link element
-                let link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.download = "MailingTemplate.xlsx"; // Set the file name
-                document.body.appendChild(link);
-                link.click(); // Trigger the download
-                document.body.removeChild(link); // Remove the link after download
-            })
-            .catch(error => {
-                // Hide loader
-                spinner.style.display = "none";
+            // Show loader
+            spinner.style.display = "flex";
 
-                // Retry mechanism on first failure
-                console.error("Download failed:", error);
-                alert("Server is not responding .Please try again.");
-            });
+            fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server responded with " + response.status);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Hide loader
+                    spinner.style.display = "none";
+
+                    // Create a temporary link element to trigger download
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "MailingTemplate.xlsx";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                })
+                .catch(error => {
+                    // Hide loader
+                    spinner.style.display = "none";
+                    console.error("Download failed:", error);
+                    alert("Server is not responding. Please try again.");
+                });
+        });
     });
 </script>
 
 <script>
-    document.getElementById("downloadBtn1").addEventListener("click", function () {
-        let spinner = document.getElementById("spinner-overlay");
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the button element
+        const downloadBtn1 = document.getElementById("downloadBtn1");
+        if (!downloadBtn1) {
+            console.error("Download button not found in the DOM.");
+            return;
+        }
 
-        // Show loader
-        spinner.style.display = "flex";
+        downloadBtn1.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission if button is inside a form
 
-        fetch('/SalesData/DownloadTemplate1', { method: 'GET', cache: 'no-store' }) // Prevent caching
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Server responded with " + response.status);
-                }
-                return response.blob(); // Convert response to Blob
-            })
-            .then(blob => {
-                // Hide loader
-                spinner.style.display = "none";
+            // Get the spinner element
+            const spinner = document.getElementById("spinner-overlay");
+            if (!spinner) {
+                console.error("Spinner overlay element not found!");
+                return;
+            }
 
-                // Create a temporary link element
-                let link = document.createElement("a");
-                link.href = window.URL.createObjectURL(blob);
-                link.download = "EventTemplate.xlsx"; // Set the file name
-                document.body.appendChild(link);
-                link.click(); // Trigger the download
-                document.body.removeChild(link); // Remove the link after download
-            })
-            .catch(error => {
-                // Hide loader
-                spinner.style.display = "none";
+            // Show loader
+            spinner.style.display = "flex";
 
-                // Retry mechanism on first failure
-                console.error("Download failed:", error);
-                alert("Server is not responding .Please try again.");
-            });
+            // Fetch the file from the server
+            fetch('/SalesData/DownloadTemplate1', { method: 'GET', cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server responded with " + response.status);
+                    }
+                    return response.blob(); // Convert response to Blob
+                })
+                .then(blob => {
+                    // Hide loader
+                    spinner.style.display = "none";
+
+                    // Create a temporary link element to trigger download
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "EventTemplate.xlsx"; // Set the file name
+                    document.body.appendChild(link);
+                    link.click(); // Trigger the download
+                    document.body.removeChild(link); // Clean up the temporary link
+                })
+                .catch(error => {
+                    // Hide loader
+                    spinner.style.display = "none";
+                    console.error("Download failed:", error);
+                    alert("Server is not responding. Please try again.");
+                });
+        });
     });
 </script>
 
