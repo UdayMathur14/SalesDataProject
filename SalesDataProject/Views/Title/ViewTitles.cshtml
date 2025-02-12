@@ -35,7 +35,7 @@
                 <button type="button" class="btn btn-secondary" id="clearButton">Clear</button> <!-- Clear filters -->
                 <a href="@Url.Action("Index", "Home")" class="btn btn-danger" style="width: 60px; color: white; text-align: center;">Back</a>
             </div>
-            
+
         </div>
     </form>
 
@@ -45,7 +45,7 @@
             <table class="table table-striped table-bordered">
                 <thead class="table-dark">
                     <tr>
-                        @if (hasDeleteAccess=="True")
+                        @if (hasDeleteAccess == "True")
                         {
                             <th><input type="checkbox" id="selectAll" /></th> <!-- Select all checkbox -->
                         }

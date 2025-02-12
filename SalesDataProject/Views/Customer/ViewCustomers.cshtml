@@ -10,7 +10,7 @@
 }
 
 <style>
-    .table-header{
+    .table-header {
         background-color: darkslateblue;
         color: white;
     }
@@ -31,44 +31,44 @@
             <form>
                 <button type="submit" class="btn btn-success" id="downloadBtn">Download Template</button>
             </form>
-            
-            <a href="@Url.Action("Index", "Home")" class="" >
+
+            <a href="@Url.Action("Index", "Home")" class="">
                 <button style="background-color:red" type="submit" class="btn btn-success">Back</button>
             </a>
         </div>
     </div>
     <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-    <table class="table table-striped">
-        <thead class="table-header">
-            <tr>
-                @* <th>Customer Code</th> *@
-                <th>Company Name</th>
-                <th>Email</th>
-                <th>Contact Number</th>
-                <th>Country</th>
-                <th>Contact Person</th>
-                <th>Category</th>
-                <th>Created By</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var customer in Model)
-            {
+        <table class="table table-striped">
+            <thead class="table-header">
                 <tr>
-                    @* <td>@customer.CUSTOMER_CODE</td> *@
-                    <td>@customer.COMPANY_NAME</td>
-                    <td>@customer.CUSTOMER_EMAIL</td>
-                    <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
-                    <td>@customer.COUNTRY</td>
-                    <td>@customer.CONTACT_PERSON</td>
-                    <td>@customer.CATEGORY</td>
-                    <td>@customer.CREATED_BY</td>
+                    @* <th>Customer Code</th> *@
+                    <th>Company Name</th>
+                    <th>Email</th>
+                    <th>Contact Number</th>
+                    <th>Country</th>
+                    <th>Contact Person</th>
+                    <th>Category</th>
+                    <th>Created By</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    
-</div>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model)
+                {
+                    <tr>
+                        @* <td>@customer.CUSTOMER_CODE</td> *@
+                        <td>@customer.COMPANY_NAME</td>
+                        <td>@customer.CUSTOMER_EMAIL</td>
+                        <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
+                        <td>@customer.COUNTRY</td>
+                        <td>@customer.CONTACT_PERSON</td>
+                        <td>@customer.CATEGORY</td>
+                        <td>@customer.CREATED_BY</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
 </div>
 
 

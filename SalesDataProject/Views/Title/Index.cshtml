@@ -13,18 +13,18 @@
     <div class="header d-flex justify-content-between align-items-center p-3 bg-light shadow rounded mb-3">
         <h2 class="text-dark m-0 text-center flex-grow-1"><i>Title Validation</i></h2>
 
-    @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
-    {
-        <div class="d-flex flex-wrap justify-content-end">
-            <form asp-action="ViewTitles" method="get">
-                <button type="submit" class="btn btn-warning fw-bold px-3"><i>View Titles</i></button>
-            </form>
-            <a href="@Url.Action("Index", "Home")" class="ms-2">
-                <button type="button" class="btn fw-bold px-3" style="background-color: red; color: white;">Back</button>
-            </a>
-        </div>
-    }
-</div>
+        @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
+        {
+            <div class="d-flex flex-wrap justify-content-end">
+                <form asp-action="ViewTitles" method="get">
+                    <button type="submit" class="btn btn-warning fw-bold px-3"><i>View Titles</i></button>
+                </form>
+                <a href="@Url.Action("Index", "Home")" class="ms-2">
+                    <button type="button" class="btn fw-bold px-3" style="background-color: red; color: white;">Back</button>
+                </a>
+            </div>
+        }
+    </div>
     <!-- Upload and Download Buttons Section -->
     <div class="card shadow-sm mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
@@ -53,9 +53,9 @@
     <!-- Validation Results Section -->
     @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null || Model.DuplicateTitlesInExcel != null))
     {
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title text-dark">Validation Results</h5>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-dark">Validation Results</h5>
                 <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
                     <table class="table table-hover table-striped align-middle">
                         <thead class="table-dark">
@@ -70,52 +70,52 @@
                                 <th>BlockCodeRef</th>
                             </tr>
                         </thead>
-                    <tbody>
-                        @foreach (var title in Model.CleanTitles)
-                        {
-                            <tr class="table-success">
-                                <td>@title.RowNumber</td>
-                                <td>@title.InvoiceNumber</td>
-                                <td>@title.CodeReference</td>
-                                <td>@title.Title</td>
-                                <td>@title.Status</td>
-                                <td>-</td>
-                                <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display blank or '-' if null -->
-                                <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display blank or '-' if null -->
-                            </tr>
-                        }
-                        @foreach (var title in Model.BlockedTitles)
-                        {
-                            <tr >
-                                <td>@title.RowNumber</td>
-                                <td>@title.InvoiceNumber</td>
-                                <td>@title.CodeReference</td>
-                                <td>@title.Title</td>
-                                <td>@title.Status</td>
-                                <td>@title.BlockedId</td>
-                                <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
-                                <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
-                            </tr>
-                        }
-                        @foreach (var title in Model.DuplicateTitlesInExcel)
-                        {
-                            <tr class="table-danger">
-                                <td>@title.RowNumber</td>
-                                <td>@title.InvoiceNumber</td>
-                                <td>@title.CodeReference</td>
-                                <td>@title.Title</td>
-                                <td>@title.Status</td>
-                                <td>@title.BlockedId</td>
-                                <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
-                                <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
-                            </tr>
-                        }
-                    </tbody>
+                        <tbody>
+                            @foreach (var title in Model.CleanTitles)
+                            {
+                                <tr class="table-success">
+                                    <td>@title.RowNumber</td>
+                                    <td>@title.InvoiceNumber</td>
+                                    <td>@title.CodeReference</td>
+                                    <td>@title.Title</td>
+                                    <td>@title.Status</td>
+                                    <td>-</td>
+                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display blank or '-' if null -->
+                                    <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display blank or '-' if null -->
+                                </tr>
+                            }
+                            @foreach (var title in Model.BlockedTitles)
+                            {
+                                <tr>
+                                    <td>@title.RowNumber</td>
+                                    <td>@title.InvoiceNumber</td>
+                                    <td>@title.CodeReference</td>
+                                    <td>@title.Title</td>
+                                    <td>@title.Status</td>
+                                    <td>@title.BlockedId</td>
+                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
+                                    <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
+                                </tr>
+                            }
+                            @foreach (var title in Model.DuplicateTitlesInExcel)
+                            {
+                                <tr class="table-danger">
+                                    <td>@title.RowNumber</td>
+                                    <td>@title.InvoiceNumber</td>
+                                    <td>@title.CodeReference</td>
+                                    <td>@title.Title</td>
+                                    <td>@title.Status</td>
+                                    <td>@title.BlockedId</td>
+                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
+                                    <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
+                                </tr>
+                            }
+                        </tbody>
 
                     </table>
                 </div>
-                </div>
             </div>
+        </div>
 
     }
 </div>
@@ -152,7 +152,7 @@
     window.addEventListener('load', function () {
         hideSpinner();
     });
-    
+
 </script>
 
 <style>
@@ -209,9 +209,9 @@
 </style>
 
 <style>
-     .error-message.collor {
+    .error-message.collor {
         background-color: greenyellow;
-     }
+    }
 
     #categorySelectDropdown {
         border: 2px solid green;
