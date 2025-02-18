@@ -10,41 +10,43 @@
 
 <div class="container mt-5">
     <!-- Title Section -->
-    <div class="header d-flex justify-content-between align-items-center p-3 bg-light shadow rounded mb-3">
-        <h2 class="text-dark m-0 text-center flex-grow-1"><i>Title Validation</i></h2>
+    <div class="header d-flex justify-content-between align-items-center p-4 bg-white shadow rounded mb-4">
+        <h2 class="text-primary m-0 text-center flex-grow-1 fw-bold"><i>Title Validation</i></h2>
 
         @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
         {
-            <div class="d-flex flex-wrap justify-content-end">
+            <div class="d-flex gap-3">
                 <form asp-action="ViewTitles" method="get">
-                    <button type="submit" class="btn btn-warning fw-bold px-3"><i>View Titles</i></button>
+                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm">
+                        <i class="bi bi-eye"></i> View Titles
+                    </button>
                 </form>
-                <a href="@Url.Action("Index", "Home")" class="ms-2">
-                    <button type="button" class="btn fw-bold px-3" style="background-color: red; color: white;">Back</button>
+                <a href="@Url.Action("Index", "Home")">
+                    <button type="button" class="btn fw-bold px-4 shadow-sm" style="background-color: red; color: white;">
+                        <i class="bi bi-arrow-left-circle"></i> Back
+                    </button>
                 </a>
             </div>
         }
     </div>
-    <!-- Upload and Download Buttons Section -->
-    <div class="card shadow-sm mb-4">
+
+    <!-- Upload and Download Section -->
+    <div class="card shadow rounded mb-4">
         <div class="card-body d-flex justify-content-between align-items-center">
-            <h4 class="" style="color:brown"><i>Upload Titles</i></h4>
-            <div class="d-flex gap-2">
+            <h4 class="text-danger fw-bold"><i>Upload Titles</i></h4>
+            <div class="d-flex gap-3">
                 <!-- Upload Excel -->
                 <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
                     <input type="file" id="fileUpload" name="file" class="d-none" required />
-                    <button type="button" id="uploadButton" class="btn btn-primary btn-md">
+                    <button type="button" id="uploadButton" class="btn btn-primary fw-bold px-4 shadow-sm">
                         <i class="bi bi-upload"></i> Upload Excel
                     </button>
                 </form>
                 <!-- Download Template -->
-                @* <form asp-action="DownloadTemplate" method="get">
-                    <button type="submit" class="btn btn-success btn-md">
+                <form>
+                    <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm" id="downloadBtn">
                         <i class="bi bi-file-earmark-arrow-down"></i> Download Template
                     </button>
-                </form> *@
-                <form>
-                    <button type="submit" class="btn btn-success btn-md bi bi-file-earmark-arrow-down" id="downloadBtn">Download Template</button>
                 </form>
             </div>
         </div>
@@ -53,15 +55,15 @@
     <!-- Validation Results Section -->
     @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null || Model.DuplicateTitlesInExcel != null))
     {
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow rounded mb-4">
             <div class="card-body">
-                <h5 class="card-title text-dark">Validation Results</h5>
-                <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-                    <table class="table table-hover table-striped align-middle">
-                        <thead class="table-dark">
+                <h5 class="card-title text-dark fw-bold"><i class="bi bi-check-circle"></i> Validation Results</h5>
+                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                    <table class="table table-hover align-middle table-bordered">
+                        <thead class="table-dark text-center">
                             <tr>
-                                <th>Row Number</th>
-                                <th>Invoice Number</th>
+                                <th>Row No</th>
+                                <th>Invoice No</th>
                                 <th>CodeRef</th>
                                 <th>Title</th>
                                 <th>Status</th>
@@ -73,50 +75,48 @@
                         <tbody>
                             @foreach (var title in Model.CleanTitles)
                             {
-                                <tr class="table-success">
+                                <tr class="table-success text-center">
                                     <td>@title.RowNumber</td>
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
                                     <td>@title.Title</td>
                                     <td>@title.Status</td>
                                     <td>-</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display blank or '-' if null -->
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display blank or '-' if null -->
+                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                    <td>@(title.BlockedCodeRef ?? "-")</td>
                                 </tr>
                             }
                             @foreach (var title in Model.BlockedTitles)
                             {
-                                <tr>
+                                <tr class="table-warning text-center">
                                     <td>@title.RowNumber</td>
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
                                     <td>@title.Title</td>
                                     <td>@title.Status</td>
                                     <td>@title.BlockedId</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
+                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                    <td>@(title.BlockedCodeRef ?? "-")</td>
                                 </tr>
                             }
                             @foreach (var title in Model.DuplicateTitlesInExcel)
                             {
-                                <tr class="table-danger">
+                                <tr class="table-danger text-center">
                                     <td>@title.RowNumber</td>
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
                                     <td>@title.Title</td>
                                     <td>@title.Status</td>
                                     <td>@title.BlockedId</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td> <!-- Display only if blocked -->
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>   <!-- Display only if blocked -->
+                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                    <td>@(title.BlockedCodeRef ?? "-")</td>
                                 </tr>
                             }
                         </tbody>
-
                     </table>
                 </div>
             </div>
         </div>
-
     }
 </div>
 
