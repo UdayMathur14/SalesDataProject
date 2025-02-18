@@ -120,3 +120,13 @@
         }, 3000);
     }
 </script>
+<script>
+        function closeAlertMessage() {
+        const alertMessage = document.getElementById('alertMessage');
+        if (alertMessage) {
+            alertMessage.classList.add('fade-out');
+            setTimeout(() => alertMessage.style.display = 'none', 500); // Wait for fade-out to complete
+        }
+    }
+    setTimeout(closeAlertMessage, 2500);
+</script>
