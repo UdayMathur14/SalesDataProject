@@ -4,7 +4,7 @@
 }
 
 <div class="container mt-4">
-    <div class="header d-flex justify-content-between align-items-center mb-3" style="border:1px dotted blue">
+    <div class="header d-flex justify-content-between align-items-center mb-3" style="border:1px dotted green;background: linear-gradient(160deg, #FCF3CF, #FCF3CF)">
         <h4 class="mb-3 " style="color:green"><i>Validate Lead Data</i></h4>
         <div class="buttons d-flex gap-3">
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
@@ -18,13 +18,13 @@
             <form>
                 <button type="submit" class="btn btn-success" id="downloadBtn">Download Template</button>
             </form>
-            <a href="@Url.Action("Index", "Home")" class="">
-                <button style="background-color:red;width:4px" type="submit" class="btn btn-danger">Back</button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-danger" style="background-color:red; width:auto">
+                Back
             </a>
         </div>
     </div>
 
-    <div class="header card shadow-sm p-4 mb-5" style="border:1px dotted green">
+    <div class="header card shadow-sm p-4 mb-5" style="border:1px dotted black;background: linear-gradient(140deg, #FCE3EC, #FCE3EC)">
         <h4 class="mb-3" style="color:darkblue"><i>View Lead Data</i></h4>
         <form asp-action="ViewRecord" method="post">
             <div class="row g-3">
@@ -134,7 +134,7 @@
             </div>
         }
     </div>
-    <div class="header align-items-center mb-3 mt-lg-5" style="border:1px dotted red">
+    <div class="header align-items-center mb-3 mt-lg-5" style="border:1px dotted red;background:linear-gradient(160deg, #FDEBD0, #FDEBD0)">
         <h4 class="mb-4" style="color:black"><i>Upload Event Contacts</i></h4>
 
         <form asp-action="UploadSalesDataEvent" method="post" enctype="multipart/form-data" class="header d-flex justify-content-between align-items-center mb-3 gap-3">
