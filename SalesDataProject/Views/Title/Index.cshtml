@@ -127,19 +127,20 @@
         const uploadForm = document.getElementById('uploadForm');
 
         if (uploadButton && fileUpload && uploadForm) {
+
             uploadButton.addEventListener('click', function () {
                 fileUpload.click();
             });
 
             fileUpload.addEventListener('change', function () {
                 if (fileUpload.files.length > 0) {
+                    showSpinner(); // Show loader
                     uploadForm.submit();
-                } else {
-                    alert("Please select a file to upload.");
                 }
             });
         }
     });
+
     function showSpinner() {
         document.getElementById("spinner-overlay").style.display = "flex";
     }
@@ -152,7 +153,6 @@
     window.addEventListener('load', function () {
         hideSpinner();
     });
-
 </script>
 
 <style>
@@ -269,4 +269,15 @@
                 });
         });
     });
+</script>
+
+<script>
+        function closeAlertMessage() {
+        const alertMessage = document.getElementById('alertMessage');
+        if (alertMessage) {
+            alertMessage.classList.add('fade-out');
+            setTimeout(() => alertMessage.style.display = 'none', 500); // Wait for fade-out to complete
+        }
+    }
+    setTimeout(closeAlertMessage, 3500);
 </script>
