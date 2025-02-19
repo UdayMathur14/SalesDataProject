@@ -1,26 +1,20 @@
 ﻿@{
-    // Simulating a variable that determines if the user has delete access.
-    // Replace this with actual logic to fetch the user's permissions (e.g., from the database or session).
     var hasDeleteAccess = ViewData["CanDeleteTitles"]?.ToString();
 }
-
 
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
 @model List<SalesDataProject.Models.TitleValidationViewModel>
 
 <div class="container mt-4">
-    <h2 class="mb-4"></h2>
-    <div class="row align-items-center mb-4">
-        <!-- Heading Section -->
-        <div class="col-md-6 text-md-start text-center">
-            <h1 class="mb-0" style="color:brown;">Title Records</h1>
-        </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text">📖 Title Records</h1>
+        <a href="@Url.Action("Index", "Home")" class="btn btn-danger">Back</a>
     </div>
 
     <!-- Filter Form -->
-    <form id="filterForm" method="get" action="/Title/querydata">
-        <div class="row mb-4">
+    <form id="filterForm" method="get" action="/Title/querydata" class="p-3 rounded shadow-sm bg-light">
+        <div class="row g-3 align-items-center">
             <div class="col-md-3">
                 <input type="text" name="filterId" class="form-control" placeholder="Filter by ID" value="@ViewData["FilterId"]" />
             </div>
@@ -30,24 +24,22 @@
             <div class="col-md-3">
                 <input type="text" name="filterTitle" class="form-control" placeholder="Filter by Title" value="@ViewData["FilterTitle"]" />
             </div>
-            <div class="col-md-3 text-md-end text-center">
-                <button type="submit" class="btn btn-primary">Filter</button>
-                <button type="button" class="btn btn-secondary" id="clearButton">Clear</button> <!-- Clear filters -->
-                <a href="@Url.Action("Index", "Home")" class="btn btn-danger" style="width: 60px; color: white; text-align: center;">Back</a>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">🔍 Filter</button>
+                <button type="button" class="btn btn-secondary" id="clearButton">❌ Clear</button>
             </div>
-
         </div>
     </form>
 
     <!-- Table -->
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
-        <div style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-            <table class="table table-striped table-bordered">
-                <thead class="table-dark">
+        <div class="table-responsive mt-4 shadow-sm rounded" style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd;">
+            <table class="table table-hover text-center">
+                <thead class="bg-dark text-light">
                     <tr>
                         @if (hasDeleteAccess == "True")
                         {
-                            <th><input type="checkbox" id="selectAll" /></th> <!-- Select all checkbox -->
+                            <th><input type="checkbox" id="selectAll" /></th>
                         }
                         <th>Id</th>
                         <th>Code Ref</th>
@@ -63,11 +55,11 @@
                     {
                         foreach (var record in Model)
                         {
-                            <tr id="record-@record.Id">
+                            <tr id="record-@record.Id" class="align-middle">
                                 @if (hasDeleteAccess == "True")
                                 {
                                     <td>
-                                        <input type="checkbox" name="selectedIds" value="@record.Id" />
+                                        <input type="checkbox" name="selectedIds" value="@record.Id" class="form-check-input" />
                                     </td>
                                 }
                                 <td>@record.Id</td>
@@ -76,27 +68,27 @@
                                 <td>@record.Title</td>
                                 <td>@record.CREATED_BY</td>
                                 <td>@record.CREATED_ON.ToString("yyyy-MM-dd")</td>
-                                <td>@record.Status</td>
+                                <td>
+                                    <span class="badge bg-success">@record.Status</span>
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="8" class="text-center">No records found</td>
+                            <td colspan="8" class="text-center text-muted">No records found</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-
         @if (hasDeleteAccess == "True")
         {
-            <button type="submit" class="btn btn-danger mt-3">Delete Selected</button>
+            <button type="submit" class="btn btn-danger mt-3">🗑️ Delete Selected</button>
         }
     </form>
 </div>
-
 
 <script>
     $(document).ready(function () {
@@ -104,34 +96,9 @@
             $('input[name="selectedIds"]').prop('checked', this.checked);
         });
     });
-
-
-
 </script>
-<style>
-    .custom-button {
-        padding-block: 10px;
-        padding-inline: 18px;
-        border-radius: 30px;
-        background-color: orange;
-        border: none;
-        color: black;
-        font-size: 1rem;
-        transition: background-color 0.3s ease;
-    }
-
-        .custom-button:hover {
-            background-color: dimgrey; /* Change this to any color you like */
-        }
-
-</style>
-
-
-
-
 
 <script>
-    // Scroll to the filtered record
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         const filterId = urlParams.get("filterId");
@@ -140,18 +107,34 @@
             const row = document.getElementById(`record-${filterId}`);
             if (row) {
                 row.scrollIntoView({ behavior: "smooth", block: "center" });
-                row.style.backgroundColor = "#ffff99"; // Highlight the row
+                row.style.backgroundColor = "#ffff99";
             }
         }
     });
 </script>
+
 <script>
     document.getElementById('clearButton').addEventListener('click', function () {
-        // Reset all input fields in the form
         document.getElementById('filterForm').reset();
-
-        // Optionally, clear query parameters by redirecting to the base URL
         window.location.href = '/Title/ViewTitles';
     });
 </script>
 
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .btn {
+        border-radius: 10px;
+    }
+
+    .badge {
+        font-size: 14px;
+        padding: 5px 10px;
+    }
+</style>
