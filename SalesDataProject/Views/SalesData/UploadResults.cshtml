@@ -7,21 +7,19 @@
 
 @model SalesDataProject.Models.UploadResultViewModel
 <div class="container">
-    <div class="header d-flex justify-content-between align-items-center mb-4 p-3 shadow-sm rounded" style="background-color: #f8f9fa;">
-        <h2 class="text m-0">Mailing Outcome</h2>
-        <div class="buttons d-flex gap-2">
-            <a href="@Url.Action("ViewRecords", "SalesData")" class="text-decoration-none">
-                <button type="button" class="btn btn-danger px-4 py-2">Back</button>
-            </a>
-        </div>
+    <div class="header d-flex justify-content-between align-items-center p-3 shadow rounded bg-light">
+        <h2 class="text-primary fw-bold m-0">📩 Mailing Outcome</h2>
+        <a href="@Url.Action("ViewRecords", "SalesData")" class="btn btn-outline-danger px-4 py-2">
+            ⬅️ Back
+        </a>
     </div>
     <div class="container mt-4">
         <div class="card mb-4 shadow">
             <div class="card-body">
-                <h3 class="text-secondary">Blocked Customers</h3>
-                <div style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-                    <table class="table table-bordered">
-                        <thead class="thead-light">
+                <h3 class="card-header bg-danger text-white fw-bold fs-5">🚫 Blocked Customers</h3>
+                <div class="card-body table-responsive p-3" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Company Name</th>
                                 <th>Email</th>
@@ -47,11 +45,11 @@
 
         <div class="card mb-4 shadow">
             <div class="card-body">
-                <h3 class="text-secondary">Clean Customers</h3>
-                <div style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                <h3 class="card-header bg-success text-white fw-bold fs-5">✅ Clean Customers</h3>
+                <div class="card-body table-responsive p-3" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
 
-                    <table class="table table-bordered">
-                        <thead class="thead-light">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Company Name</th>
                                 <th>Email</th>
@@ -75,11 +73,10 @@
         </div>
         <div class="card mb-4 shadow">
             <div class="card-body">
-                <h3 class="text-secondary">Invalid Details or duplicate data</h3>
-                <div style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
-
-                    <table class="table table-bordered">
-                        <thead class="thead-light">
+                <h3 class="card-header bg-warning text-dark fw-bold fs-5">⚠️ Invalid or Duplicate Data</h3>
+                <div class="card-body table-responsive p-3" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Row</th>
                                 <th>Company Name</th>
@@ -96,7 +93,7 @@
                                     <td>@customer.CompanyName</td>
                                     <td>@customer.CustomerEmail</td>
                                     <td>@customer.CustomerNumber</td>
-                                    <td>@customer.ErrorMessage</td>
+                                    <td class="text-danger fw-bold">@customer.ErrorMessage</td>
                                 </tr>
                             }
                         </tbody>
@@ -109,7 +106,10 @@
                 <input type="hidden" name="BlockedCustomersJson" value="@JsonSerializer.Serialize(Model.BlockedCustomers)" />
                 <input type="hidden" name="CleanCustomersJson" value="@JsonSerializer.Serialize(Model.CleanCustomers)" />
                 <input type="hidden" name="InvalidCustomersJson" value="@JsonSerializer.Serialize(Model.invalidCustomerRecords)" />
-                <button id="exportLink" type="submit" class="btn btn-success">Export to Excel</button>
+                @* <button id="exportLink" type="submit" class="btn btn-success">Export to Excel</button> *@
+                <button id="exportLink" type="submit" class="btn btn-lg btn-primary px-3 py-1">
+                    ⬇️ Export to Excel
+                </button>
             </form>
         </div>
     </div>
@@ -117,30 +117,45 @@
 
 
 <!-- Add some custom CSS if needed -->
-<style>
-    .card {
-        border-radius: 10px;
-    }
 
+<style>
     .table {
         border-radius: 10px;
         overflow: hidden;
     }
 
-    .thead-light th {
-        background-color: #f8f9fa;
-        color: #495057;
+    .table-hover tbody tr:hover {
+        background-color: lightgray;
     }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #eef2f7;
+    }
+
+    .table thead th {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 3px solid #343a40;
+    }
+
+    .btn {
+        transition: all 0.3s ease-in-out;
+    }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
 </style>
 
-
-
+<!-- JavaScript to Redirect After Export -->
 @section Scripts {
-    <script type="text/javascript">
+    <script>
         document.getElementById('exportLink').addEventListener('click', function () {
             setTimeout(function () {
                 window.location.href = '@Url.Action("ViewRecords")';
-            }, 2000); // Wait for 2 seconds to allow the download to start
+            }, 2000);
         });
     </script>
 }
+
+
