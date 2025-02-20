@@ -152,6 +152,8 @@ namespace SalesDataProject.Controllers
                 // If not authorized, redirect to home or another page
                 return RedirectToAction("Login", "Auth");
             }
+            var users = _context.Users.ToList(); // Fetch users from DB
+            ViewBag.Users = users; // Pass it to the View
             return View();
         }
 
@@ -167,7 +169,7 @@ namespace SalesDataProject.Controllers
                     _context.SaveChanges();
                     TempData["Message"] = "Succesfully Created";
                     TempData["MessageType"] = "Success";
-                    return RedirectToAction("ManageUsers");
+                    return RedirectToAction("CreateUser");
                 }
             }
             catch (Exception ex)
@@ -178,6 +180,49 @@ namespace SalesDataProject.Controllers
             }
             return View(model);
         }
+
+        [HttpPost]
+        
+        public JsonResult EditUser([FromBody] User model)
+        {
+            try
+            {
+                var existingUser = _context.Users.FirstOrDefault(u => u.Id == model.Id);
+                if (existingUser != null)
+                {
+                    existingUser.Username = model.Username;
+                    existingUser.Password = model.Password; // Ideally, hash password before saving
+
+                    _context.SaveChanges();
+                    return Json(new { success = true });
+                }
+                return Json(new { success = false });
+            }
+            catch
+            {
+                return Json(new { success = false });
+            }
+        }
+
+        public IActionResult DeleteUser(int id)
+        {
+            try
+            {
+                var user = _context.Users.FirstOrDefault(u => u.Id == id);
+                if (user != null)
+                {
+                    _context.Users.Remove(user);
+                    _context.SaveChanges();
+                    TempData["Message"] = "User deleted successfully!";
+                }
+            }
+            catch
+            {
+                TempData["Message"] = "Error deleting user.";
+            }
+            return RedirectToAction("CreateUser");
+        }
+
 
         [HttpPost]
         public IActionResult UpdateUserAccess(List<User> Users)

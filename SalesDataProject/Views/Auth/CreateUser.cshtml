@@ -1,6 +1,7 @@
 ﻿@model SalesDataProject.Models.AuthenticationModels.User
 @{
     ViewData["Title"] = "Create User";
+    var users = ViewBag.Users as List<SalesDataProject.Models.AuthenticationModels.User>;
 }
 <div class="container">
     <div class="d-flex justify-content-end">
@@ -57,8 +58,62 @@
             </div>
         </div>
     </form>
-</div>
 
+    <div class="mt-5">
+        <h3 class="text-center mb-4" style="color:cornflowerblue;text-decoration:underline">User List</h3>
+        <table class="table table-bordered table-hover shadow">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (users != null && users.Count > 0)
+                {
+                    @foreach (var user in users)
+                    {
+                        <tr id="row-@user.Id">
+                            <td>@user.Id</td>
+
+                            <!-- Editable Username Field -->
+                            <td>
+                                <span id="text-username-@user.Id">@user.Username</span>
+                                <input type="text" id="input-username-@user.Id" class="form-control d-none" value="@user.Username" />
+                            </td>
+
+                            <!-- Editable Password Field -->
+                            <td>
+                                @* <span>*******</span> *@
+                                <input type="password" id="input-password-@user.Id" class="form-control d-none" />
+                            </td>
+
+                            <td>
+                                <!-- Edit Button -->
+                                <button type="button" class="btn btn-warning btn-sm" onclick="editUser(@user.Id)">Edit</button>
+
+                                <!-- Save Button (Hidden initially) -->
+                                <button type="button" class="btn btn-success btn-sm d-none" id="save-btn-@user.Id" onclick="saveUser(@user.Id)">Save</button>
+
+                                <!-- Delete Button -->
+                                <a href="@Url.Action("DeleteUser", "Auth", new { id = user.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">No users found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
 
 <style>
     h2 {
@@ -119,3 +174,52 @@
         font-size: 0.9rem;
     }
 </style>
+<script>
+    function editUser(userId) {
+        // Hide text and show input fields
+        document.getElementById("text-username-" + userId).classList.add("d-none");
+        document.getElementById("input-username-" + userId).classList.remove("d-none");
+        document.getElementById("input-password-" + userId).classList.remove("d-none");
+
+        // Show Save button, hide Edit button
+        event.target.classList.add("d-none"); // Hide Edit button
+        document.getElementById("save-btn-" + userId).classList.remove("d-none"); // Show Save button
+    }
+
+    function saveUser(userId) {
+        var username = document.getElementById("input-username-" + userId).value;
+        var password = document.getElementById("input-password-" + userId).value;
+
+        // Send AJAX request to update the user
+        fetch("/Auth/EditUser", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                Id: userId,
+                Username: username,
+                Password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update UI
+                document.getElementById("text-username-" + userId).innerText = username;
+                document.getElementById("text-username-" + userId).classList.remove("d-none");
+                document.getElementById("input-username-" + userId).classList.add("d-none");
+                document.getElementById("input-password-" + userId).classList.add("d-none");
+
+                // Show Edit button, hide Save button
+                document.getElementById("save-btn-" + userId).classList.add("d-none");
+                document.querySelector(`#row-${userId} .btn-warning`).classList.remove("d-none");
+
+                alert("User updated successfully!");
+            } else {
+                alert("Error updating user.");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+</script>
