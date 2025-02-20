@@ -84,10 +84,14 @@
                                 <input type="text" id="input-username-@user.Id" class="form-control d-none" value="@user.Username" />
                             </td>
 
-                            <!-- Editable Password Field -->
+                            <!-- Editable Password Field with View Toggle -->
                             <td>
-                                @* <span>*******</span> *@
-                                <input type="password" id="input-password-@user.Id" class="form-control d-none" />
+                                <div class="d-flex align-items-center">
+                                    <input type="password" id="input-password-@user.Id" class="form-control" value="@user.Password" disabled />
+                                    <button type="button" class="btn btn-info btn-sm ms-2" onclick="togglePassword(@user.Id)">
+                                        👁️
+                                    </button>
+                                </div>
                             </td>
 
                             <td>
@@ -112,6 +116,7 @@
             </tbody>
         </table>
     </div>
+
 
 </div>
 
@@ -175,13 +180,20 @@
     }
 </style>
 <script>
+    function togglePassword(userId) {
+        var passwordInput = document.getElementById("input-password-" + userId);
+        if (passwordInput.type === "password") {
+            passwordInput.type = "text";
+        } else {
+            passwordInput.type = "password";
+        }
+    }
+
     function editUser(userId) {
-        // Hide text and show input fields
         document.getElementById("text-username-" + userId).classList.add("d-none");
         document.getElementById("input-username-" + userId).classList.remove("d-none");
-        document.getElementById("input-password-" + userId).classList.remove("d-none");
+        document.getElementById("input-password-" + userId).disabled = false;
 
-        // Show Save button, hide Edit button
         event.target.classList.add("d-none"); // Hide Edit button
         document.getElementById("save-btn-" + userId).classList.remove("d-none"); // Show Save button
     }
@@ -190,7 +202,6 @@
         var username = document.getElementById("input-username-" + userId).value;
         var password = document.getElementById("input-password-" + userId).value;
 
-        // Send AJAX request to update the user
         fetch("/Auth/EditUser", {
             method: "POST",
             headers: {
@@ -205,13 +216,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update UI
                 document.getElementById("text-username-" + userId).innerText = username;
                 document.getElementById("text-username-" + userId).classList.remove("d-none");
                 document.getElementById("input-username-" + userId).classList.add("d-none");
-                document.getElementById("input-password-" + userId).classList.add("d-none");
+                document.getElementById("input-password-" + userId).disabled = true;
 
-                // Show Edit button, hide Save button
                 document.getElementById("save-btn-" + userId).classList.add("d-none");
                 document.querySelector(`#row-${userId} .btn-warning`).classList.remove("d-none");
 
