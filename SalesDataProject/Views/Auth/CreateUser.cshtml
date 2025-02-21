@@ -4,63 +4,68 @@
     var users = ViewBag.Users as List<SalesDataProject.Models.AuthenticationModels.User>;
 }
 <div class="container">
-    <div class="d-flex justify-content-end">
-        <a href="@Url.Action("ManageUsers", "Auth")" class="">
-            <button style="background-color:red;width:60px;color:white" type="submit" class="btn btn-success">Back</button>
+    <div class="d-flex justify-content-end mb-3">
+        <a href="@Url.Action("ManageUsers", "Auth")" class="btn btn-outline-danger">
+            <i class="fas fa-arrow-left"></i> Back
         </a>
     </div>
 
-    <form asp-action="CreateUser" method="post" class="container shadow rounded p-4" style="max-width: 550px;">
-        <h2 class="text-center mb-4" style="color:cornflowerblue;text-decoration:underline">Create New User</h2>
-        <div class="align-items-center d-flex flex-column">
-            <div class="col-md-6 mb-3">
+    <div class="card shadow-lg border-0 rounded-3 p-4 mx-auto" style="max-width: 550px;">
+        <h2 class="text-center mb-4">Create New User</h2>
+
+        <form asp-action="CreateUser" method="post">
+            <div class="mb-3">
                 <label asp-for="Username" class="form-label fw-bold">Username</label>
-                <input type="text" asp-for="Username" class="form-control" placeholder="Enter username" />
+                <input type="text" asp-for="Username" class="form-control" placeholder="Enter username">
                 <span asp-validation-for="Username" class="text-danger"></span>
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="mb-3">
                 <label asp-for="Password" class="form-label fw-bold">Password</label>
-                <input type="password" asp-for="Password" class="form-control" placeholder="Enter password" />
+                <input type="password" asp-for="Password" class="form-control" placeholder="Enter password">
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <div class="col-md-6 mb-3">
-                <h5 class="fw-bold">Access Permissions</h5>
-                <div class="form-check">
-                    <input type="checkbox" asp-for="CanAccessCustomer" class="form-check-input" />
-                    <label asp-for="CanAccessCustomer" class="form-check-label">Access Customer Module</label>
+            <h5 class="fw-bold mt-3">Access Permissions</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" asp-for="CanAccessCustomer" class="form-check-input">
+                        <label asp-for="CanAccessCustomer" class="form-check-label">Customer Module</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" asp-for="CanAccessSales" class="form-check-input">
+                        <label asp-for="CanAccessSales" class="form-check-label">Mailing Module</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" asp-for="CanAccessUserManagement" class="form-check-input">
+                        <label asp-for="CanAccessUserManagement" class="form-check-label">Admin Module</label>
+                    </div>
                 </div>
-                <div class="form-check">
-                    <input type="checkbox" asp-for="CanAccessSales" class="form-check-input" />
-                    <label asp-for="CanAccessSales" class="form-check-label">Access Mailing Module</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" asp-for="CanAccessUserManagement" class="form-check-input" />
-                    <label asp-for="CanAccessUserManagement" class="form-check-label">Access Admin Module</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" asp-for="CanAccessTitle" class="form-check-input" />
-                    <label asp-for="CanAccessTitle" class="form-check-label">Access Title Module</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" asp-for="CanViewTitles" class="form-check-input" />
-                    <label asp-for="CanViewTitles" class="form-check-label">Access ViewTitles</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" asp-for="CanDeleteTitles" class="form-check-input" />
-                    <label asp-for="CanDeleteTitles" class="form-check-label">Access DeleteTitles</label>
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" asp-for="CanAccessTitle" class="form-check-input">
+                        <label asp-for="CanAccessTitle" class="form-check-label">Title Module</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" asp-for="CanViewTitles" class="form-check-input">
+                        <label asp-for="CanViewTitles" class="form-check-label">View Titles</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" asp-for="CanDeleteTitles" class="form-check-input">
+                        <label asp-for="CanDeleteTitles" class="form-check-label">Delete Titles</label>
+                    </div>
                 </div>
             </div>
 
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-secondary btn-lg">Create</button>
+                <button type="submit" class="btn btn-success btn-lg px-4">Create User</button>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 
     <div class="mt-5">
-        <h3 class="text-center mb-4" style="color:cornflowerblue;text-decoration:underline">User List</h3>
+        <h3 class="text-center mb-4" style="color:cornflowerblue;text-decoration:underline">USER LIST</h3>
         <table class="table table-bordered table-hover shadow">
             <thead class="table-dark">
                 <tr>
