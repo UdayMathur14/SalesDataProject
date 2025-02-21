@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -141,7 +142,7 @@ namespace SalesDataProject.Controllers
                                     }
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM", "Individual" ,"INDIVIDUAL"}.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -332,7 +333,7 @@ namespace SalesDataProject.Controllers
                                     }
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" , "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -624,7 +625,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 9).Value = "9876543210";
                     worksheet.Cell(2, 10).Value = "DELHI";
                     worksheet.Cell(2, 11).Value = "NEW DELHI";
-                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT";
+                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
 
                     // Adjust column widths to fit content
                     worksheet.Columns().AdjustToContents();
@@ -695,7 +696,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 9).Value = "9876543210";
                     worksheet.Cell(2, 10).Value = "DELHI";
                     worksheet.Cell(2, 11).Value = "NEW DELHI";
-                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT";
+                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
 
                     // Adjust column widths to fit content
                     worksheet.Columns().AdjustToContents();
