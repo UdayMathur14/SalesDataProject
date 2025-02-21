@@ -586,9 +586,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Message"] = "An unexpected error occurred. Please try again.";
+                var model = new UploadResultViewModel
+                {
+
+                };
+                TempData["Message"] = "Too much data , Not able to Export";
                 TempData["MessageType"] = "Error";
-                return View("ViewRecords");
+                return View("ViewRecords", model);
             }
         }
 
@@ -657,9 +661,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
+                var model = new UploadResultViewModel
+                {
+
+                };
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View("ViewRecords");
+                return View("ViewRecords", model);
             }
         }
 
@@ -728,9 +736,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
+                var model = new UploadResultViewModel
+                {
+
+                };
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View("ViewRecords");
+                return View("ViewRecords", model);
             }
         }
 

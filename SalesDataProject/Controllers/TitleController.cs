@@ -204,9 +204,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
+                var result = new ValidationResultViewModel
+                {
+
+                };
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View("Index");
+                return View("Index",result);
             }
         }
 
@@ -255,9 +259,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
+                var result = new ValidationResultViewModel
+                {
+
+                };
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
-                return View("Index");
+                return View("Index", result);
             }
         }
 
@@ -305,7 +313,7 @@ namespace SalesDataProject.Controllers
             {
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
-                return RedirectToAction("ViewTitles");
+                return View("ViewTitles");
             }
         }
 
