@@ -4,9 +4,9 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
-using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
 {
@@ -113,13 +113,13 @@ namespace SalesDataProject.Controllers
                             for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
                             {
                                 var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
-                                var contactPerson = worksheet.Cell(row, 3).GetString();
-                                var customerNumber = worksheet.Cell(row, 4).GetString();
-                                var customerNumber2 = worksheet.Cell(row, 8).GetString();
-                                var customerNumber3 = worksheet.Cell(row, 9).GetString();
-                                var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                                var contactPerson = worksheet.Cell(row, 3).GetString().Trim();
+                                var customerNumber = worksheet.Cell(row, 4).GetString().Trim();
+                                var customerNumber2 = worksheet.Cell(row, 8).GetString().Trim();
+                                var customerNumber3 = worksheet.Cell(row, 9).GetString().Trim();
+                                var customerEmail = worksheet.Cell(row, 5).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
                                 var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
-                                var country = worksheet.Cell(row, 7).GetString();
+                                var country = worksheet.Cell(row, 7).GetString().Trim();
                                 var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
@@ -154,19 +154,19 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && !string.IsNullOrWhiteSpace(customerNumber))
+                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
                                         RowNumber = row,
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
-                                        CustomerNumber = customerNumber,
+                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
                                         ErrorMessage = "Invalid Contact Number."
                                     });
                                     continue;
                                 }
-                                if (!IsValidEmail(customerEmail) || duplicateEmails.Contains(customerEmail))
+                                if (!IsValidEmail(customerEmail.Trim()) || duplicateEmails.Contains(customerEmail))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -301,16 +301,16 @@ namespace SalesDataProject.Controllers
                             var emailSet = new HashSet<string>();
                             var duplicateEmails = new HashSet<string>();
 
-                            for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
+                            for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)          
                             {
                                 var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
-                                var contactPerson = worksheet.Cell(row, 3).GetString();
-                                var customerNumber = worksheet.Cell(row, 4).GetString();
-                                var customerNumber2 = worksheet.Cell(row, 8).GetString();
-                                var customerNumber3 = worksheet.Cell(row, 9).GetString();
-                                var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                                var contactPerson = worksheet.Cell(row, 3).GetString().Trim();
+                                var customerNumber = worksheet.Cell(row, 4).GetString().Trim();
+                                var customerNumber2 = worksheet.Cell(row, 8).GetString().Trim();
+                                var customerNumber3 = worksheet.Cell(row, 9).GetString().Trim();
+                                var customerEmail = worksheet.Cell(row, 5).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
                                 var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
-                                var country = worksheet.Cell(row, 7).GetString();
+                                var country = worksheet.Cell(row, 7).GetString().Trim();
                                 var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
@@ -345,19 +345,19 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && !string.IsNullOrWhiteSpace(customerNumber))
+                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) )
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
                                         RowNumber = row,
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
-                                        CustomerNumber = customerNumber,
+                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
                                         ErrorMessage = "Invalid Contact Number."
                                     });
                                     continue;
                                 }
-                                if (!IsValidEmail(customerEmail) || duplicateEmails.Contains(customerEmail))
+                                if (!IsValidEmail(customerEmail.Trim()) || duplicateEmails.Contains(customerEmail))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -488,6 +488,8 @@ namespace SalesDataProject.Controllers
         }
         public bool IsValidPhoneNumber(string customerNumber)
         {
+            if (string.IsNullOrWhiteSpace(customerNumber)) return true;
+            customerNumber = customerNumber.Trim();
             // Regular expression to match only digits or an empty string
             string pattern = @"^\d*$";
             Regex regex = new Regex(pattern);
