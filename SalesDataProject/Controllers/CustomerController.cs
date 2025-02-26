@@ -161,7 +161,7 @@ namespace SalesDataProject.Controllers
                                 var companyName = worksheet.Cell(row, 2).GetString().ToUpper();
                                 var contactPerson = worksheet.Cell(row, 3).GetString();
                                 var customerNumber = worksheet.Cell(row, 4).GetString();
-                                var customerEmail = worksheet.Cell(row, 5).GetString()?.ToLowerInvariant();
+                                var customerEmail = worksheet.Cell(row, 5).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
                                 var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
                                 var country = worksheet.Cell(row, 7).GetString();
                                 var customerNumber2 = worksheet.Cell(row, 8).GetString();
