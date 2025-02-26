@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
+using SalesDataProject.Models.AuthenticationModels;
 
 namespace SalesDataProject.Controllers
 {
@@ -142,7 +143,7 @@ namespace SalesDataProject.Controllers
                                     }
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM", "Individual" ,"INDIVIDUAL"}.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM", "Individual", "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -237,8 +238,17 @@ namespace SalesDataProject.Controllers
                                 // Apply blocking logic
                                 if (isAlreadyUploadedByOther || isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
                                 {
+                                    if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
+                                    {
+                                        var existingRecord = await _context.Prospects.Where(c => (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+                                        customerData.BLOCKED_BY = existingRecord?.CREATED_BY ?? "Unknown";
+                                    }
+                                    else
+                                    {
+                                        customerData.BLOCKED_BY = "Another User";
+                                    }
+
                                     customerData.RECORD_TYPE = true; // Blocked
-                                    customerData.BLOCKED_BY = "Another User";
                                     blockedCustomers.Add(customerData);
                                 }
                                 else
@@ -333,7 +343,7 @@ namespace SalesDataProject.Controllers
                                     }
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM" , "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM", "Individual", "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -345,7 +355,7 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) )
+                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -656,7 +666,7 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        
+
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingTemplate.xlsx");
                     }
                 }
@@ -731,7 +741,7 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        
+
                         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EventTemplate.xlsx");
                     }
                 }
@@ -774,7 +784,7 @@ namespace SalesDataProject.Controllers
                         .ToListAsync();
 
                     TempData["Message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
-                    
+
                     TempData["MessageType"] = "Success";
 
                     model.BlockedCustomers = filteredCustomers;
@@ -791,7 +801,7 @@ namespace SalesDataProject.Controllers
                         .ToListAsync();
 
                     TempData["Message"] = filteredCustomers.Any() ? "Successfully Record Found" : "No Record Found";
-                    
+
                     TempData["MessageType"] = "Success";
 
                     model.CleanCustomers = filteredCustomers;
@@ -819,7 +829,7 @@ namespace SalesDataProject.Controllers
                     TempData["Message"] = (filteredBlockedCustomers.Any() || filteredCleanCustomers.Any())
                                             ? "Successfully Record Found"
                                             : "No Record Found";
-                    
+
                     TempData["MessageType"] = "Success";
 
                     model.CleanCustomers = filteredCleanCustomers;
