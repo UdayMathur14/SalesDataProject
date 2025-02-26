@@ -155,7 +155,7 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if ((!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)))
+                                if (!IsValidPhoneNumber(customerNumber) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {

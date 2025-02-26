@@ -74,8 +74,6 @@ namespace SalesDataProject.Controllers
             }
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> Create(Customer customer)
         {

@@ -229,11 +229,6 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(1, 3).Value = "*Title";
                     worksheet.Cell(1, 4).Value = "*Year";
 
-                    //worksheet.Cell(2, 1).Value = "ExINV001";
-                    //worksheet.Cell(2, 2).Value = "Ex1234";
-                    //worksheet.Cell(2, 3).Value = "UploadTitle";
-                    //worksheet.Cell(2, 4).Value = "2025";
-
                     // Set the column width specifically for the "Title" column
                     worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
 
