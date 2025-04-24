@@ -242,7 +242,7 @@
             spinner.style.display = "flex";
 
             // Fetch the file from the server
-            fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' })
+            fetch('/Title/DownloadTemplate', { method: 'GET', cache: 'no-store' })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error("Server responded with " + response.status);
