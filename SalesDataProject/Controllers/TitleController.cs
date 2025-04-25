@@ -110,6 +110,23 @@ namespace SalesDataProject.Controllers
 
                             continue; // Skip further processing for duplicates
                         }
+
+                        if (!IsValidFinancialYear(yearTtile))
+                        {
+                            duplicateTitlesInExcel.Add(concatenatedTitle);
+
+                            result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                Title = cleantitle,
+                                InvoiceNumber = invoiceNumber,
+                                CodeReference = codeReference,
+                                Status = "Invalid Financial Year",
+                                TitleYear = yearTtile
+                            });
+
+                            continue; // Skip this row as the financial year is invalid
+                        }
                         // Check for duplicate titles within the Excel file
                         if (titlesInExcel.Contains(concatenatedTitle))
                         {
@@ -227,7 +244,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(1, 1).Value = "InvoiceNumber";
                     worksheet.Cell(1, 2).Value = "CodeReference";
                     worksheet.Cell(1, 3).Value = "*Title";
-                    worksheet.Cell(1, 4).Value = "*Year";
+                    worksheet.Cell(1, 4).Value = "*FinancialYear";
 
                     // Set the column width specifically for the "Title" column
                     worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
@@ -263,6 +280,25 @@ namespace SalesDataProject.Controllers
                 return View("Index", result);
             }
         }
+        private bool IsValidFinancialYear(string year)
+        {
+            // Example: The year should match the format "yyyy-yy"
+            var yearParts = year.Split('-');
+
+            if (yearParts.Length != 2) return false;
+
+            if (!int.TryParse(yearParts[0], out int startYear) || !int.TryParse(yearParts[1], out int endYear))
+                return false;
+
+            // Ensure the second year is exactly one year greater than the first year
+            if (endYear != startYear + 1) return false;
+
+            // Optionally: Ensure the years are within a certain range (e.g., from 2023 to 2099)
+            if (startYear < 2023 || startYear > 2099) return false;
+
+            return true;
+        }
+
 
         private string CleanTitle(string title)
         {
