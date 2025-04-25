@@ -168,18 +168,18 @@ namespace SalesDataProject.Controllers
                 // Save only clean records to the database if all rows have valid InvoiceNumbers
                 if (!hasInvalidInvoiceNumber)
                 {
+                    
                     var cleanRecordsToSave = result.CleanTitles
-                        .Select(tv => new TitleValidationViewModel
+                        .Select(tv => new TitleValidationViewModel // <-- Use the correct entity, not the ViewModel
                         {
                             Title = tv.Title,
                             InvoiceNumber = tv.InvoiceNumber,
                             CodeReference = tv.CodeReference,
-                            CREATED_ON = tv.CREATED_ON,
-                            CREATED_BY = tv.CREATED_BY,
+                            CREATED_ON = tv.CREATED_ON, // or tv.CREATED_ON if it's valid
+                            CREATED_BY = username,
                             ReferenceTitle = CleanTitle(tv.Title),
                             Status = "Clean",
                             TitleYear = tv.TitleYear
-
                         }).ToList();
 
                     if (cleanRecordsToSave.Any())
