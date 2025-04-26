@@ -22,7 +22,6 @@
     <!-- Filter Form -->
     <form id="filterForm" method="get" action="/Title/querydata" class="p-4 rounded-4 shadow-sm"
           style="background: linear-gradient(135deg, #f8f9fa, #e8f0fe); border: 1px solid black;">
-
         <div class="row g-3 align-items-center">
             <div class="col-md-3">
                 <input type="text" name="filterId"
@@ -54,8 +53,19 @@
                         style="background: linear-gradient(45deg, #ff758c, #ff7eb3); border: none; color: white;">
                     ❌ Clear
                 </button>
+               
             </div>
+            <div class="col-md-3 mt-2 justify-content-end">
+                <a href="/Title/DownloadExcel" class="btn fw-semibold shadow-sm rounded-3"
+                   style="background: linear-gradient(45deg, #28a745, #218838); border: none; color: white;">
+                    ⬇️ Download Excel
+                </a>
+            </div>
+            
         </div>
+        
+        
+
     </form>
 
 
@@ -63,7 +73,7 @@
     <!-- Table -->
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
         <div class="table-responsive mt-4 shadow-sm rounded" style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd;">
-            <table class="table table-hover text-center">
+            <table class="table table-hover text-start">
                 <thead class="bg-dark text-light">
                     <tr>
                         @if (hasDeleteAccess == "True")
@@ -75,7 +85,7 @@
                         <th>Invoice No</th>
                         <th>Title</th>
                         <th>Created By</th>
-                        <th>Year</th>
+                        <th style="min-width: 100px;">Year</th>
                         <th>Status</th>
                     </tr>
                 </thead>

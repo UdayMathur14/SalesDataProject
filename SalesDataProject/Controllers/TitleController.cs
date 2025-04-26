@@ -385,5 +385,53 @@ namespace SalesDataProject.Controllers
             var model = await query.ToListAsync();
             return View("ViewTitles", model);
         }
+
+        public async Task<IActionResult> DownloadExcel()
+        {
+            try
+            {
+                var titles = await _context.Titles.ToListAsync();
+
+                using (var package = new ExcelPackage())
+                {
+                    var worksheet = package.Workbook.Worksheets.Add("Titles");
+
+                    // Add Header
+                    worksheet.Cells[1, 1].Value = "Id";
+                    worksheet.Cells[1, 2].Value = "Code Ref";
+                    worksheet.Cells[1, 3].Value = "Invoice No";
+                    worksheet.Cells[1, 4].Value = "Title";
+                    worksheet.Cells[1, 5].Value = "Created By";
+                    worksheet.Cells[1, 6].Value = "Year";
+                    worksheet.Cells[1, 7].Value = "Status";
+
+                    int row = 2;
+                    foreach (var record in titles)
+                    {
+                        worksheet.Cells[row, 1].Value = record.Id;
+                        worksheet.Cells[row, 2].Value = record.CodeReference;
+                        worksheet.Cells[row, 3].Value = record.InvoiceNumber;
+                        worksheet.Cells[row, 4].Value = record.Title;
+                        worksheet.Cells[row, 5].Value = record.CREATED_BY;
+                        worksheet.Cells[row, 6].Value = record.TitleYear;
+                        worksheet.Cells[row, 7].Value = record.Status;
+                        row++;
+                    }
+                    worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
+                    var stream = new MemoryStream();
+                    package.SaveAs(stream);
+                    stream.Position = 0;
+                    
+                    string excelName = $"TitleRecords-{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelName);
+                }
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction("ViewTitles");
+            }
+        }
+
+
     }
 }
