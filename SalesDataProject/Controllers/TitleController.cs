@@ -45,7 +45,7 @@ namespace SalesDataProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadExcel(IFormFile file)
+        public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false)
         {
             try
             {
@@ -183,7 +183,7 @@ namespace SalesDataProject.Controllers
                     }
                 }
                 // Save only clean records to the database if all rows have valid InvoiceNumbers
-                if (!hasInvalidInvoiceNumber)
+                if (!hasInvalidInvoiceNumber && !testMode)
                 {
                     
                     var cleanRecordsToSave = result.CleanTitles
@@ -206,6 +206,11 @@ namespace SalesDataProject.Controllers
                         TempData["Message"] = "Successfully Saved";
                         TempData["MessageType"] = "Success";
                     }
+                }
+                else if (testMode)
+                {
+                    TempData["Message"] = "Test mode: Validation successful. No data saved.";
+                    TempData["MessageType"] = "Info";
                 }
                 else
                 {
