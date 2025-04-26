@@ -282,22 +282,22 @@ namespace SalesDataProject.Controllers
         }
         private bool IsValidFinancialYear(string year)
         {
-            // Example: The year should match the format "yyyy-yy"
             var yearParts = year.Split('-');
 
             if (yearParts.Length != 2) return false;
 
-            if (!int.TryParse(yearParts[0], out int startYear) || !int.TryParse(yearParts[1], out int endYear))
+            if (!int.TryParse(yearParts[0], out int startYear) || !int.TryParse(yearParts[1], out int endYearPart))
                 return false;
 
-            // Ensure the second year is exactly one year greater than the first year
-            if (endYear != startYear + 1) return false;
+            // Ensure start year is in valid range
+            if (startYear < 1999 || startYear > 2099) return false;
 
-            // Optionally: Ensure the years are within a certain range (e.g., from 2023 to 2099)
-            if (startYear < 2023 || startYear > 2099) return false;
+            // Get the expected last two digits of (startYear + 1)
+            int expectedEndYearPart = (startYear + 1) % 100;
 
-            return true;
+            return endYearPart == expectedEndYearPart;
         }
+
 
 
         private string CleanTitle(string title)
@@ -348,12 +348,13 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterTitle)
+        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterTitle,string titleYear)
         {
             // Pass filters back to the view
             ViewData["FilterId"] = filterId;
             ViewData["FilterCodeReference"] = filterCodeReference;
             ViewData["FilterTitle"] = filterTitle;
+            ViewData["TitleYear"] = titleYear;
 
             // Fetch data and filter based on inputs
             var query = _context.Titles.AsQueryable();
@@ -372,6 +373,14 @@ namespace SalesDataProject.Controllers
             {
                 query = query.Where(x => x.Title.Contains(filterTitle));
             }
+
+            if (!string.IsNullOrEmpty(titleYear))
+            {
+                query = query.Where(x => x.TitleYear.Contains(titleYear));
+            }
+
+            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+            ViewData["CanDeleteTitles"] = canDeleteTitle;
 
             var model = await query.ToListAsync();
             return View("ViewTitles", model);

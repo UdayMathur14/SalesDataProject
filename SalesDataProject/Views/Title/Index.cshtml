@@ -11,7 +11,7 @@
 <div class="container mt-5" >
     <!-- Title Section -->
     <div class="header d-flex justify-content-between align-items-center p-4 bg-white shadow rounded mb-4" style="background: linear-gradient(156deg, #F8F9FA, #D6EAF8);">
-        <h2 class="text m-0 text-center flex-grow-1 fw-bold"><i>Title Validation</i></h2>
+        <h2 class="text m-0 text-left flex-grow-1 fw-bold"><i>Title Validation</i></h2>
 
         @if (!string.IsNullOrEmpty(canAccessTitle) && canAccessTitle == "True")
         {
@@ -70,6 +70,7 @@
                                 <th>BlockedBy</th>
                                 <th>BlockInvoiceNo</th>
                                 <th>BlockCodeRef</th>
+                                <th>Year</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,6 +85,7 @@
                                     <td>-</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    <td>@(title.TitleYear ?? "-")</td>
                                 </tr>
                             }
                             @foreach (var title in Model.BlockedTitles)
@@ -97,6 +99,7 @@
                                     <td>@title.BlockedId</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    <td>@(title.TitleYear ?? "-")</td>
                                 </tr>
                             }
                             @foreach (var title in Model.DuplicateTitlesInExcel)
@@ -110,6 +113,7 @@
                                     <td>@title.BlockedId</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    <td>@(title.TitleYear ?? "-")</td>
                                 </tr>
                             }
                         </tbody>

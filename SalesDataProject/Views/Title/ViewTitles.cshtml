@@ -6,30 +6,59 @@
 
 @model List<SalesDataProject.Models.TitleValidationViewModel>
 
-<div class="container mt-4" style="background-color:white">
+<div class="container mt-4 p-4 rounded-4 shadow-sm"
+     style="background: linear-gradient(135deg, #f8f9fa, #e8f0fe); border: 1px solid #dee2e6;">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text">📖 Title Records</h1>
-        <a href="@Url.Action("Index", "Home")" class="btn btn-danger">Back</a>
+        <h1 class="text fw-bold text m-0">
+            📖 Title Records
+        </h1>
+        <a href="@Url.Action("Index", "Title")"
+           class="btn fw-semibold shadow-sm px-4 rounded-3"
+           style="background-color: red; color: white;">
+            ⬅️ Back
+        </a>
     </div>
 
     <!-- Filter Form -->
-    <form id="filterForm" method="get" action="/Title/querydata" class="p-3 rounded shadow-sm bg-light">
+    <form id="filterForm" method="get" action="/Title/querydata" class="p-4 rounded-4 shadow-sm"
+          style="background: linear-gradient(135deg, #f8f9fa, #e8f0fe); border: 1px solid black;">
+
         <div class="row g-3 align-items-center">
             <div class="col-md-3">
-                <input type="text" name="filterId" class="form-control" placeholder="Filter by ID" value="@ViewData["FilterId"]" />
+                <input type="text" name="filterId"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Filter by ID" value="@ViewData["FilterId"]" />
             </div>
             <div class="col-md-3">
-                <input type="text" name="filterCodeReference" class="form-control" placeholder="Filter by Code Reference" value="@ViewData["FilterCodeReference"]" />
+                <input type="text" name="filterCodeReference"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Filter by Code Reference" value="@ViewData["FilterCodeReference"]" />
             </div>
             <div class="col-md-3">
-                <input type="text" name="filterTitle" class="form-control" placeholder="Filter by Title" value="@ViewData["FilterTitle"]" />
+                <input type="text" name="filterTitle"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Filter by Title" value="@ViewData["FilterTitle"]" />
             </div>
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">🔍 Filter</button>
-                <button type="button" class="btn btn-secondary" id="clearButton">❌ Clear</button>
+            <div class="col-md-3">
+                <input type="text" name="titleYear"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="📅 Filter by Year (2023-24)" value="@ViewData["TitleYear"]" />
+            </div>
+
+            <div class="col-md-3 d-flex gap-2 mt-2">
+                <button type="submit" class="btn btn-gradient-primary fw-semibold shadow-sm px-4 rounded-3"
+                        style="background: linear-gradient(45deg, #4facfe, #00f2fe); border: none; color: white;">
+                    🔍 Filter
+                </button>
+                <button type="button" class="btn fw-semibold shadow-sm px-4 rounded-3" id="clearButton"
+                        style="background: linear-gradient(45deg, #ff758c, #ff7eb3); border: none; color: white;">
+                    ❌ Clear
+                </button>
             </div>
         </div>
     </form>
+
+
 
     <!-- Table -->
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
@@ -46,7 +75,7 @@
                         <th>Invoice No</th>
                         <th>Title</th>
                         <th>Created By</th>
-                        <th>Created On</th>
+                        <th>Year</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -67,7 +96,8 @@
                                 <td>@record.InvoiceNumber</td>
                                 <td>@record.Title</td>
                                 <td>@record.CREATED_BY</td>
-                                <td>@record.CREATED_ON.ToString("yyyy-MM-dd")</td>
+                                <td>@record.TitleYear</td>
+                                @* <td>@record.CREATED_ON.ToString("yyyy-MM-dd")</td> *@
                                 <td>
                                     <span class="badge bg-success">@record.Status</span>
                                 </td>
