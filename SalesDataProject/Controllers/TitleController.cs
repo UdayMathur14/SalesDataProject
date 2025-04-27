@@ -206,6 +206,11 @@ namespace SalesDataProject.Controllers
                         TempData["Message"] = "Successfully Saved";
                         TempData["MessageType"] = "Success";
                     }
+                    else
+                    {
+                        TempData["Message"] = "Successfully Uploaded";
+                        TempData["MessageType"] = "Success";
+                    }
                 }
                 else if (testMode)
                 {

@@ -38,13 +38,17 @@
                 <!-- Upload Excel -->
                 <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
                     <input type="file" id="fileUpload" name="file" class="d-none" required />
-                    <button type="button" id="uploadButton" class="btn btn-primary fw-bold px-4 shadow-sm">
-                        <i class="bi bi-upload"></i> Upload Excel
+                    <input type="hidden" id="testMode" name="testMode" value="false" />
+                    <button type="button" id="testUploadButton" class="btn btn-warning fw-bold px-2 shadow-sm">
+                        <i class="bi bi-check-circle"></i> Test Upload (Validate Only)
+                    </button>
+                    <button type="button" id="uploadAndSaveButton" class="btn btn-primary fw-bold px-2 shadow-sm">
+                        <i class="bi bi-upload"></i> Upload and Save
                     </button>
                 </form>
                 <!-- Download Template -->
                 <form>
-                    <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm" id="downloadBtn">
+                    <button type="submit" class="btn btn-success fw-bold px-2 shadow-sm" id="downloadBtn">
                         <i class="bi bi-file-earmark-arrow-down"></i> Download Template
                     </button>
                 </form>
@@ -126,13 +130,21 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const uploadButton = document.getElementById('uploadButton');
+        const uploadAndSaveButton = document.getElementById('uploadAndSaveButton');
+        const testUploadButton = document.getElementById('testUploadButton');
         const fileUpload = document.getElementById('fileUpload');
         const uploadForm = document.getElementById('uploadForm');
+        const testModeInput = document.getElementById('testMode');
 
-        if (uploadButton && fileUpload && uploadForm) {
+        if (uploadAndSaveButton && testUploadButton && fileUpload && uploadForm && testModeInput) {
 
-            uploadButton.addEventListener('click', function () {
+            uploadAndSaveButton.addEventListener('click', function () {
+                testModeInput.value = 'false'; // Set testMode = false for Upload and Save
+                fileUpload.click();
+            });
+
+            testUploadButton.addEventListener('click', function () {
+                testModeInput.value = 'true'; // Set testMode = true for Test Upload
                 fileUpload.click();
             });
 
@@ -153,7 +165,6 @@
         document.getElementById("spinner-overlay").style.display = "none";
     }
 
-    // Hide the loader when the page is fully loaded (after form submission)
     window.addEventListener('load', function () {
         hideSpinner();
     });
