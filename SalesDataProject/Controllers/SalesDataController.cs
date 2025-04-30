@@ -126,6 +126,8 @@ namespace SalesDataProject.Controllers
 
                                 var isCommonDomain = await _context.CommonDomains
                                     .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
+                                bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
+                                bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3);
 
                                 if (isCommonDomain)
                                 {
@@ -189,6 +191,18 @@ namespace SalesDataProject.Controllers
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
                                         ErrorMessage = "Missing Mandatory Fields"
+                                    });
+                                    continue;
+                                }
+                                if (isEmailEmpty && isAllContactsEmpty)
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
+                                        ErrorMessage = "Either Email or at least one Contact Number must be provided."
                                     });
                                     continue;
                                 }
@@ -327,6 +341,10 @@ namespace SalesDataProject.Controllers
                                 var isCommonDomain = await _context.CommonDomains
                                     .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
 
+                                bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
+                                bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3);
+
+
                                 if (isCommonDomain)
                                 {
                                     emailDomain = "NULL"; // Set to null if it is a common domain
@@ -389,6 +407,18 @@ namespace SalesDataProject.Controllers
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
                                         ErrorMessage = "Missing Mandatory Fields"
+                                    });
+                                    continue;
+                                }
+                                if (isEmailEmpty && isAllContactsEmpty)
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
+                                        ErrorMessage = "Either Email or at least one Contact Number must be provided."
                                     });
                                     continue;
                                 }
