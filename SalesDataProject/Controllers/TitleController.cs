@@ -282,28 +282,47 @@ namespace SalesDataProject.Controllers
             {
                 using (var workbook = new XLWorkbook())
                 {
-                    var worksheet = workbook.Worksheets.Add("Titles");
+                    var worksheet = workbook.Worksheets.Add("UploadTitles");
 
-                    // Define the headers in the template
-                    worksheet.Cell(1, 1).Value = "InvoiceNumber";
-                    worksheet.Cell(1, 2).Value = "CodeReference";
-                    worksheet.Cell(1, 3).Value = "*Title";
-                    worksheet.Cell(1, 4).Value = "*FinancialYear";
+                    // Define the headers
+                    worksheet.Cell(1, 1).Value = "Invoice No";
+                    worksheet.Cell(1, 2).Value = "Code Ref";
+                    worksheet.Cell(1, 3).Value = "Title (Required)";
+                    worksheet.Cell(1, 4).Value = "Financial Year (Required)";
+                    worksheet.Cell(1, 5).Value = "Example";
 
-                    // Set the column width specifically for the "Title" column
-                    worksheet.Column(3).Width = 11.0; // Approximate width for 3 cm
+                    // Apply style to header row
+                    var headerRange = worksheet.Range("A1:E1");
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Font.FontColor = XLColor.Red;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.LightYellow; // Light background for visibility
+                    headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    // Optionally, adjust the other columns to fit content
-                    worksheet.Column(1).AdjustToContents();
-                    worksheet.Column(2).AdjustToContents();
+                    // Apply black border to header row
+                    headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    headerRange.Style.Border.OutsideBorderColor = XLColor.Black;
+                    headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                    headerRange.Style.Border.InsideBorderColor = XLColor.Black;
 
-                    // Optionally, apply styles to the header row for better visibility
-                    var headerRow = worksheet.Range("A1:D1");
-                    headerRow.Style.Font.Bold = true;
-                    headerRow.Style.Font.FontColor = XLColor.Red;
+                    // Example row (second row)
+                    worksheet.Cell(2, 1).Value = "INV123";
+                    worksheet.Cell(2, 2).Value = "CR456";
+                    worksheet.Cell(2, 3).Value = "Sample Title";
+                    worksheet.Cell(2, 4).Value = "2025-26";
+                    worksheet.Cell(2, 5).Value = "Example row. Please delete and follow this format.";
 
-                    var row = worksheet.Range("A2:L2");
-                    row.Style.Font.FontColor = XLColor.Black;
+
+                    // Apply style to example row
+                    var exampleRow = worksheet.Range("A2:E2");
+                    exampleRow.Style.Font.FontColor = XLColor.Gray;
+                    exampleRow.Style.Font.Italic = true;
+
+                    // Set custom column widths (give space to look neat)
+                    worksheet.Column(1).Width = 15; // Invoice No
+                    worksheet.Column(2).Width = 15; // Code Ref
+                    worksheet.Column(3).Width = 25; // Title
+                    worksheet.Column(4).Width = 23;
+                    worksheet.Column(5).Width = 40; // Example column
 
                     using (var stream = new MemoryStream())
                     {
@@ -315,15 +334,14 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                var result = new ValidationResultViewModel
-                {
-
-                };
+                var result = new ValidationResultViewModel();
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return View("Index", result);
             }
         }
+
+
         private bool IsValidFinancialYear(string year)
         {
             var yearParts = year.Split('-');
