@@ -27,22 +27,49 @@ namespace SalesDataProject.Controllers
                 return RedirectToAction("Login", "Auth");
             }
         }
+        //public async Task<IActionResult> ViewTitles()
+        //{
+        //    try
+        //    {
+        //        var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+        //        var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+        //        ViewData["CanViewTitles"] = canAccessTitle;
+        //        ViewData["CanDeleteTitles"] = canDeleteTitle;
+        //        var titles = await _context.Titles.AsNoTracking().ToListAsync();
+        //        return View(titles);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return RedirectToAction("Login", "Auth");
+        //    }
+        //}
+
         public async Task<IActionResult> ViewTitles()
         {
             try
             {
                 var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
                 var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+
+                if (string.IsNullOrEmpty(canAccessTitle))
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+
                 ViewData["CanViewTitles"] = canAccessTitle;
                 ViewData["CanDeleteTitles"] = canDeleteTitle;
-                var titles = await _context.Titles.ToListAsync();
+
+                var titles = await _context.Titles.AsNoTracking().ToListAsync();
+
                 return View(titles);
             }
             catch (Exception ex)
             {
+                // Log ex.Message for debugging
                 return RedirectToAction("Login", "Auth");
             }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false)
