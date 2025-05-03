@@ -8,7 +8,7 @@
 
 @model ValidationResultViewModel
 
-<div class="container mt-5" >
+<div class="container mt-5"  >
     <!-- Title Section -->
     <div class="header d-flex justify-content-between align-items-center p-4 bg-white shadow rounded mb-4" style="background: linear-gradient(156deg, #F8F9FA, #D6EAF8);">
         <h2 class="text m-0 text-left flex-grow-1 fw-bold"><i>Title Validation</i></h2>
@@ -17,18 +17,19 @@
         {
             <div class="d-flex gap-3">
                 <form asp-action="ViewTitles" method="get">
-                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm">
+                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm custom-hover-button custom-hover-button-warning" style="background-color: coral; color: white; border: none; font-weight: 600; padding: 0.5rem 1rem;">
                         <i class="bi bi-eye"></i> View Titles
                     </button>
                 </form>
                 <a href="@Url.Action("Index", "Home")">
-                    <button type="button" class="btn fw-bold px-4 shadow-sm" style="background-color: red; color: white;">
+                    <button type="button" class="btn fw-bold px-4 shadow-sm custom-hover-button custom-hover-button-back" style="background-color: red; color: white;">
                         <i class="bi bi-arrow-left-circle"></i> Back
                     </button>
                 </a>
             </div>
         }
     </div>
+
 
     <!-- Upload and Download Section -->
     <div class="card shadow rounded mb-4">
@@ -246,6 +247,25 @@
     #categorySelectDropdown {
         border: 2px solid green;
     }
+    /* Custom hover effect for buttons */
+    .custom-hover-button {
+        transition: all 0.3s ease; /* Smooth transition for all properties */
+    }
+
+        .custom-hover-button:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Increased shadow for a dramatic effect */
+            transform: translateY(-5px) scale(1.05); /* Slightly lift and scale up the button */
+        }
+
+    /* Optional: Change background color for hover */
+    .custom-hover-button-warning:hover {
+        background-color: bisque; /* Change to a darker shade for the warning button */
+    }
+
+    .custom-hover-button-back:hover {
+        background-color: #c0392b; /* Darker red for the back button */
+    }
+
 </style>
 
 <script>
