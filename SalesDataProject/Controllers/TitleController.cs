@@ -77,6 +77,13 @@ namespace SalesDataProject.Controllers
             try
             {
                 var username = HttpContext.Session.GetString("Username");
+                if (string.IsNullOrEmpty(username))
+                {
+                    TempData["Message"] = "Session Expired, Please Login again";
+                    TempData["MessageType"] = "Error";
+                    return RedirectToAction("Login", "Auth");
+                }
+
                 ViewBag.Username = username;
                
                 if (file == null || file.Length == 0)
