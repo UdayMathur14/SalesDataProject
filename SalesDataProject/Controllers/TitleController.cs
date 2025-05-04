@@ -123,10 +123,10 @@ namespace SalesDataProject.Controllers
                         string concatenatedTitle = CleanTitle(cleantitle);
 
                         // Check if the InvoiceNumber is empty or null
-                        if (string.IsNullOrWhiteSpace(invoiceNumber))
-                        {
-                            hasInvalidInvoiceNumber = true; // Set the flag if an invalid row is found
-                        }
+                        //if (string.IsNullOrWhiteSpace(invoiceNumber))
+                        //{
+                        //    hasInvalidInvoiceNumber = true; // Set the flag if an invalid row is found
+                        //}
 
                         if (yearTtile == null || string.IsNullOrWhiteSpace(yearTtile))
                         {
@@ -139,6 +139,22 @@ namespace SalesDataProject.Controllers
                                 InvoiceNumber = invoiceNumber,
                                 CodeReference = codeReference,
                                 Status = "Year Missing ",
+                                TitleYear = yearTtile
+                            });
+
+                            continue; // Skip further processing for duplicates
+                        }
+                        if (invoiceNumber == null || string.IsNullOrWhiteSpace(invoiceNumber))
+                        {
+                            duplicateTitlesInExcel.Add(concatenatedTitle);
+
+                            result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                Title = cleantitle,
+                                InvoiceNumber = invoiceNumber,
+                                CodeReference = codeReference,
+                                Status = "Invoice No is Missing ",
                                 TitleYear = yearTtile
                             });
 
@@ -217,7 +233,7 @@ namespace SalesDataProject.Controllers
                     }
                 }
                 // Save only clean records to the database if all rows have valid InvoiceNumbers
-                if (!hasInvalidInvoiceNumber && !testMode)
+                if (!testMode)
                 {
                     
                     var cleanRecordsToSave = result.CleanTitles

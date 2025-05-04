@@ -8,7 +8,7 @@
 
 @model ValidationResultViewModel
 
-<div class="container mt-5"  >
+<div class="container mt-5">
     <!-- Title Section -->
     <div class="header d-flex justify-content-between align-items-center p-4 bg-white shadow rounded mb-4" style="background: linear-gradient(156deg, #F8F9FA, #D6EAF8);">
         <h2 class="text m-0 text-left flex-grow-1 fw-bold"><i>Title Validation</i></h2>
@@ -17,12 +17,12 @@
         {
             <div class="d-flex gap-3">
                 <form asp-action="ViewTitles" method="get">
-                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm custom-hover-button custom-hover-button-warning" style="background-color: coral; color: white; border: none; font-weight: 600; padding: 0.5rem 1rem;">
+                    <button type="submit" class="btn btn-warning fw-bold px-4 shadow-sm custom-hover-button custom-hover-button-back" style="background-color: coral; color: white; border: none; font-weight: 600; padding: 0.5rem 1rem;">
                         <i class="bi bi-eye"></i> View Titles
                     </button>
                 </form>
                 <a href="@Url.Action("Index", "Home")">
-                    <button type="button" class="btn fw-bold px-4 shadow-sm custom-hover-button custom-hover-button-back" style="background-color: red; color: white;">
+                    <button type="button" class="btn fw-bold px-4 shadow-sm custom-hover-button custom-hover-button custom-hover-button-back" style="background-color: red; color: white;">
                         <i class="bi bi-arrow-left-circle"></i> Back
                     </button>
                 </a>
@@ -72,17 +72,17 @@
                 <h5 class="card-title text-dark fw-bold"><i class="bi bi-check-circle"></i> Validation Result</h5>
                 <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover align-middle table-bordered">
-                        <thead class="table-dark text-center">
+                        <thead class="table-dark text-center" style="position: sticky; top: 0; z-index: 1;">
                             <tr>
                                 <th>Row No</th>
                                 <th>Invoice No</th>
                                 <th>CodeRef</th>
-                                <th>Title</th>
+                                <th>Title</th>  <!-- Title aligned to the left -->
                                 <th>Status</th>
-                                <th>BlockedBy</th>
+                                <th>BlockedByRow</th>
                                 <th>BlockInvoiceNo</th>
                                 <th>BlockCodeRef</th>
-                                <th>Year</th>
+                                <th>FinancialYear</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,12 +92,12 @@
                                     <td>@title.RowNumber</td>
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
-                                    <td>@title.Title</td>
+                                    <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
                                     <td>@title.Status</td>
                                     <td>-</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    <td>@(title.TitleYear ?? "-")</td>
+                                    <td style="white-space: nowrap; width: 120px;">@(title.TitleYear ?? "-")</td>
                                 </tr>
                             }
                             @foreach (var title in Model.BlockedTitles)
@@ -106,12 +106,12 @@
                                     <td>@title.RowNumber</td>
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
-                                    <td>@title.Title</td>
+                                    <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
                                     <td>@title.Status</td>
                                     <td>@title.BlockedId</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    <td>@(title.TitleYear ?? "-")</td>
+                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
                                 </tr>
                             }
                             @foreach (var title in Model.DuplicateTitlesInExcel)
@@ -120,12 +120,12 @@
                                     <td>@title.RowNumber</td>
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
-                                    <td>@title.Title</td>
+                                    <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
                                     <td>@title.Status</td>
                                     <td>@title.BlockedId</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    <td>@(title.TitleYear ?? "-")</td>
+                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
                                 </tr>
                             }
                         </tbody>
@@ -134,7 +134,7 @@
             </div>
         </div>
     }
-</div>
+    </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -181,90 +181,131 @@
 <style>
     .hover-custom {
         transition: all 0.3s ease; /* Smooth transition for all properties */
+        border-radius: 8px;
     }
     .hover-custom:hover {
         box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Increased shadow for a dramatic effect */
         transform: translateY(-5px) scale(1.05); /* Slightly lift and scale up the button */
         color: white; /* Change text color on hover for contrast */
+            border-radius: 8px;
+    }
+
+    .custom-hover-button {
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 8px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+    }
+
+    .custom-hover-button-back:hover {
+        background-color: darkred;
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
     }
     /* General Styling */
     body {
-        background-color: #f8f9fa;
+        background-color: #f8f9fa; /* Light gray background for the body */
+        font-family: 'Roboto', sans-serif;
     }
 
-    h1 {
+    /* Heading Style */
+    h1, h2, h3 {
         font-family: 'Roboto', sans-serif;
         font-weight: 700;
+        color: #333; /* Slightly darker color for headings */
     }
 
+    /* Button Styling */
     .btn-lg {
         padding: 0.8rem 1.5rem;
         font-size: 1.1rem;
         border-radius: 8px;
+        font-weight: bold; /* Bold font for buttons */
     }
 
+    /* Card Styling */
     .card {
         border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Light shadow around cards */
     }
 
+    /* Alert Styling */
     .alert {
         border-radius: 10px;
+        padding: 1rem;
+        font-weight: bold;
     }
 
+    /* Table Styling */
     .table {
         border-radius: 10px;
         overflow: hidden;
+        margin-bottom: 1.5rem; /* Adding some spacing below tables */
     }
 
     .table-hover tbody tr:hover {
-        background-color: lightblue;
+        background-color: #f1f1f1; /* Light gray background on hover */
     }
 
+    /* Table row color based on status */
     .table-success {
         background-color: #eafaf1;
     }
 
     .table-danger {
-        background-color: #ddd;
+        background-color: #ffd1d1; /* Slightly more visible red color for danger rows */
     }
 
+    /* Custom button hover effects */
     .btn-outline-primary:hover {
         background-color: #0056b3;
         color: white;
+        border-color: #0056b3;
     }
 
     .btn-outline-success:hover {
         background-color: #218838;
         color: white;
-    }
-</style>
-
-<style>
-    .error-message.collor {
-        background-color: greenyellow;
+        border-color: #218838;
     }
 
-    #categorySelectDropdown {
-        border: 2px solid green;
-    }
-    /* Custom hover effect for buttons */
-    .custom-hover-button {
-        transition: all 0.3s ease; /* Smooth transition for all properties */
+    /* Additional focus styles for accessibility */
+    .btn:focus, .btn:hover {
+        outline: none; /* Removes the outline for button focus */
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5); /* Adds a glow effect around buttons when focused */
     }
 
-        .custom-hover-button:hover {
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Increased shadow for a dramatic effect */
-            transform: translateY(-5px) scale(1.05); /* Slightly lift and scale up the button */
-        }
-
-    /* Optional: Change background color for hover */
-    .custom-hover-button-warning:hover {
-        background-color: bisque; /* Change to a darker shade for the warning button */
+    /* Enhanced table appearance */
+    .table-bordered th, .table-bordered td {
+        border: 1px solid #ddd; /* Lighter border color for better contrast */
     }
 
-    .custom-hover-button-back:hover {
-        background-color: #c0392b; /* Darker red for the back button */
+    /* Tables within cards */
+    .card .table {
+        background-color: #fff;
     }
+
+    /* Table header background */
+    .table-dark th {
+        background-color: #343a40;
+        color: white;
+    }
+
+    /* Style for rounded corners */
+    .rounded {
+        border-radius: 8px; /* Rounded corners for general elements */
+    }
+
+    /* Custom table row styling for more contrast */
+    .table-hover tbody tr:nth-child(odd) {
+        background-color: #f9f9f9; /* Light alternating row color */
+    }
+
+    .table-hover tbody tr:nth-child(even) {
+        background-color: #ffffff; /* Alternate row color */
+    }
+
 
 </style>
 
