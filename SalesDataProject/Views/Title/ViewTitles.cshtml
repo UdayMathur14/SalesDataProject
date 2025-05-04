@@ -6,87 +6,104 @@
 
 @model List<SalesDataProject.Models.TitleValidationViewModel>
 
-<div class="container mt-4 p-4 rounded-4 shadow-sm"
-     style="background: linear-gradient(135deg, #f8f9fa, #e8f0fe); border: 1px solid #dee2e6;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="text fw-bold text m-0">
-            📖 Title Records
-        </h1>
+<div class="container mt-4 ">
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-lg"
+         style="background: linear-gradient(135deg, #e0f7fa, #ffffff); border: 1px solid #d0e9f7; box-shadow: 0 8px 16px rgba(0,0,0,0.05);border-radius:16px">
+
+        <div>
+            <h1 class="m-0 fw-bold d-flex align-items-center" style="font-size: 2rem; gap: 0.5rem;">
+                <span style="color: #007bff; font-size: 2.5rem; filter: drop-shadow(0 0 5px rgba(0, 123, 255, 0.5));">📖</span>
+                <span style="color: #333;"><i>Title Records</i></span>
+            </h1>
+            <small class="text-muted" style="font-size: 0.9rem;">Manage and filter your title records easily.</small>
+        </div>
         <a href="@Url.Action("Index", "Title")"
-           class="btn fw-semibold shadow-sm px-4 rounded-3"
-           style="background-color: red; color: white;">
+           class="btn fw-semibold shadow-sm px-4 rounded-pill"
+           style="background: linear-gradient(45deg, #ff4e50, #f9d423); color: white; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;">
             ⬅️ Back
         </a>
     </div>
 
     <!-- Filter Form -->
-    <form id="filterForm" method="get" action="/Title/querydata" class="p-4 rounded-4 shadow-sm"
-          style="background: linear-gradient(135deg, #f8f9fa, #e8f0fe); border: 1px solid black;">
-        <div class="row g-3 align-items-center">
+    <form id="filterForm" method="get" action="/Title/querydata"
+          class="p-4 rounded-4 shadow-sm"
+          style="background: white; border: 1px solid #e3e6ea;border-radius:16px">
+
+        <div class="row g-3 align-items-end">
+
+            <!-- Filter Fields -->
             <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted ">Filter by ID</label>
                 <input type="text" name="filterId"
                        class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Filter by ID" value="@ViewData["FilterId"]" />
+                       placeholder="🔎 ID" value="@ViewData["FilterId"]" />
             </div>
             <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted ">Code Reference</label>
                 <input type="text" name="filterCodeReference"
                        class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Filter by Code Reference" value="@ViewData["FilterCodeReference"]" />
+                       placeholder="🔎 Code Reference" value="@ViewData["FilterCodeReference"]" />
             </div>
             <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted ">Title</label>
                 <input type="text" name="filterTitle"
                        class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Filter by Title" value="@ViewData["FilterTitle"]" />
+                       placeholder="🔎 Title" value="@ViewData["FilterTitle"]" />
             </div>
             <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted ">Financial Year</label>
                 <input type="text" name="titleYear"
                        class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="📅 Filter by Year (2023-24)" value="@ViewData["TitleYear"]" />
+                       placeholder="📅 e.g. 2023-24" value="@ViewData["TitleYear"]" />
             </div>
 
-            <div class="col-md-3 d-flex gap-2 mt-2">
-                <button type="submit" class="btn btn-gradient-primary fw-semibold shadow-sm px-4 rounded-3"
-                        style="background: linear-gradient(45deg, #4facfe, #00f2fe); border: none; color: white;">
+            <!-- Buttons -->
+            <div class="col-md-6 d-flex gap-2 mt-3">
+
+                <button type="submit" class="btn fw-semibold shadow-sm px-4 rounded-pill"
+                        style="background: linear-gradient(45deg, #36d1dc, #5b86e5); border: none; color: white;">
                     🔍 Filter
                 </button>
-                <button type="button" class="btn fw-semibold shadow-sm px-4 rounded-3" id="clearButton"
-                        style="background: linear-gradient(45deg, #ff758c, #ff7eb3); border: none; color: white;">
+
+                <button type="button" class="btn fw-semibold shadow-sm px-4 rounded-pill" id="clearButton"
+                        style="background: linear-gradient(45deg, #ff6a00, #ee0979); border: none; color: white;">
                     ❌ Clear
                 </button>
-               
-            </div>
-            <div class="col-md-3 mt-2 justify-content-end">
-                <a href="/Title/DownloadExcel" class="btn fw-semibold shadow-sm rounded-3"
-                   style="background: linear-gradient(45deg, #28a745, #218838); border: none; color: white;">
-                    ⬇️ Download Excel
-                </a>
-            </div>
-            
-        </div>
-        
-        
 
+            </div>
+
+            <div class="col-md-6 mt-3 text-md-end">
+
+                <a href="/Title/DownloadExcel" class="btn fw-semibold shadow-sm px-4 rounded-pill"
+                   style="background: linear-gradient(45deg, #00b09b, #96c93d); border: none; color: white;">
+                    ⬇️ Export to Excel
+                </a>
+
+            </div>
+
+        </div>
     </form>
+
 
 
 
     <!-- Table -->
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
-        <div class="table-responsive mt-4 shadow-sm rounded" style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd;">
-            <table class="table table-hover text-start">
-                <thead class="bg-dark text-light">
+        <div class="table-responsive mt-4 shadow-sm rounded-4" style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd; background: white;">
+            <table class="table table-hover text-start align-left">
+                <thead style="background: linear-gradient(45deg, #4facfe, #00f2fe); color: white;">
                     <tr>
                         @if (hasDeleteAccess == "True")
                         {
-                            <th><input type="checkbox" id="selectAll" /></th>
+                            <th class="rounded-start"><input type="checkbox" id="selectAll" class="form-check-input" /></th>
                         }
                         <th>Id</th>
                         <th>Code Ref</th>
                         <th>Invoice No</th>
-                        <th>Title</th>
+                        <th class="text-center">Title</th>
                         <th>Created By</th>
-                        <th style="min-width: 100px;">Year</th>
-                        <th>Status</th>
+                        <th style="min-width: 100px;">FinancialYear</th>
+                        <th class="rounded-end">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -94,7 +111,7 @@
                     {
                         foreach (var record in Model)
                         {
-                            <tr id="record-@record.Id" class="align-middle">
+                            <tr id="record-@record.Id">
                                 @if (hasDeleteAccess == "True")
                                 {
                                     <td>
@@ -104,12 +121,11 @@
                                 <td>@record.Id</td>
                                 <td>@record.CodeReference</td>
                                 <td>@record.InvoiceNumber</td>
-                                <td>@record.Title</td>
+                                <td class="text-center">@record.Title</td>
                                 <td>@record.CREATED_BY</td>
                                 <td>@record.TitleYear</td>
-                                @* <td>@record.CREATED_ON.ToString("yyyy-MM-dd")</td> *@
                                 <td>
-                                    <span class="badge bg-success">@record.Status</span>
+                                    <span class="badge bg-success rounded-pill px-3 py-2">@record.Status</span>
                                 </td>
                             </tr>
                         }
@@ -123,11 +139,16 @@
                 </tbody>
             </table>
         </div>
+
         @if (hasDeleteAccess == "True")
         {
-            <button type="submit" class="btn btn-danger mt-3">🗑️ Delete Selected</button>
+            <button type="submit" class="btn fw-semibold shadow-sm mt-3 px-4 rounded-pill"
+                    style="background: linear-gradient(45deg, #ff4e50, #f9d423); border: none; color: white;">
+                🗑️ Delete Selected
+            </button>
         }
     </form>
+
 </div>
 
 <script>
@@ -177,4 +198,144 @@
         font-size: 14px;
         padding: 5px 10px;
     }
+
+    td:nth-child(4) {
+        text-align: justify;
+        text-justify: inter-word;
+        line-height: 1.5;
+    }
+    /* Input boxes beautification */
+    input.form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+        border-color: #4facfe;
+    }
+
+        input.form-control:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+        }
+
+    /* Buttons beautification */
+    button, .btn {
+        border-radius: 50px !important;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        button:hover, .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+    /* Filter & card section */
+    .filter-section, .card {
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        padding: 1rem;
+        background-color: white;
+    }
+
+    /* Table header sticky & beautify */
+    table th {
+        position: sticky;
+        top: 0;
+        background-color: #343a40 !important;
+        color: white !important;
+        border: none;
+    }
+
+    table {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+        table td, table th {
+            vertical-align: middle;
+        }
+
+        /* Table row hover */
+        table tbody tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+    /* Title Heading */
+    .page-title {
+        font-weight: 700;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .page-title i {
+            color: #4a90e2;
+        }
+
+    /* Download, Filter, Clear buttons unique color glow */
+    .btn-success:hover {
+        background-color: #28a745 !important;
+        box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+    }
+
+    .btn-primary:hover {
+        background-color: #007bff !important;
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+
+    .btn-danger:hover {
+        background-color: #dc3545 !important;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+    }
+
+    a.btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Page background */
+    body {
+        background-color: white !important;
+    }
+
+    table tbody tr:nth-child(odd) {
+        background-color: mintcream ;
+    }
+
+    table tbody tr:nth-child(even) {
+        background-color: ivory;
+    }
+
+    /* Hover effect */
+    table tbody tr:hover {
+        background: #eaf6ff !important;
+        cursor: pointer;
+    }
+
+    /* Table header rounded corners */
+    table thead tr th:first-child {
+        border-top-left-radius: 0.5rem;
+    }
+
+    table thead tr th:last-child {
+        border-top-right-radius: 0.5rem;
+    }
+
+    /* Smooth checkbox hover */
+    input[type="checkbox"]:hover {
+        transform: scale(1.2);
+        transition: 0.2s;
+    }
+
+    /* Soft shadow badge */
+    .badge {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .container {
+    background: linear-gradient(135deg, #ffffff, #f7f9fc);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    /* border:  solid #e2e8f0; */
+}
+
 </style>
