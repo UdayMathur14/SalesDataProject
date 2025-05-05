@@ -160,7 +160,22 @@ namespace SalesDataProject.Controllers
 
                             continue; // Skip further processing for duplicates
                         }
+                        if (codeReference == null || string.IsNullOrWhiteSpace(codeReference))
+                        {
+                            duplicateTitlesInExcel.Add(concatenatedTitle);
 
+                            result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                Title = cleantitle,
+                                InvoiceNumber = invoiceNumber,
+                                CodeReference = codeReference,
+                                Status = "Code Reference No is Missing ",
+                                TitleYear = yearTtile
+                            });
+
+                            continue; // Skip further processing for duplicates
+                        }
                         if (!IsValidFinancialYear(yearTtile))
                         {
                             duplicateTitlesInExcel.Add(concatenatedTitle);
@@ -301,8 +316,8 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("UploadTitles");
 
                     // Define the headers
-                    worksheet.Cell(1, 1).Value = "Invoice No";
-                    worksheet.Cell(1, 2).Value = "Code Ref";
+                    worksheet.Cell(1, 1).Value = "Invoice No(Required)";
+                    worksheet.Cell(1, 2).Value = "Code Ref(Required)";
                     worksheet.Cell(1, 3).Value = "Title (Required)";
                     worksheet.Cell(1, 4).Value = "Financial Year (Required)";
                     worksheet.Cell(1, 5).Value = "Example";
@@ -334,8 +349,8 @@ namespace SalesDataProject.Controllers
                     exampleRow.Style.Font.Italic = true;
 
                     // Set custom column widths (give space to look neat)
-                    worksheet.Column(1).Width = 15; // Invoice No
-                    worksheet.Column(2).Width = 15; // Code Ref
+                    worksheet.Column(1).Width = 20; // Invoice No
+                    worksheet.Column(2).Width = 20; // Code Ref
                     worksheet.Column(3).Width = 25; // Title
                     worksheet.Column(4).Width = 23;
                     worksheet.Column(5).Width = 40; // Example column
