@@ -316,8 +316,8 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("UploadTitles");
 
                     // Define the headers
-                    worksheet.Cell(1, 1).Value = "Invoice No(Required)";
-                    worksheet.Cell(1, 2).Value = "Code Ref(Required)";
+                    worksheet.Cell(1, 1).Value = "Invoice No (Required)";
+                    worksheet.Cell(1, 2).Value = "Code Ref (Required)";
                     worksheet.Cell(1, 3).Value = "Title (Required)";
                     worksheet.Cell(1, 4).Value = "Financial Year (Required)";
                     worksheet.Cell(1, 5).Value = "Example";
