@@ -214,6 +214,24 @@ namespace SalesDataProject.Controllers
                             titlesInExcel.Add(concatenatedTitle);
                         }
 
+                        var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber);
+
+                        if (isInvoiceExists )
+                        {
+                            duplicateTitlesInExcel.Add(concatenatedTitle);
+
+                            result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                Title = cleantitle,
+                                InvoiceNumber = invoiceNumber,
+                                CodeReference = codeReference,
+                                Status = "Invoice No already exists",
+                                TitleYear = yearTtile
+                            });
+
+                            continue; // Skip this row and don't process further
+                        }
                         // Check if the concatenated title matches any ReferenceTitle in the database
                         var existingTitle = allTitles
                             .FirstOrDefault(t => t.ReferenceTitle == concatenatedTitle);
