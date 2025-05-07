@@ -459,12 +459,12 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterTitle,string titleYear)
+        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber,string titleYear)
         {
             // Pass filters back to the view
             ViewData["FilterId"] = filterId;
             ViewData["FilterCodeReference"] = filterCodeReference;
-            ViewData["FilterTitle"] = filterTitle;
+            ViewData["FilterInvoiceNumber"] = filterInvoiceNumber;
             ViewData["TitleYear"] = titleYear;
 
             // Fetch data and filter based on inputs
@@ -480,27 +480,15 @@ namespace SalesDataProject.Controllers
                 query = query.Where(x => x.CodeReference.Contains(filterCodeReference));
             }
 
-            if (!string.IsNullOrEmpty(filterTitle))
+            if (!string.IsNullOrEmpty(filterInvoiceNumber))
             {
-                query = query.Where(x => x.Title.Contains(filterTitle));
+                query = query.Where(x => x.InvoiceNumber.Contains(filterInvoiceNumber));
             }
 
             if (!string.IsNullOrEmpty(titleYear))
             {
                 query = query.Where(x => x.TitleYear.Contains(titleYear));
             }
-            var codeReferences = await _context.Titles
-                                       .Select(x => x.CodeReference)
-                                       .Distinct()
-                                       .ToListAsync();
-
-            var invoices = await _context.Titles
-                                         .Select(x => x.InvoiceNumber) // assuming column is named Invoice
-                                         .Distinct()
-                                         .ToListAsync();
-
-            ViewData["CodeReferencesList"] = codeReferences;
-            ViewData["InvoicesList"] = invoices;
 
             var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanDeleteTitles"] = canDeleteTitle;
