@@ -78,11 +78,12 @@
                                 <th>Invoice No</th>
                                 <th>CodeRef</th>
                                 <th>Title</th>  <!-- Title aligned to the left -->
+                                <th>FinancialYear</th>
                                 <th>Status</th>
                                 <th>BlockedByRow</th>
                                 <th>BlockInvoiceNo</th>
                                 <th>BlockCodeRef</th>
-                                <th>FinancialYear</th>
+                                
                             </tr>
                         </thead>
                         <tbody>
@@ -93,11 +94,12 @@
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
                                     <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
+                                    <td style="white-space: nowrap; width: 120px;">@(title.TitleYear ?? "-")</td>
                                     <td>@title.Status</td>
                                     <td>-</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    <td style="white-space: nowrap; width: 120px;">@(title.TitleYear ?? "-")</td>
+                                    
                                 </tr>
                             }
                             @foreach (var title in Model.BlockedTitles)
@@ -107,11 +109,12 @@
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
                                     <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
+                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
                                     <td>@title.Status</td>
                                     <td>@title.BlockedId</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
+                                    
                                 </tr>
                             }
                             @foreach (var title in Model.DuplicateTitlesInExcel)
@@ -121,11 +124,12 @@
                                     <td>@title.InvoiceNumber</td>
                                     <td>@title.CodeReference</td>
                                     <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
+                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
                                     <td>@title.Status</td>
                                     <td>@title.BlockedId</td>
                                     <td>@(title.BlockedByInvoiceNo ?? "-")</td>
                                     <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
+                                    
                                 </tr>
                             }
                         </tbody>

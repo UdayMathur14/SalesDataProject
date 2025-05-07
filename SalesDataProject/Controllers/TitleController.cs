@@ -59,7 +59,10 @@ namespace SalesDataProject.Controllers
                 ViewData["CanViewTitles"] = canAccessTitle;
                 ViewData["CanDeleteTitles"] = canDeleteTitle;
 
-                var titles = await _context.Titles.AsNoTracking().ToListAsync();
+                var titles = await _context.Titles
+    .AsNoTracking()
+    .OrderByDescending(t => t.Id)
+    .ToListAsync();// Use the correct property name.ToListAsync();
 
                 return View(titles);
             }
