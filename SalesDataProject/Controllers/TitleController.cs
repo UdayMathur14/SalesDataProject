@@ -526,6 +526,9 @@ namespace SalesDataProject.Controllers
                 query = query.Where(x => x.TitleYear.Contains(titleYear));
             }
 
+            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+            ViewData["CanDeleteTitles"] = canDeleteTitle;
+
             var model = await query.ToListAsync();
             return View("ViewTitles", model);
         }
