@@ -31,25 +31,33 @@
 
         <div class="row g-3 align-items-end">
 
-            <!-- Filter Fields -->
+            <!-- Code Reference -->
+            <div class="col-md-3 position-relative">
+                <label class="form-label fw-semibold text-muted ">Code Reference</label>
+                <input type="text" name="filterCodeReference" id="filterCodeReference"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Search Code Reference" autocomplete="off">
+                <ul id="codeReferenceList" class="dropdown-list"></ul>
+            </div>
+
+            <!-- Invoice Number -->
+            <div class="col-md-3 position-relative">
+                <label class="form-label fw-semibold text-muted ">Invoice Number</label>
+                <input type="text" name="filterInvoiceNumber" id="filterInvoiceNumber"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Search Invoice Number" autocomplete="off">
+                <ul id="invoiceNumberList" class="dropdown-list"></ul>
+            </div>
+
+            <!-- Filter by ID -->
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted ">Filter by ID</label>
                 <input type="text" name="filterId"
                        class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
                        placeholder="🔎 ID" value="@ViewData["FilterId"]" />
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted ">Code Reference</label>
-                <input type="text" name="filterCodeReference"
-                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Code Reference" value="@ViewData["FilterCodeReference"]" />
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted ">Invoice Number</label>
-                <input type="text" name="filterInvoiceNumber"
-                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Invoice Number" value="@ViewData["FilterInvoiceNumber"]" />
-            </div>
+
+            <!-- Financial Year -->
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted ">Financial Year</label>
                 <input type="text" name="titleYear"
@@ -59,30 +67,31 @@
 
             <!-- Buttons -->
             <div class="col-md-6 d-flex gap-2 mt-3">
-
                 <button type="submit" class="btn fw-semibold shadow-sm px-4 rounded-pill"
                         style="background: linear-gradient(45deg, #36d1dc, #5b86e5); border: none; color: white;">
                     🔍 Filter
                 </button>
-
                 <button type="button" class="btn fw-semibold shadow-sm px-4 rounded-pill" id="clearButton"
                         style="background: linear-gradient(45deg, #ff6a00, #ee0979); border: none; color: white;">
                     ❌ Clear
                 </button>
-
             </div>
 
             <div class="col-md-6 mt-3 text-md-end">
-
                 <a href="/Title/DownloadExcel" class="btn fw-semibold shadow-sm px-4 rounded-pill"
                    style="background: linear-gradient(45deg, #00b09b, #96c93d); border: none; color: white;">
                     ⬇️ Export to Excel
                 </a>
-
             </div>
 
         </div>
     </form>
+
+
+ 
+
+
+
 
 
 
@@ -159,7 +168,7 @@
     });
 </script>
 
-<script>
+@* <script>
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         const filterId = urlParams.get("filterId");
@@ -172,7 +181,7 @@
             }
         }
     });
-</script>
+</script> *@
 
 <script>
     document.getElementById('clearButton').addEventListener('click', function () {
@@ -338,4 +347,81 @@
     /* border:  solid #e2e8f0; */
 }
 
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch dropdown data
+        fetch('/Title/GetDropdownData')
+            .then(response => response.json())
+            .then(data => {
+                populateDropdown('filterCodeReference', 'codeReferenceList', data.codeReferences);
+                populateDropdown('filterInvoiceNumber', 'invoiceNumberList', data.invoiceNumbers);
+            })
+            .catch(error => console.error('Error fetching dropdown data:', error));
+
+        function populateDropdown(inputId, listId, items) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            input.addEventListener('input', function () {
+                const filter = this.value.toLowerCase();
+                list.innerHTML = '';
+
+                const filtered = items.filter(item => item.toLowerCase().includes(filter));
+                filtered.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    li.className = 'dropdown-item';
+                    li.addEventListener('click', function () {
+                        input.value = item;
+                        list.innerHTML = '';
+                    });
+                    list.appendChild(li);
+                });
+
+                list.style.display = filtered.length ? 'block' : 'none';
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    list.innerHTML = '';
+                }
+            });
+        }
+
+        // Clear Button
+        document.getElementById('clearButton').addEventListener('click', function () {
+            document.getElementById('filterForm').reset();
+            document.getElementById('codeReferenceList').innerHTML = '';
+            document.getElementById('invoiceNumberList').innerHTML = '';
+        });
+    });
+</script>
+
+
+<style>
+   
+    .dropdown-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        margin-top: 5px;
+        padding-left: 0;
+        background-color: white;
+        position: absolute;
+        width: 80%;
+        z-index: 10;
+        list-style: none;
+        border-radius: 4px;
+        display: none;
+    }
+
+    .dropdown-item {
+        padding: 8px;
+        cursor: pointer;
+    }
+    .dropdown-item:hover {
+        background-color: #f0f0f0;
+     }
 </style>
