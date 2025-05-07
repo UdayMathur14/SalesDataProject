@@ -250,8 +250,8 @@ namespace SalesDataProject.Controllers
                             BlockedId = existingTitle?.Id,
                             TitleYear = yearTtile,
                             // Only populate BlockedByInvoiceNo and BlockedCodeRef if the title is blocked
-                            BlockedByInvoiceNo = existingTitle != null ? invoiceNumber : null,
-                            BlockedCodeRef = existingTitle != null ? codeReference : null
+                            BlockedByInvoiceNo = existingTitle?.InvoiceNumber,
+                            BlockedCodeRef = existingTitle?.CodeReference
                         };
 
                         // Add the titleValidation object to the appropriate list
@@ -489,9 +489,22 @@ namespace SalesDataProject.Controllers
             {
                 query = query.Where(x => x.TitleYear.Contains(titleYear));
             }
+            var codeReferences = await _context.Titles
+                                       .Select(x => x.CodeReference)
+                                       .Distinct()
+                                       .ToListAsync();
+
+            var invoices = await _context.Titles
+                                         .Select(x => x.InvoiceNumber) // assuming column is named Invoice
+                                         .Distinct()
+                                         .ToListAsync();
+
+            ViewData["CodeReferencesList"] = codeReferences;
+            ViewData["InvoicesList"] = invoices;
 
             var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanDeleteTitles"] = canDeleteTitle;
+
 
             var model = await query.ToListAsync();
             return View("ViewTitles", model);
