@@ -111,17 +111,17 @@ namespace SalesDataProject.Controllers
                             var emailSet = new HashSet<string>();
                             var duplicateEmails = new HashSet<string>();
 
-                            for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)
+                            for (int row = 2; row <= lastRow; row++) // Start from the third row (skip header)
                             {
-                                var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
-                                var contactPerson = worksheet.Cell(row, 3).GetString().Trim();
-                                var customerNumber = worksheet.Cell(row, 4).GetString().Trim();
-                                var customerNumber2 = worksheet.Cell(row, 8).GetString().Trim();
-                                var customerNumber3 = worksheet.Cell(row, 9).GetString().Trim();
-                                var customerEmail = worksheet.Cell(row, 5).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
-                                var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
-                                var country = worksheet.Cell(row, 7).GetString().Trim();
-                                var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
+                                var companyName = worksheet.Cell(row, 1).GetString().Trim().ToUpper();
+                                var contactPerson = worksheet.Cell(row, 2).GetString().Trim();
+                                var customerNumber = worksheet.Cell(row, 3).GetString().Trim();
+                                var customerNumber2 = worksheet.Cell(row, 7).GetString().Trim();
+                                var customerNumber3 = worksheet.Cell(row, 8).GetString().Trim();
+                                var customerEmail = worksheet.Cell(row, 4).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
+                                var countryCode = worksheet.Cell(row, 5).GetString()?.Trim();
+                                var country = worksheet.Cell(row, 6).GetString().Trim();
+                                var category = worksheet.Cell(row, 11).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
                                 var isCommonDomain = await _context.CommonDomains
@@ -334,17 +334,17 @@ namespace SalesDataProject.Controllers
                             var emailSet = new HashSet<string>();
                             var duplicateEmails = new HashSet<string>();
 
-                            for (int row = 3; row <= lastRow; row++) // Start from the third row (skip header)          
+                            for (int row = 2; row <= lastRow; row++) // Start from the third row (skip header)          
                             {
-                                var companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
-                                var contactPerson = worksheet.Cell(row, 3).GetString().Trim();
-                                var customerNumber = worksheet.Cell(row, 4).GetString().Trim();
-                                var customerNumber2 = worksheet.Cell(row, 8).GetString().Trim();
-                                var customerNumber3 = worksheet.Cell(row, 9).GetString().Trim();
-                                var customerEmail = worksheet.Cell(row, 5).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
-                                var countryCode = worksheet.Cell(row, 6).GetString()?.Trim();
-                                var country = worksheet.Cell(row, 7).GetString().Trim();
-                                var category = worksheet.Cell(row, 12).GetString().ToUpper().Trim();
+                                var companyName = worksheet.Cell(row, 1).GetString().Trim().ToUpper();
+                                var contactPerson = worksheet.Cell(row, 2).GetString().Trim();
+                                var customerNumber = worksheet.Cell(row, 3).GetString().Trim();
+                                var customerNumber2 = worksheet.Cell(row, 7).GetString().Trim();
+                                var customerNumber3 = worksheet.Cell(row, 8).GetString().Trim();
+                                var customerEmail = worksheet.Cell(row, 4).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
+                                var countryCode = worksheet.Cell(row, 5).GetString()?.Trim();
+                                var country = worksheet.Cell(row, 6).GetString().Trim();
+                                var category = worksheet.Cell(row, 11).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
                                 var isCommonDomain = await _context.CommonDomains
@@ -781,24 +781,6 @@ namespace SalesDataProject.Controllers
                 return View("ViewRecords", model);
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         [HttpGet]
         public IActionResult DownloadTemplate1()
