@@ -1,13 +1,10 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
-using SalesDataProject.Models.AuthenticationModels;
+using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
 {
@@ -741,7 +738,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 9).Value = "DELHI";
                     worksheet.Cell(2, 10).Value = "NEW DELHI";
                     worksheet.Cell(2, 11).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
-                    worksheet.Cell(2, 12).Value = "Example row. Please delete This row and follow this format.";
+                    worksheet.Cell(2, 12).Value = "Please delete This row and follow this format.";
 
                     // Style the example row (Gray, italic and background color)
                     var exampleRow = worksheet.Range("A2:L2");
