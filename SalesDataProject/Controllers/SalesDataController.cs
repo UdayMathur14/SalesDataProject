@@ -169,6 +169,18 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
+                                if (isEmailEmpty && isAllContactsEmpty)
+                                {
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
+                                        ErrorMessage = "Either Email or at least one Contact Number must be provided."
+                                    });
+                                    continue;
+                                }
                                 if (!IsValidEmail(customerEmail.Trim()) || duplicateEmails.Contains(customerEmail))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
@@ -194,18 +206,7 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if (isEmailEmpty && isAllContactsEmpty)
-                                {
-                                    invalidRecords.Add(new InvalidCustomerRecord
-                                    {
-                                        RowNumber = row,
-                                        CompanyName = companyName,
-                                        CustomerEmail = customerEmail,
-                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
-                                        ErrorMessage = "Either Email or at least one Contact Number must be provided."
-                                    });
-                                    continue;
-                                }
+                                
                                 bool isAlreadyUploadedByOther = false;
 
                                 var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
