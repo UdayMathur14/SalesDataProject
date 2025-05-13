@@ -193,20 +193,28 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                else if (string.IsNullOrWhiteSpace(companyName) ||
-                                         string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
+                                else if (string.IsNullOrWhiteSpace(companyName) ||string.IsNullOrWhiteSpace(customerEmail) ||string.IsNullOrWhiteSpace(countryCode) ||string.IsNullOrWhiteSpace(country))
                                 {
+                                    var missingFields = new List<string>();
+
+                                    if (string.IsNullOrWhiteSpace(companyName)) missingFields.Add("Company Name");
+                                    if (string.IsNullOrWhiteSpace(customerEmail)) missingFields.Add("Customer Email");
+                                    if (string.IsNullOrWhiteSpace(countryCode)) missingFields.Add("Country Code");
+                                    if (string.IsNullOrWhiteSpace(country)) missingFields.Add("Country");
+
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
                                         RowNumber = row,
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
-                                        ErrorMessage = "Missing Mandatory Fields"
+                                        ErrorMessage = "Missing Mandatory Field(s): " + string.Join(", ", missingFields)
                                     });
+
                                     continue;
                                 }
-                                
+
+
                                 bool isAlreadyUploadedByOther = false;
 
                                 var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
