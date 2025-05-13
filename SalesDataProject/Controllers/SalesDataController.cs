@@ -656,20 +656,80 @@ namespace SalesDataProject.Controllers
                 {
                     var worksheet = workbook.Worksheets.Add("CustomerTemplate");
 
-                    worksheet.Cell(1, 1).Value = "*CompanyName";
-                    worksheet.Cell(1, 2).Value = "*ContactPerson";
-                    worksheet.Cell(1, 3).Value = "ContactNo1";
-                    worksheet.Cell(1, 4).Value = "*Email";
-                    worksheet.Cell(1, 5).Value = "*CountryCode";
-                    worksheet.Cell(1, 6).Value = "*Country";
-                    worksheet.Cell(1, 7).Value = "ContactNo2";
-                    worksheet.Cell(1, 8).Value = "ContactNo3";
+                    // Define headers with no asterisk
+                    worksheet.Cell(1, 1).Value = "Company Name";
+                    worksheet.Cell(1, 2).Value = "Contact Person";
+                    worksheet.Cell(1, 3).Value = "Contact No1";
+                    worksheet.Cell(1, 4).Value = "Email";
+                    worksheet.Cell(1, 5).Value = "Country Code";
+                    worksheet.Cell(1, 6).Value = "Country";
+                    worksheet.Cell(1, 7).Value = "Contact No2";
+                    worksheet.Cell(1, 8).Value = "Contact No3";
                     worksheet.Cell(1, 9).Value = "State";
                     worksheet.Cell(1, 10).Value = "City";
-                    worksheet.Cell(1, 11).Value = "*Category";
+                    worksheet.Cell(1, 11).Value = "Category";
+                    worksheet.Cell(1, 12).Value = "Example"; // Help column
 
-                    // Example data
+                    // Style headers (Red for required, Blue/Black for optional)
+                    var headerRange = worksheet.Range("A1:L1");
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    headerRange.Style.Border.OutsideBorderColor = XLColor.Black;
+                    headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                    headerRange.Style.Border.InsideBorderColor = XLColor.Black;
 
+                    // Applying background color and italic styling for headers
+                    worksheet.Cell(1, 1).Style.Font.FontColor = XLColor.Red;
+                    worksheet.Cell(1, 1).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Cell(1, 1).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 2).Style.Font.FontColor = XLColor.Red;
+                    worksheet.Cell(1, 2).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Cell(1, 2).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 4).Style.Font.FontColor = XLColor.Red;
+                    worksheet.Cell(1, 4).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Cell(1, 4).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 5).Style.Font.FontColor = XLColor.Red;
+                    worksheet.Cell(1, 5).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Cell(1, 5).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 6).Style.Font.FontColor = XLColor.Red;
+                    worksheet.Cell(1, 6).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Cell(1, 6).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 11).Style.Font.FontColor = XLColor.Red;
+                    worksheet.Cell(1, 11).Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    worksheet.Cell(1, 11).Style.Font.Italic = true;
+
+                    // Optional fields in Blue/Black with background color
+                    worksheet.Cell(1, 3).Style.Font.FontColor = XLColor.Blue;
+                    worksheet.Cell(1, 3).Style.Fill.BackgroundColor = XLColor.LightCyan;
+                    worksheet.Cell(1, 3).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 7).Style.Font.FontColor = XLColor.Blue;
+                    worksheet.Cell(1, 7).Style.Fill.BackgroundColor = XLColor.LightCyan;
+                    worksheet.Cell(1, 7).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 8).Style.Font.FontColor = XLColor.Blue;
+                    worksheet.Cell(1, 8).Style.Fill.BackgroundColor = XLColor.LightCyan;
+                    worksheet.Cell(1, 8).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 9).Style.Font.FontColor = XLColor.Blue;
+                    worksheet.Cell(1, 9).Style.Fill.BackgroundColor = XLColor.LightCyan;
+                    worksheet.Cell(1, 9).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 10).Style.Font.FontColor = XLColor.Blue;
+                    worksheet.Cell(1, 10).Style.Fill.BackgroundColor = XLColor.LightCyan;
+                    worksheet.Cell(1, 10).Style.Font.Italic = true;
+
+                    worksheet.Cell(1, 12).Style.Font.FontColor = XLColor.Gray;
+                    worksheet.Cell(1, 12).Style.Fill.BackgroundColor = XLColor.LightGray;
+                    worksheet.Cell(1, 12).Style.Font.Italic = true;
+
+                    // Example row (Row 2) with gray italic text and background color
                     worksheet.Cell(2, 1).Value = "Ennoble Ip";
                     worksheet.Cell(2, 2).Value = "Rajnish Sir";
                     worksheet.Cell(2, 3).Value = "123456789";
@@ -681,46 +741,65 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 9).Value = "DELHI";
                     worksheet.Cell(2, 10).Value = "NEW DELHI";
                     worksheet.Cell(2, 11).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
+                    worksheet.Cell(2, 12).Value = "Example row. Please delete This row and follow this format.";
 
-                    // Adjust column widths to fit content
-                    worksheet.Columns().AdjustToContents();
+                    // Style the example row (Gray, italic and background color)
+                    var exampleRow = worksheet.Range("A2:L2");
+                    exampleRow.Style.Font.FontColor = XLColor.Black;
+                    exampleRow.Style.Font.Italic = true;
 
-                    // Optionally, apply styles to the header row for better visibility
-                    worksheet.Columns().AdjustToContents();
+                    // Set custom column widths
+                    worksheet.Column(1).Width = 20;
+                    worksheet.Column(2).Width = 20;
+                    worksheet.Column(3).Width = 15;
+                    worksheet.Column(4).Width = 25;
+                    worksheet.Column(5).Width = 12;
+                    worksheet.Column(6).Width = 15;
+                    worksheet.Column(7).Width = 15;
+                    worksheet.Column(8).Width = 15;
+                    worksheet.Column(9).Width = 15;
+                    worksheet.Column(10).Width = 18;
+                    worksheet.Column(11).Width = 50;
+                    worksheet.Column(12).Width = 50; // Example column
 
-                    // Optionally, apply styles to the header row for better visibility
-                    var headerRow = worksheet.Range("A1:L1");
-                    headerRow.Style.Font.Bold = true;
-                    headerRow.Style.Font.FontColor = XLColor.Red;
-                    headerRow.Style.Fill.BackgroundColor = XLColor.Yellow;
-                    headerRow.Style.Border.TopBorder = XLBorderStyleValues.Thin;
-                    headerRow.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
-                    headerRow.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
-                    headerRow.Style.Border.RightBorder = XLBorderStyleValues.Thin;
-
-                    var row = worksheet.Range("A2:L2");
-                    row.Style.Font.FontColor = XLColor.Black;
+                    // Add a note to help the user (in the Example column)
+                    worksheet.Cell(3, 12).Value = "Red headers are mandatory. Either 'Email' or 'Contact No' is required.";
 
                     using (var stream = new MemoryStream())
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-
-                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MailingTemplate.xlsx");
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CustomerTemplate.xlsx");
                     }
                 }
             }
             catch (Exception ex)
             {
-                var model = new UploadResultViewModel
-                {
-
-                };
+                var model = new UploadResultViewModel();
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return View("ViewRecords", model);
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         [HttpGet]
         public IActionResult DownloadTemplate1()
         {
