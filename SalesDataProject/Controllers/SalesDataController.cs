@@ -258,15 +258,18 @@ namespace SalesDataProject.Controllers
                                 // Apply blocking logic
                                 if (isAlreadyUploadedByOther || isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
                                 {
-                                    if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
-                                    {
-                                        var existingRecord = await _context.Prospects.Where(c => (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
-                                        customerData.BLOCKED_BY = existingRecord?.CREATED_BY ?? "Unknown";
-                                    }
-                                    else
-                                    {
-                                        customerData.BLOCKED_BY = "Another User";
-                                    }
+                                    //if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
+                                    //{
+                                    //    var existingRecord = await _context.Prospects.Where(c => (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+                                    //    customerData.BLOCKED_BY = existingRecord?.CREATED_BY ?? "Unknown";
+                                    //}
+                                    //else
+                                    //{
+                                    //    customerData.BLOCKED_BY = "Another User";
+                                    //}
+
+                                    var existingRecord = await _context.Prospects.Where(c => (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+                                    customerData.BLOCKED_BY = existingRecord?.CREATED_BY ;
 
                                     customerData.RECORD_TYPE = true; // Blocked
                                     blockedCustomers.Add(customerData);
