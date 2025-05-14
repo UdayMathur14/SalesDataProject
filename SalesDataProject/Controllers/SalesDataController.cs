@@ -173,29 +173,57 @@ namespace SalesDataProject.Controllers
                                         RowNumber = row,
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
-                                        CustomerNumber = $"{customerNumber}, {customerNumber2}, {customerNumber3}",
-                                        ErrorMessage = "Either Email or at least one Contact Number must be provided."
-                                    });
-                                    continue;
-                                }
-                                if (!IsValidEmail(customerEmail.Trim()) || duplicateEmails.Contains(customerEmail))
-                                {
-                                    invalidRecords.Add(new InvalidCustomerRecord
-                                    {
-                                        RowNumber = row,
-                                        CompanyName = companyName,
-                                        CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
-                                        ErrorMessage = duplicateEmails.Contains(customerEmail) ? "Duplicate email within the file." : "Invalid email format."
+                                        ErrorMessage = "Please enter at least one contact number or email."
                                     });
                                     continue;
                                 }
-                                else if (string.IsNullOrWhiteSpace(companyName) ||string.IsNullOrWhiteSpace(customerEmail) ||string.IsNullOrWhiteSpace(countryCode) ||string.IsNullOrWhiteSpace(country))
+
+                                //if (!IsValidEmail(customerEmail.Trim()) || duplicateEmails.Contains(customerEmail))
+                                //{
+                                //    invalidRecords.Add(new InvalidCustomerRecord
+                                //    {
+                                //        RowNumber = row,
+                                //        CompanyName = companyName,
+                                //        CustomerEmail = customerEmail,
+                                //        CustomerNumber = customerNumber,
+                                //        ErrorMessage = duplicateEmails.Contains(customerEmail) ? "Duplicate email within the file." : "Invalid email format."
+                                //    });
+                                //    continue;
+                                //}
+                                if (!isEmailEmpty)
+                                {
+                                    if (!IsValidEmail(customerEmail.Trim()))
+                                    {
+                                        invalidRecords.Add(new InvalidCustomerRecord
+                                        {
+                                            RowNumber = row,
+                                            CompanyName = companyName,
+                                            CustomerEmail = customerEmail,
+                                            CustomerNumber = customerNumber,
+                                            ErrorMessage = "Invalid email format."
+                                        });
+                                        continue;
+                                    }
+
+                                    if (duplicateEmails.Contains(customerEmail.Trim()))
+                                    {
+                                        invalidRecords.Add(new InvalidCustomerRecord
+                                        {
+                                            RowNumber = row,
+                                            CompanyName = companyName,
+                                            CustomerEmail = customerEmail,
+                                            CustomerNumber = customerNumber,
+                                            ErrorMessage = "Duplicate email within the file."
+                                        });
+                                        continue;
+                                    }
+                                }
+                                else if (string.IsNullOrWhiteSpace(companyName) ||string.IsNullOrWhiteSpace(countryCode) ||string.IsNullOrWhiteSpace(country))
                                 {
                                     var missingFields = new List<string>();
 
                                     if (string.IsNullOrWhiteSpace(companyName)) missingFields.Add("Company Name");
-                                    if (string.IsNullOrWhiteSpace(customerEmail)) missingFields.Add("Customer Email");
                                     if (string.IsNullOrWhiteSpace(countryCode)) missingFields.Add("Country Code");
                                     if (string.IsNullOrWhiteSpace(country)) missingFields.Add("Country");
 
