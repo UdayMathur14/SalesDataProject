@@ -791,6 +791,7 @@ namespace SalesDataProject.Controllers
                 {
                     var worksheet = workbook.Worksheets.Add("EventTemplate");
 
+                    // Set headers
                     worksheet.Cell(1, 1).Value = "*CompanyName";
                     worksheet.Cell(1, 2).Value = "*ContactPerson";
                     worksheet.Cell(1, 3).Value = "ContactNo1";
@@ -803,8 +804,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(1, 10).Value = "City";
                     worksheet.Cell(1, 11).Value = "*Category";
 
-                    // Example data
-
+                    // Sample row data
                     worksheet.Cell(2, 1).Value = "Ennoble Ip";
                     worksheet.Cell(2, 2).Value = "Rajnish Sir";
                     worksheet.Cell(2, 3).Value = "123456789";
@@ -820,21 +820,27 @@ namespace SalesDataProject.Controllers
                     // Adjust column widths to fit content
                     worksheet.Columns().AdjustToContents();
 
-                    // Optionally, apply styles to the header row for better visibility
-                    worksheet.Columns().AdjustToContents();
-
-                    // Optionally, apply styles to the header row for better visibility
-                    var headerRow = worksheet.Range("A1:L1");
+                    // Apply styles to header row
+                    var headerRow = worksheet.Range("A1:K1");
                     headerRow.Style.Font.Bold = true;
-                    headerRow.Style.Font.FontColor = XLColor.Red;
-                    headerRow.Style.Fill.BackgroundColor = XLColor.Yellow;
-                    headerRow.Style.Border.TopBorder = XLBorderStyleValues.Thin;
-                    headerRow.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
-                    headerRow.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
-                    headerRow.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+                    headerRow.Style.Font.FontColor = XLColor.White;
+                    headerRow.Style.Fill.BackgroundColor = XLColor.DarkBlue;
+                    headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    headerRow.Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
+                    headerRow.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
-                    var row = worksheet.Range("A2:L2");
-                    row.Style.Font.FontColor = XLColor.Black;
+                    // Apply styles to data row
+                    var dataRow = worksheet.Range("A2:K2");
+                    dataRow.Style.Font.FontColor = XLColor.Black;
+                    dataRow.Style.Fill.BackgroundColor = XLColor.LightYellow;
+                    dataRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    dataRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    dataRow.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    dataRow.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                    // Freeze top row
+                    worksheet.SheetView.FreezeRows(1);
 
                     using (var stream = new MemoryStream())
                     {
@@ -847,15 +853,13 @@ namespace SalesDataProject.Controllers
             }
             catch (Exception ex)
             {
-                var model = new UploadResultViewModel
-                {
-
-                };
+                var model = new UploadResultViewModel { };
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
                 return View("ViewRecords", model);
             }
         }
+
 
 
         [HttpPost]
