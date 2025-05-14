@@ -220,6 +220,11 @@
     window.addEventListener('load', function () {
         hideSpinner();
     });
+    
+    const fileUpload = document.getElementById('fileUpload');
+        if (fileUpload) {
+            fileUpload.value = '';
+        }
 </script>
 
 
