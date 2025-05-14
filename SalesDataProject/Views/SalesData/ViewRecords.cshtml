@@ -12,9 +12,9 @@
                 <input type="file" id="fileUpload" name="file" class="form-control-file d-none" required />
                 <button type="button" id="uploadButton" class="btn btn-outline-light btn-sm"><i class="bi bi-upload me-1"></i> Upload</button>
             </form>
-            <form>
-                <button type="submit" class="btn btn-outline-light btn-sm shadow-sm"><i class="bi bi-download me-1"></i> Template</button>
-            </form>
+            <button type="button" class="btn btn-outline-light btn-sm shadow-sm" id="downloadBtn">
+                <i class="bi bi-download me-1"></i> Template
+            </button>
             <a href="@Url.Action("Index", "Home")" class="btn btn-outline-light btn-sm shadow-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
         </div>
     </div>
@@ -72,9 +72,9 @@
                                 <thead class="table-danger text-white small">
                                     <tr>
                                         <th>Category</th>
-                                        <th>Company</th>
+                                        <th>Company Name</th>
                                         <th>Email</th>
-                                        <th>Contact</th>
+                                        <th>Contact Number</th>
                                         <th>Blocked On</th>
                                     </tr>
                                 </thead>
@@ -114,9 +114,9 @@
                                 <thead class="table-success text-white small">
                                     <tr>
                                         <th>Category</th>
-                                        <th>Company</th>
+                                        <th>Company Name</th>
                                         <th>Email</th>
-                                        <th>Contact</th>
+                                        <th>Contact Number</th>
                                         <th>Created On</th>
                                     </tr>
                                 </thead>
@@ -162,10 +162,12 @@
                 <input type="file" class="form-control shadow-sm form-control-sm" id="excelFile" name="file" accept=".xlsx" required>
             </div>
             <div class="col-md-3">
-                <button type="submit" class="btn btn-warning shadow-sm btn-sm"><i class="bi bi-cloud-upload me-1"></i> Upload</button>
-                <form class="d-inline ms-2">
-                    <button type="submit" class="btn shadow-sm btn-warning btn-sm"><i class="bi bi-file-earmark-arrow-down me-1"></i> Template</button>
-                </form>
+                <button type="submit" class="btn btn-warning shadow-sm btn-sm">
+                    <i class="bi bi-cloud-upload me-1"></i> Upload
+                </button>
+                <button id="downloadBtn1" type="submit" class="btn shadow-sm btn-warning btn-sm">
+                        <i class="bi bi-file-earmark-arrow-down me-1"></i> Template
+                </button>
             </div>
         </form>
     </div>
