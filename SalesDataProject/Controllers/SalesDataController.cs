@@ -580,7 +580,7 @@ namespace SalesDataProject.Controllers
         {
             try
             {
-                var blockedCustomers = JsonConvert.DeserializeObject<List<Customer>>(BlockedCustomersJson);
+                var blockedCustomers = JsonConvert.DeserializeObject<List<ProspectCustomer>>(BlockedCustomersJson);
                 var cleanCustomers = JsonConvert.DeserializeObject<List<Customer>>(CleanCustomersJson);
                 var invalidCustomers = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(InvalidCustomersJson);
 
@@ -595,6 +595,7 @@ namespace SalesDataProject.Controllers
                     blockedSheet.Cell(1, 2).Value = "Company Name";
                     blockedSheet.Cell(1, 3).Value = "Email";
                     blockedSheet.Cell(1, 4).Value = "Contact Number";
+                    blockedSheet.Cell(1, 5).Value = "Blocked By";
 
                     // Fill data for blocked customers
                     for (int i = 0; i < blockedCustomers.Count; i++)
@@ -603,6 +604,7 @@ namespace SalesDataProject.Controllers
                         blockedSheet.Cell(i + 2, 2).Value = blockedCustomers[i].COMPANY_NAME;
                         blockedSheet.Cell(i + 2, 3).Value = blockedCustomers[i].CUSTOMER_EMAIL;
                         blockedSheet.Cell(i + 2, 4).Value = blockedCustomers[i].CUSTOMER_CONTACT_NUMBER1;
+                        blockedSheet.Cell(i + 2, 5).Value = blockedCustomers[i].BLOCKED_BY;
                     }
 
                     // Add headers for clean customers
