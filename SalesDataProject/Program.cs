@@ -4,39 +4,53 @@ using OfficeOpenXml;  // Import this for ExcelPackage
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Set EPPlus license context for non-commercial use (LGPL license)
-ExcelPackage.LicenseContext = LicenseContext.NonCommercial; // Or LicenseContext.Commercial if you have a commercial license
+// Set EPPlus license context for non-commercial use
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Enable in-memory session storage
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddSession(options => {
-    options.IdleTimeout = TimeSpan.FromMinutes(1000); // Set timeout as needed
-    options.Cookie.HttpOnly = true; // Protects the session cookie
-    options.Cookie.IsEssential = true; // Required for session to work
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(12); // Extend session timeout to 12 hours
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax; // Helps with cookie persistence
+});
+
+// OPTIONAL: If using cookie authentication (e.g., Identity or manual cookie auth)
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromHours(12); // Keep auth cookie alive for 12 hours
+    options.SlidingExpiration = true;                // Reset expiration on each request
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseSession();
+
+app.UseSession(); // Make sure this comes BEFORE Routing/Authorization
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication(); // Add if you're using authentication
 app.UseAuthorization();
 
 app.MapControllerRoute(
