@@ -126,10 +126,6 @@ namespace SalesDataProject.Controllers
 
                                 bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
 
-                                if (isEmailEmpty)
-                                {
-                                    customerEmail = null;
-                                }
                                 bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3); // all contact numbers are empty or not
 
                                 if (isCommonDomain)
