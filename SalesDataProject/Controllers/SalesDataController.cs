@@ -122,9 +122,15 @@ namespace SalesDataProject.Controllers
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
                                 var isCommonDomain = await _context.CommonDomains
-                                    .AnyAsync(d => d.DomainName.ToLower() == emailDomain);
+                                    .AnyAsync(d => d.DomainName.ToLower() == emailDomain); //common domain m h toh nhi 
+
                                 bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
-                                bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3);
+
+                                if (isEmailEmpty)
+                                {
+                                    customerEmail = null;
+                                }
+                                bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3); // all contact numbers are empty or not
 
                                 if (isCommonDomain)
                                 {
@@ -242,25 +248,21 @@ namespace SalesDataProject.Controllers
 
                                 bool isAlreadyUploadedByOther = false;
 
-                                var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()).AnyAsync();
+                                //kya yeh hmare database m h 
+                                var isAlreadyInMaster = await _context.Customers.Where(c =>c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())).AnyAsync();
                                 if (emailDomain == "NULL")
                                 {
-                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c =>(c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))&& c.CREATED_BY != username).AnyAsync(); //kis aur ne name , email toh phele se hi upolad nhi kr rakhi 
                                 }
                                 else
                                 {
-                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) && c.CREATED_BY != username)).AnyAsync();
+                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || (!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) || (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())) && c.CREATED_BY != username)).AnyAsync();
                                 }
 
-                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
+                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => !string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
 
                                 // New logic: Check if record type is true in the Prospects table
-                                var isBlockedInProspectTable = await _context.Prospects
-                                    .Where(c => c.RECORD_TYPE == true &&
-                                                (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||
-                                                 c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()
-                                                 || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))
-                                    .AnyAsync();
+                                var isBlockedInProspectTable = await _context.Prospects.Where(c => c.RECORD_TYPE == true &&(c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))).AnyAsync();
 
                                 var customerData = new ProspectCustomer
                                 {
