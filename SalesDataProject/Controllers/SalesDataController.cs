@@ -255,7 +255,13 @@ namespace SalesDataProject.Controllers
                                     isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || (!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) || (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())) && c.CREATED_BY != username)).AnyAsync();
                                 }
 
-                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => !string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
+                                //var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => !string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
+                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c =>(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||(c.CONTACT_PERSON.ToUpper() == contactPerson.ToUpper() &&
+                                (
+                                    (!string.IsNullOrEmpty(customerNumber) && c.CUSTOMER_CONTACT_NUMBER1 == customerNumber) ||
+                                    (!string.IsNullOrEmpty(customerNumber2) && c.CUSTOMER_CONTACT_NUMBER1 == customerNumber2) ||
+                                    (!string.IsNullOrEmpty(customerNumber3) && c.CUSTOMER_CONTACT_NUMBER1 == customerNumber3)
+                                ))).AnyAsync();
 
                                 // New logic: Check if record type is true in the Prospects table
                                 var isBlockedInProspectTable = await _context.Prospects.Where(c => c.RECORD_TYPE == true &&(c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))).AnyAsync();
@@ -294,7 +300,8 @@ namespace SalesDataProject.Controllers
                                     //    customerData.BLOCKED_BY = "Another User";
                                     //}
 
-                                    var existingRecord = await _context.Prospects.Where(c => (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+                                    var existingRecord = await _context.Prospects.Where(c =>c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+
                                     customerData.BLOCKED_BY = existingRecord?.CREATED_BY ;
 
                                     customerData.RECORD_TYPE = true; // Blocked
