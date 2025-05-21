@@ -1,9 +1,11 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
+using System.Diagnostics.Metrics;
 using System.Text.RegularExpressions;
 
 namespace SalesDataProject.Controllers
@@ -112,12 +114,12 @@ namespace SalesDataProject.Controllers
                             {
                                 var companyName = worksheet.Cell(row, 1).GetString().Trim().ToUpper();
                                 var contactPerson = worksheet.Cell(row, 2).GetString().Trim();
-                                var customerNumber = worksheet.Cell(row, 3).GetString().Trim();
+                                var customerNumber = worksheet.Cell(row, 3).GetString().Trim().ToUpper();
                                 var customerNumber2 = worksheet.Cell(row, 7).GetString().Trim();
                                 var customerNumber3 = worksheet.Cell(row, 8).GetString().Trim();
                                 var customerEmail = worksheet.Cell(row, 4).GetString().Trim().Replace("\u00A0", "").ToLowerInvariant();
                                 var countryCode = worksheet.Cell(row, 5).GetString()?.Trim();
-                                var country = worksheet.Cell(row, 6).GetString().Trim();
+                                var country = worksheet.Cell(row, 6).GetString().Trim().ToLower();
                                 var category = worksheet.Cell(row, 11).GetString().ToUpper().Trim();
                                 var emailDomain = customerEmail?.Split('@').Last().ToLower();
 
@@ -144,7 +146,7 @@ namespace SalesDataProject.Controllers
                                     }
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM", "Individual", "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "MSME", "LAW FIRM", "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -176,23 +178,10 @@ namespace SalesDataProject.Controllers
                                         CompanyName = companyName,
                                         CustomerEmail = customerEmail,
                                         CustomerNumber = customerNumber,
-                                        ErrorMessage = "Please enter at least one contact number or email."
+                                        ErrorMessage = "Please enter at least contact number or email."
                                     });
                                     continue;
                                 }
-
-                                //if (!IsValidEmail(customerEmail.Trim()) || duplicateEmails.Contains(customerEmail))
-                                //{
-                                //    invalidRecords.Add(new InvalidCustomerRecord
-                                //    {
-                                //        RowNumber = row,
-                                //        CompanyName = companyName,
-                                //        CustomerEmail = customerEmail,
-                                //        CustomerNumber = customerNumber,
-                                //        ErrorMessage = duplicateEmails.Contains(customerEmail) ? "Duplicate email within the file." : "Invalid email format."
-                                //    });
-                                //    continue;
-                                //}
                                 if (!isEmailEmpty)
                                 {
                                     if (!IsValidEmail(customerEmail.Trim()))
@@ -241,68 +230,155 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
+                                bool isBlocked = false;
+                                string normalizedCategory = category?.Replace(" ", "").ToUpper();
 
-                                bool isAlreadyUploadedByOther = false;
-
-                                //kya yeh hmare database m h 
-                                var isAlreadyInMaster = await _context.Customers.Where(c =>c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())).AnyAsync();
-                                if (emailDomain == "NULL")
+                                switch (normalizedCategory)
                                 {
-                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c =>(c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))&& c.CREATED_BY != username).AnyAsync(); //kis aur ne name , email toh phele se hi upolad nhi kr rakhi 
-                                }
-                                else
-                                {
-                                    isAlreadyUploadedByOther = await _context.Prospects.Where(c => ((c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || (!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) || (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())) && c.CREATED_BY != username)).AnyAsync();
+                                    case "LAWFIRM":
+                                        if (!string.IsNullOrEmpty(customerEmail))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+                                        }
+                                        else if (!string.IsNullOrEmpty(customerNumber))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_CONTACT_NUMBER1.ToUpper() == customerNumber.ToUpper());
+                                        }
+                                        break;
+
+                                    case "CORPORATE":
+                                        if (!string.IsNullOrEmpty(customerEmail))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.COUNTRY.ToLower() == country.ToLower() &&
+                                                               c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+                                        }
+                                        else if (!string.IsNullOrEmpty(customerNumber))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.COUNTRY.ToLower() == country.ToLower() &&
+                                                               c.CUSTOMER_CONTACT_NUMBER1.ToUpper() == customerNumber.ToUpper());
+                                        }
+                                        break;
+
+                                    case "UNIVERSITY":
+                                        if (!string.IsNullOrEmpty(customerEmail))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+                                        }
+                                        else if (!string.IsNullOrEmpty(customerNumber))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_CONTACT_NUMBER1.ToUpper() == customerNumber.ToUpper());
+                                        }
+                                        break;
+
+                                    case "MSME":
+                                        if (!string.IsNullOrEmpty(customerEmail) && !string.IsNullOrEmpty(emailDomain))
+                                        {
+                                            string domain = customerEmail.Split('@').Last();
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() &&
+                                                               c.EMAIL_DOMAIN == emailDomain);
+                                        }
+                                        else if (!string.IsNullOrEmpty(customerNumber))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_CONTACT_NUMBER1.ToUpper() == customerNumber.ToUpper());
+                                        }
+                                        break;
+
+                                    case "INDIVIDUAL":
+                                        if (!string.IsNullOrEmpty(customerEmail))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+                                        }
+                                        else if (!string.IsNullOrEmpty(customerNumber))
+                                        {
+                                            isBlocked = await _context.Prospects
+                                                .AnyAsync(c => c.CATEGORY.ToUpper() == category &&
+                                                               c.CUSTOMER_CONTACT_NUMBER1.ToUpper() == customerNumber.ToUpper());
+                                        }
+                                        break;
                                 }
 
-                                //var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c => !string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()).AnyAsync();
-                                var isAlreadyUploadedBySameOrOther = await _context.Prospects.Where(c =>(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||(c.CONTACT_PERSON.ToUpper() == contactPerson.ToUpper() &&
-                                (
-                                    (!string.IsNullOrEmpty(customerNumber) && c.CUSTOMER_CONTACT_NUMBER1 == customerNumber) ||
-                                    (!string.IsNullOrEmpty(customerNumber2) && c.CUSTOMER_CONTACT_NUMBER1 == customerNumber2) ||
-                                    (!string.IsNullOrEmpty(customerNumber3) && c.CUSTOMER_CONTACT_NUMBER1 == customerNumber3)
-                                ))).AnyAsync();
-
-                                // New logic: Check if record type is true in the Prospects table
-                                var isBlockedInProspectTable = await _context.Prospects.Where(c => c.RECORD_TYPE == true &&(c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()))).AnyAsync();
+                                var isAlreadyInMaster = await _context.Customers.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).AnyAsync();
+                                var presentWithDifferentCategory = await _context.Prospects.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).AnyAsync();
 
                                 var customerData = new ProspectCustomer
+                                    {
+                                        CUSTOMER_CODE = "1",
+                                        COMPANY_NAME = companyName,
+                                        CONTACT_PERSON = contactPerson,
+                                        CUSTOMER_CONTACT_NUMBER1 = customerNumber,
+                                        CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+                                        CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
+                                        CUSTOMER_EMAIL = customerEmail,
+                                        COUNTRY = country,
+                                        STATE = worksheet.Cell(row, 10).GetString(),
+                                        CITY = worksheet.Cell(row, 11).GetString(),
+                                        CREATED_ON = DateTime.Now,
+                                        CREATED_BY = username,
+                                        MODIFIED_BY = username,
+                                        MODIFIED_ON = DateTime.Now,
+                                        COUNTRY_CODE = countryCode,
+                                        EMAIL_DOMAIN = emailDomain,
+                                        CATEGORY = category,
+                                    };
+
+                                if (isAlreadyInMaster)
                                 {
-                                    CUSTOMER_CODE = "1",
-                                    COMPANY_NAME = companyName,
-                                    CONTACT_PERSON = contactPerson,
-                                    CUSTOMER_CONTACT_NUMBER1 = customerNumber,
-                                    CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
-                                    CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
-                                    CUSTOMER_EMAIL = customerEmail,
-                                    COUNTRY = country,
-                                    STATE = worksheet.Cell(row, 10).GetString(),
-                                    CITY = worksheet.Cell(row, 11).GetString(),
-                                    CREATED_ON = DateTime.Now,
-                                    CREATED_BY = username,
-                                    MODIFIED_BY = username,
-                                    MODIFIED_ON = DateTime.Now,
-                                    COUNTRY_CODE = countryCode,
-                                    EMAIL_DOMAIN = emailDomain,
-                                    CATEGORY = category,
-                                };
-
-                                // Apply blocking logic
-                                if (isAlreadyUploadedByOther || isBlockedInProspectTable || isAlreadyUploadedBySameOrOther)
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = customerNumber,
+                                        ErrorMessage = "Already Present in the Master Table."
+                                    });
+                                    continue;
+                                }
+                                if (presentWithDifferentCategory)
                                 {
-                                    //if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
-                                    //{
-                                    //    var existingRecord = await _context.Prospects.Where(c => (c.COMPANY_NAME.ToUpper() == companyName.ToUpper() || c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower() || c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
-                                    //    customerData.BLOCKED_BY = existingRecord?.CREATED_BY ?? "Unknown";
-                                    //}
-                                    //else
-                                    //{
-                                    //    customerData.BLOCKED_BY = "Another User";
-                                    //}
+                                    invalidRecords.Add(new InvalidCustomerRecord
+                                    {
+                                        RowNumber = row,
+                                        CompanyName = companyName,
+                                        CustomerEmail = customerEmail,
+                                        CustomerNumber = customerNumber,
+                                        ErrorMessage = "Already Present With Different Category."
+                                    });
+                                    continue;
+                                }
 
-                                    var existingRecord = await _context.Prospects.Where(c =>c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||(!string.IsNullOrEmpty(emailDomain) && c.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||(!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+                                if (isBlocked)
+                                {
+                                    var existingRecord = await _context.Prospects.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||  (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
+                                    if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
+                                    {
+                                        customerData.BLOCKED_BY = existingRecord?.CREATED_BY;
+                                    }
+                                    else
+                                    {
+                                        customerData.BLOCKED_BY = "Another User";
+                                    }
 
-                                    customerData.BLOCKED_BY = existingRecord?.CREATED_BY ;
+                                    
+
+                                    //customerData.BLOCKED_BY = existingRecord?.CREATED_BY;
 
                                     customerData.RECORD_TYPE = true; // Blocked
                                     blockedCustomers.Add(customerData);
@@ -403,7 +479,7 @@ namespace SalesDataProject.Controllers
                                     }
                                 }
 
-                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "SME", "LAW FIRM", "Individual", "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "MSME", "LAW FIRM", "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -439,8 +515,7 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                else if (string.IsNullOrWhiteSpace(companyName) ||
-                                         string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
+                                else if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -775,7 +850,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 8).Value = "9876543210";
                     worksheet.Cell(2, 9).Value = "DELHI";
                     worksheet.Cell(2, 10).Value = "NEW DELHI";
-                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
+                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/MSME/University/PCT/Individual";
                     worksheet.Cell(2, 12).Value = "Please delete This row and follow this format.";
 
                     // Style the example row (Gray, italic and background color)
@@ -850,7 +925,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 8).Value = "9876543210";
                     worksheet.Cell(2, 9).Value = "DELHI";
                     worksheet.Cell(2, 10).Value = "NEW DELHI";
-                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
+                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/MSME/University/PCT/Individual";
 
                     // Adjust column widths to fit content
                     worksheet.Columns().AdjustToContents();

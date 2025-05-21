@@ -214,7 +214,7 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
-                                if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "SME", "UNIVERSITY", "University", "PCT", "LAW FIRM", "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
+                                if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "MSME", "UNIVERSITY", "University", "PCT", "LAW FIRM", "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -430,7 +430,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 9).Value = "9876543210";
                     worksheet.Cell(2, 10).Value = "DELHI";
                     worksheet.Cell(2, 11).Value = "NEW DELHI";
-                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/SME/University/PCT/Individual";
+                    worksheet.Cell(2, 12).Value = "Corporate/Law Firm/MSME/University/PCT/Individual";
 
                     // Adjust column widths to fit content
                     worksheet.Columns().AdjustToContents();
