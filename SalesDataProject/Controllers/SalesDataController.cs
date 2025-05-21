@@ -351,23 +351,11 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-                                if (presentWithDifferentCategory)
-                                {
-                                    invalidRecords.Add(new InvalidCustomerRecord
-                                    {
-                                        RowNumber = row,
-                                        CompanyName = companyName,
-                                        CustomerEmail = customerEmail,
-                                        CustomerNumber = customerNumber,
-                                        ErrorMessage = "Already Present With Different Category."
-                                    });
-                                    continue;
-                                }
 
                                 if (isBlocked)
                                 {
                                     var existingRecord = await _context.Prospects.Where(c => c.COMPANY_NAME.ToUpper() == companyName.ToUpper() ||  (!string.IsNullOrEmpty(customerEmail) && c.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())).OrderByDescending(c => c.CREATED_ON).FirstOrDefaultAsync();
-                                    if (HttpContext.Session.GetString("CanAccessUserManagement") != "True")
+                                    if (HttpContext.Session.GetString("CanAccessUserManagement") == "True")
                                     {
                                         customerData.BLOCKED_BY = existingRecord?.CREATED_BY;
                                     }
@@ -385,6 +373,18 @@ namespace SalesDataProject.Controllers
                                 }
                                 else
                                 {
+                                    if (presentWithDifferentCategory)
+                                    {
+                                        invalidRecords.Add(new InvalidCustomerRecord
+                                        {
+                                            RowNumber = row,
+                                            CompanyName = companyName,
+                                            CustomerEmail = customerEmail,
+                                            CustomerNumber = customerNumber,
+                                            ErrorMessage = "Already Present With Different Category."
+                                        });
+                                        continue;
+                                    }
                                     customerData.RECORD_TYPE = false; // Clean
                                     cleanCustomers.Add(customerData);
                                     _context.Prospects.Add(customerData);
