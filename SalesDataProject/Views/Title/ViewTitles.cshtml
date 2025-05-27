@@ -66,16 +66,26 @@
             </div>
 
             <!-- Buttons -->
-            <div class="col-md-6 d-flex gap-2 mt-3">
+            <div class="col-md-6 d-flex gap-2 mt-3 align-items-center flex-wrap">
                 <button type="submit" class="btn fw-semibold shadow-sm px-4 rounded-pill"
                         style="background: linear-gradient(45deg, #36d1dc, #5b86e5); border: none; color: white;">
                     🔍 Filter
                 </button>
+
                 <button type="button" class="btn fw-semibold shadow-sm px-4 rounded-pill" id="clearButton"
                         style="background: linear-gradient(45deg, #ff6a00, #ee0979); border: none; color: white;">
                     ❌ Clear
                 </button>
+
+                <!-- 🧮 Filtered Count Display -->
+                @if (ViewData["FilteredCount"] != null)
+                {
+                    <span class="badge bg-secondary px-3 py-2 rounded-pill">
+                        Records Found: <strong>@ViewData["FilteredCount"]</strong>
+                    </span>
+                }
             </div>
+
 
             <div class="col-md-6 mt-3 text-md-end">
                 <a href="/Title/DownloadExcel" class="btn fw-semibold shadow-sm px-4 rounded-pill"
@@ -112,6 +122,7 @@
                         <th class="text-center">Title</th>
                         <th>Created By</th>
                         <th style="min-width: 100px;">FinancialYear</th>
+                        <th style="min-width: 100px;">Date</th>
                         <th class="rounded-end">Status</th>
                     </tr>
                 </thead>
@@ -133,6 +144,7 @@
                                 <td class="text-start" style="white-space: normal; max-width: 400px;">@record.Title</td>
                                 <td>@record.CREATED_BY</td>
                                 <td>@record.TitleYear</td>
+                                <td>@record.CREATED_ON</td>
                                 <td>
                                     <span class="badge bg-success rounded-pill px-3 py-2">@record.Status</span>
                                 </td>

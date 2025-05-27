@@ -528,8 +528,9 @@ namespace SalesDataProject.Controllers
 
             var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanDeleteTitles"] = canDeleteTitle;
-
             var model = await query.ToListAsync();
+
+            ViewData["FilteredCount"] = model.Count;
             return View("ViewTitles", model);
         }
 
