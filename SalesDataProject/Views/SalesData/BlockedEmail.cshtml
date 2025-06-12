@@ -1,4 +1,4 @@
-﻿@model IEnumerable<SalesDataProject.Models.ProspectCustomer>
+﻿@model IEnumerable<SalesDataProject.Models.ProspectCustomerClean>
 @{
     ViewData["Title"] = "Records";
 }
@@ -59,11 +59,11 @@
                                     <td>@customer.COMPANY_NAME</td>
                                     <td>@customer.CUSTOMER_EMAIL</td>
                                     <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
-                                    <td>
-                                        <span class="badge badge-@(customer.IS_EMAIL_BLOCKED ? "danger" : "success")">
-                                            @(customer.IS_EMAIL_BLOCKED ? "Blocked" : "Clean")
+                                    @* <td>
+                                        <span class="badge badge-@(customer.CATEGORY ? "danger" : "success")">
+                                            @(customer.CATEGORY ? "Blocked" : "Clean")
                                         </span>
-                                    </td>
+                                    </td> *@
                                 </tr>
                             }
                         </tbody>

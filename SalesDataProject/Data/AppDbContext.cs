@@ -10,7 +10,8 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Customer> Customers { get; set; }
-    public DbSet<ProspectCustomer> Prospects { get; set; }
+    public DbSet<ProspectCustomerClean> CleanProspects { get; set; }
+    public DbSet<ProspectCustomerBlocked> BlockedProspects { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Country> Countries { get; set; }
     public DbSet<CommonDomains> CommonDomains { get; set; }

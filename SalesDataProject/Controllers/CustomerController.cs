@@ -88,7 +88,7 @@ namespace SalesDataProject.Controllers
                 // Attempt to add the new customer to the context
                 _context.Customers.Add(customer);
                 var existingCustomer = _context.Customers.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == c.COMPANY_NAME.ToUpper());
-                var existingSalesCustomer = _context.Prospects.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == customer.COMPANY_NAME.ToUpper() || (c.EMAIL_DOMAIN.ToLower() == c.EMAIL_DOMAIN.ToLower() && c.RECORD_TYPE == true));
+                var existingSalesCustomer = _context.CleanProspects.FirstOrDefault(c => c.CUSTOMER_EMAIL.ToLower() == customer.CUSTOMER_EMAIL.Trim().ToLower() || c.COMPANY_NAME.ToUpper() == customer.COMPANY_NAME.ToUpper() || (c.EMAIL_DOMAIN.ToLower() == c.EMAIL_DOMAIN.ToLower()));
                 if (existingCustomer != null || existingSalesCustomer != null)
                 {
                     ModelState.AddModelError("CUSTOMER_EMAIL", "This customer Email already exists.");
@@ -268,13 +268,13 @@ namespace SalesDataProject.Controllers
                                 .ToList();
 
                             // Retrieve the full prospect records from the database
-                            var dbProspects = _context.Prospects
+                            var dbProspects = _context.CleanProspects
                                 .Select(p => new
                                 {
                                     p.CUSTOMER_EMAIL,
                                     p.COMPANY_NAME,
                                     p.EMAIL_DOMAIN,
-                                    p.RECORD_TYPE,
+                                    
                                     p.CREATED_BY // Include the CREATED_BY field in the selection
                                 })
                                 .ToList();
@@ -292,7 +292,7 @@ namespace SalesDataProject.Controllers
                                     var existingProspect = dbProspects.Any(p =>
                                         p.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
                                         p.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim() ||
-                                        (p.EMAIL_DOMAIN == c.CUSTOMER_EMAIL?.Split('@').Last() && p.RECORD_TYPE == true)); // Check blocked emails in Prospects
+                                        (p.EMAIL_DOMAIN == c.CUSTOMER_EMAIL?.Split('@').Last())); // Check blocked emails in Prospects
 
                                     // Check if the entry is a duplicate within the Excel sheet
                                     var isExcelDuplicate = excelDuplicates.Any(e =>
@@ -311,7 +311,7 @@ namespace SalesDataProject.Controllers
                                     var existingProspect = dbProspects.FirstOrDefault(p =>
                                         p.CUSTOMER_EMAIL.ToLowerInvariant().Trim() == c.CUSTOMER_EMAIL.ToLowerInvariant().Trim() ||
                                         p.COMPANY_NAME.ToLowerInvariant().Trim() == c.COMPANY_NAME.ToLowerInvariant().Trim() ||
-                                        (p.EMAIL_DOMAIN == c.CUSTOMER_EMAIL?.Split('@').Last() && p.RECORD_TYPE == true));
+                                        (p.EMAIL_DOMAIN == c.CUSTOMER_EMAIL?.Split('@').Last()));
 
                                     // Determine the origin of the existing record (database or Excel duplicate)
                                     var createdBy = existingCustomer?.CREATED_BY ?? existingProspect?.CREATED_BY ?? "Unknown";

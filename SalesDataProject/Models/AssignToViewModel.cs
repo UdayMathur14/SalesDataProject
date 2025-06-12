@@ -12,12 +12,12 @@ namespace SalesDataProject.Models
         public string Category { get; set; }
 
         // List of records to display on the page
-        public List<ProspectCustomer> RecordsList { get; set; }
+        public List<ProspectCustomerClean> RecordsList { get; set; }
         public List<AssignmentHistory> AssignmentHistoryList { get; set; }
 
         public AssignToViewModel()
         {
-            RecordsList = new List<ProspectCustomer>();
+            RecordsList = new List<ProspectCustomerClean>();
             AssignmentHistoryList = new List<AssignmentHistory>();
         }
     }

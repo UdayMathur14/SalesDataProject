@@ -52,7 +52,7 @@ namespace SalesDataProject.Controllers
                 // Create a view model with both the prospect customer records and the assignment history
                 var model = new AssignToViewModel
                 {
-                    RecordsList = new List<ProspectCustomer>(),  // Initial empty list, populated later
+                    RecordsList = new List<ProspectCustomerClean>(),  // Initial empty list, populated later
                     AssignmentHistoryList = assignmentHistoryRecords
                 };
 
@@ -62,7 +62,7 @@ namespace SalesDataProject.Controllers
             {
                 var model = new AssignToViewModel
                 {
-                    RecordsList = new List<ProspectCustomer>()
+                    RecordsList = new List<ProspectCustomerClean>()
                 };
                 TempData["Message"] = "An unexpected error occurred. Please try again.";
                 TempData["MessageType"] = "Error";
@@ -274,14 +274,14 @@ namespace SalesDataProject.Controllers
             // Change blocked customers to clean
             if (BlockedCustomerIds != null && BlockedCustomerIds.Any())
             {
-                var blockedCustomers = await _context.Prospects
+                var blockedCustomers = await _context.CleanProspects
                     .Where(c => BlockedCustomerIds.Contains(c.ID))
                     .ToListAsync();
 
                 foreach (var customer in blockedCustomers)
                 {
-                    customer.IS_EMAIL_BLOCKED = false; // Change to clean
-                    customer.RECORD_TYPE = false;
+                    
+                   
                 }
 
                 await _context.SaveChangesAsync();
@@ -292,14 +292,14 @@ namespace SalesDataProject.Controllers
             // Change clean customers to blocked
             if (CleanCustomerIds != null && CleanCustomerIds.Any())
             {
-                var cleanCustomers = await _context.Prospects
+                var cleanCustomers = await _context.CleanProspects
                     .Where(c => CleanCustomerIds.Contains(c.ID))
                     .ToListAsync();
 
                 foreach (var customer in cleanCustomers)
                 {
-                    customer.IS_EMAIL_BLOCKED = true; // Change to blocked
-                    customer.RECORD_TYPE = true;
+                    //customer.IS_EMAIL_BLOCKED = true; // Change to blocked
+                    //customer.RECORD_TYPE = true;
                 }
                 await _context.SaveChangesAsync();
                 TempData["Message"] = "Successfully blocked selected companies.";
@@ -319,12 +319,12 @@ namespace SalesDataProject.Controllers
 
                 var model = new UploadResultViewModel
                 {
-                    BlockCustomersEmailList = new List<ProspectCustomer>(),
-                    CleanCustomersEmailList = new List<ProspectCustomer>(),
+                    BlockCustomersEmailList = new List<ProspectCustomerBlocked>(),
+                    CleanCustomersEmailList = new List<ProspectCustomerClean>(),
                     SelectedDate = SelectedDate,
                     RecordType = RecordType,
-                    BlockedCustomers = new List<ProspectCustomer>(),
-                    CleanCustomers = new List<ProspectCustomer>()
+                    BlockedCustomers = new List<ProspectCustomerBlocked>(),
+                    CleanCustomers = new List<ProspectCustomerClean>()
                 };
 
                 // Parse the RecordType to determine if it's clean or blocked
@@ -334,8 +334,8 @@ namespace SalesDataProject.Controllers
                 // Blocked records: RecordType == 0 and IS_EMAIL_BLOCKED == true
                 if (isBlocked)
                 {
-                    model.BlockCustomersEmailList = await _context.Prospects
-                        .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                    model.BlockCustomersEmailList = await _context.BlockedProspects
+                        .Where(c =>   c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                     (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                         .ToListAsync();
                     if (model.BlockCustomersEmailList.Any())
@@ -352,8 +352,8 @@ namespace SalesDataProject.Controllers
                 // Clean records: RecordType == 0 and IS_EMAIL_BLOCKED == false
                 else if (isClean)
                 {
-                    model.CleanCustomersEmailList = await _context.Prospects
-                        .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                    model.CleanCustomersEmailList = await _context.CleanProspects
+                        .Where(c =>  c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                     (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                         .ToListAsync();
                     if (model.CleanCustomersEmailList.Any())
@@ -371,13 +371,13 @@ namespace SalesDataProject.Controllers
                 // If no specific record type is selected, show both Blocked and Clean records for the given date
                 else
                 {
-                    model.BlockCustomersEmailList = await _context.Prospects
-                        .Where(c => c.RECORD_TYPE == true && c.IS_EMAIL_BLOCKED == true && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                    model.BlockCustomersEmailList = await _context.BlockedProspects
+                        .Where(c =>  c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                     (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                         .ToListAsync();
 
-                    model.CleanCustomersEmailList = await _context.Prospects
-                        .Where(c => c.RECORD_TYPE == false && c.IS_EMAIL_BLOCKED == false && c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
+                    model.CleanCustomersEmailList = await _context.CleanProspects
+                        .Where(c =>  c.CREATED_BY == username && (string.IsNullOrEmpty(category) || c.CATEGORY == category) &&
                                     (!SelectedDate.HasValue || c.CREATED_ON.Value.Date == SelectedDate.Value.Date))
                         .ToListAsync();
 
@@ -415,19 +415,19 @@ namespace SalesDataProject.Controllers
                 var users = await _context.Users.ToListAsync();
                 ViewBag.Users = new SelectList(users, "Username", "Username");
 
-                var recordsQuery = _context.Prospects.AsQueryable();
+                var recordsQuery = _context.CleanProspects.AsQueryable();
 
                 if (!string.IsNullOrEmpty(Category) && !string.IsNullOrEmpty(UserName))
                 {
-                    recordsQuery = recordsQuery.Where(r => r.CATEGORY == Category && !r.RECORD_TYPE && r.CREATED_BY == UserName);
+                    recordsQuery = recordsQuery.Where(r => r.CATEGORY == Category && r.CREATED_BY == UserName);
                 }
                 else if (!string.IsNullOrEmpty(UserName) && string.IsNullOrEmpty(Category))
                 {
-                    recordsQuery = recordsQuery.Where(r => !r.RECORD_TYPE && r.CREATED_BY == UserName);
+                    recordsQuery = recordsQuery.Where(r =>  r.CREATED_BY == UserName);
                 }
                 else if (!string.IsNullOrEmpty(Category) && string.IsNullOrEmpty(UserName))
                 {
-                    recordsQuery = recordsQuery.Where(r => !r.RECORD_TYPE && r.CREATED_BY == UserName && r.CATEGORY == Category);
+                    recordsQuery = recordsQuery.Where(r => r.CREATED_BY == UserName && r.CATEGORY == Category);
                 }
 
                 var model = new AssignToViewModel
@@ -469,7 +469,7 @@ namespace SalesDataProject.Controllers
                 }
 
                 // Fetch records from the ProspectCustomer table
-                var recordsToAssign = await _context.Prospects
+                var recordsToAssign = await _context.CleanProspects
                     .Where(r => RecordIds.Contains(r.ID))
                     .ToListAsync();
 
@@ -567,7 +567,7 @@ namespace SalesDataProject.Controllers
                     return RedirectToAction(nameof(AddRecord));
                 }
 
-                var newCustomers = new List<ProspectCustomer>();
+                var newCustomers = new List<ProspectCustomerClean>();
                 var invalidRecords = new List<InvalidCustomerRecord>();
                 using (var stream = new MemoryStream())
                 {
@@ -579,7 +579,7 @@ namespace SalesDataProject.Controllers
                         var worksheet = workbook.Worksheet(1); // Use the first worksheet
                         var lastRow = worksheet.LastRowUsed().RowNumber();
 
-                        var customersFromExcel = new List<ProspectCustomer>();
+                        var customersFromExcel = new List<ProspectCustomerClean>();
 
                         for (int row = 3; row <= lastRow; row++) // Start reading data from row 3
                         {
@@ -649,7 +649,7 @@ namespace SalesDataProject.Controllers
                             }
 
                             // Add to the list of customers
-                            var customerData = new ProspectCustomer
+                            var customerData = new ProspectCustomerClean
                             {
                                 CUSTOMER_CODE = worksheet.Cell(row, 1).GetString(),
                                 COMPANY_NAME = companyName,
@@ -672,15 +672,15 @@ namespace SalesDataProject.Controllers
 
                             if (recordtype == "clean")
                             {
-                                customerData.RECORD_TYPE = true; // Blocked
-                                customerData.IS_EMAIL_BLOCKED = true;
+                                //customerData.RECORD_TYPE = true; // Blocked
+                                //customerData.IS_EMAIL_BLOCKED = true;
                             }
                             else
                             {
-                                customerData.RECORD_TYPE = true; // Blocked
-                                customerData.IS_EMAIL_BLOCKED = true;
+                                //customerData.RECORD_TYPE = true; // Blocked
+                                //customerData.IS_EMAIL_BLOCKED = true;
                             }
-                            _context.Prospects.Add(customerData);
+                            _context.CleanProspects.Add(customerData);
                         }
                         await _context.SaveChangesAsync();
 
