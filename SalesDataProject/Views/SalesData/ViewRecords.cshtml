@@ -76,6 +76,7 @@
                                         <th>Email</th>
                                         <th>Contact Number</th>
                                         <th>Blocked On</th>
+                                        <th>Blocked Reason</th>
                                     </tr>
                                 </thead>
                                 <tbody class="small">
@@ -87,6 +88,7 @@
                                             <td>@customer?.CUSTOMER_EMAIL</td>
                                             <td>@customer?.CUSTOMER_CONTACT_NUMBER1</td>
                                             <td>@(customer?.CREATED_ON != null ? customer?.CREATED_ON.Value.ToString("yyyy-MM-dd") : "")</td>
+                                            <td>@customer?.BLOCK_REASON</td>
                                         </tr>
                                     }
                                 </tbody>

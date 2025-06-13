@@ -127,112 +127,94 @@ namespace SalesDataProject.Controllers
                     var category = worksheet.Cell(row, 11).GetString().Trim().ToUpper();
 
                     bool isCommonDomain = await _context.CommonDomains.AnyAsync(x => x.DomainName.ToLower() == emailDomain);
+                    if (isCommonDomain) emailDomain = null;
 
-                    if (isCommonDomain)
-                        emailDomain = null;
-
-                    // Validations
                     if (!validCategories.Contains(category))
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord
-                        {
-                            RowNumber = row,
-                            CompanyName = companyName,
-                            CustomerEmail = customerEmail,
-                            CustomerNumber = customerNumber1,
-                            ErrorMessage = "Invalid category."
-                        });
+                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Invalid category." });
                         continue;
                     }
 
                     if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(country))
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord
-                        {
-                            RowNumber = row,
-                            CompanyName = companyName,
-                            CustomerEmail = customerEmail,
-                            CustomerNumber = customerNumber1,
-                            ErrorMessage = "Missing mandatory fields."
-                        });
+                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Missing mandatory fields." });
                         continue;
                     }
 
                     bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
-                    bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1) &&
-                                              string.IsNullOrWhiteSpace(customerNumber2) &&
-                                              string.IsNullOrWhiteSpace(customerNumber3);
+                    bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3);
 
                     if (isEmailEmpty && isAllContactsEmpty)
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord
-                        {
-                            RowNumber = row,
-                            CompanyName = companyName,
-                            CustomerEmail = customerEmail,
-                            CustomerNumber = customerNumber1,
-                            ErrorMessage = "Email or contact number required."
-                        });
+                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Email or contact number required." });
                         continue;
                     }
 
                     if (!isEmailEmpty && (!IsValidEmail(customerEmail) || !emailSet.Add(customerEmail)))
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord
-                        {
-                            RowNumber = row,
-                            CompanyName = companyName,
-                            CustomerEmail = customerEmail,
-                            CustomerNumber = customerNumber1,
-                            ErrorMessage = !IsValidEmail(customerEmail) ? "Invalid email." : "Duplicate email in Excel File"
-                        });
+                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = !IsValidEmail(customerEmail) ? "Invalid email." : "Duplicate email in Excel File" });
                         continue;
                     }
 
-                    // 3 out of 4 match invalid check
-                    bool alreadyExists = await _context.CleanProspects.AnyAsync(x =>
-                        (x.COMPANY_NAME == companyName ? 1 : 0) +
-                        (x.CONTACT_PERSON == contactPerson ? 1 : 0) +
-                        (x.CUSTOMER_EMAIL == customerEmail ? 1 : 0) +
-                        (x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 ? 1 : 0) >= 3
-                    ) || await _context.BlockedProspects.AnyAsync(x =>
-                        (x.COMPANY_NAME == companyName ? 1 : 0) +
-                        (x.CONTACT_PERSON == contactPerson ? 1 : 0) +
-                        (x.CUSTOMER_EMAIL == customerEmail ? 1 : 0) +
-                        (x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 ? 1 : 0) >= 3
-                    );
+                    bool alreadyExists = await _context.CleanProspects.AnyAsync(x => (x.COMPANY_NAME == companyName ? 1 : 0) + (x.CONTACT_PERSON == contactPerson ? 1 : 0) + (x.CUSTOMER_EMAIL == customerEmail ? 1 : 0) + (x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 ? 1 : 0) >= 3)
+                        || await _context.BlockedProspects.AnyAsync(x => (x.COMPANY_NAME == companyName ? 1 : 0) + (x.CONTACT_PERSON == contactPerson ? 1 : 0) + (x.CUSTOMER_EMAIL == customerEmail ? 1 : 0) + (x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 ? 1 : 0) >= 3);
 
                     if (alreadyExists)
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord
-                        {
-                            RowNumber = row,
-                            CompanyName = companyName,
-                            CustomerEmail = customerEmail,
-                            CustomerNumber = customerNumber1,
-                            ErrorMessage = "Record already exists."
-                        });
+                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Same Details Record already exists." });
                         continue;
                     }
 
-                    // Blocking rule check
-                    bool shouldBlock = await _context.CleanProspects.AnyAsync(x =>
-                        (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
-                        (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) ||
-                        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) &&
-                            (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
-                    ) || await _context.BlockedProspects.AnyAsync(x =>
-                        (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
-                        (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) ||
-                        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) &&
-                            (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
-                    );
+                    string blockedReason = "";
+                    string blockedByName = "";
 
-                    if (shouldBlock)
+                    var cleanMatch = await _context.CleanProspects.FirstOrDefaultAsync(x =>
+                        (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
+                        (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
+                        (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
+                        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) ||
+                        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) && (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower())));
+
+                    if (cleanMatch != null)
+                    {
+                        blockedByName = cleanMatch.CREATED_BY;
+                        if (!string.IsNullOrWhiteSpace(customerEmail) && cleanMatch.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
+                            blockedReason = "Email already exists";
+                        else if (!string.IsNullOrWhiteSpace(customerNumber1) && cleanMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+                            blockedReason = "Contact number already exists";
+                        else if (!string.IsNullOrWhiteSpace(emailDomain) && cleanMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
+                            blockedReason = "Email domain already exists";
+                        else if (!string.IsNullOrWhiteSpace(companyName) && cleanMatch.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower()))
+                            blockedReason = "Company name partially matched";
+                        else
+                            blockedReason = "Matched with company + person name";
+                    }
+                    else
+                    {
+                        var blockMatch = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
+                            (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
+                            (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
+                            (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
+                            (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) ||
+                            ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) && (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower())));
+
+                        if (blockMatch != null)
+                        {
+                            blockedByName = blockMatch.CREATED_BY;
+                            if (!string.IsNullOrWhiteSpace(customerEmail) && blockMatch.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
+                                blockedReason = "Email already exists";
+                            else if (!string.IsNullOrWhiteSpace(customerNumber1) && blockMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+                                blockedReason = "Contact number already exists";
+                            else if (!string.IsNullOrWhiteSpace(emailDomain) && blockMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
+                                blockedReason = "Email domain already exists";
+                            else if (!string.IsNullOrWhiteSpace(companyName) && blockMatch.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower()))
+                                blockedReason = "Company name partially matched";
+                            else
+                                blockedReason = "Matched with company + person name";
+                        }
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(blockedReason))
                     {
                         blockedCustomers.Add(new ProspectCustomerBlocked
                         {
@@ -250,7 +232,8 @@ namespace SalesDataProject.Controllers
                             CATEGORY = category,
                             CREATED_BY = username,
                             CREATED_ON = DateTime.UtcNow,
-                            BLOCKED_BY = "System"
+                            BLOCKED_BY = blockedByName,
+                            BLOCK_REASON = blockedReason
                         });
                     }
                     else
@@ -298,6 +281,7 @@ namespace SalesDataProject.Controllers
                 return View("ViewRecords", new UploadResultViewModel());
             }
         }
+
 
 
 
