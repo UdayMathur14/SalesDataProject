@@ -156,8 +156,18 @@ namespace SalesDataProject.Controllers
                         continue;
                     }
 
-                    bool alreadyExists = await _context.CleanProspects.AnyAsync(x => (x.COMPANY_NAME == companyName ? 1 : 0) + (x.CONTACT_PERSON == contactPerson ? 1 : 0) + (x.CUSTOMER_EMAIL == customerEmail ? 1 : 0) + (x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 ? 1 : 0) >= 3)
-                        || await _context.BlockedProspects.AnyAsync(x => (x.COMPANY_NAME == companyName ? 1 : 0) + (x.CONTACT_PERSON == contactPerson ? 1 : 0) + (x.CUSTOMER_EMAIL == customerEmail ? 1 : 0) + (x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 ? 1 : 0) >= 3);
+                    bool alreadyExists = await _context.CleanProspects.AnyAsync(x =>
+    x.COMPANY_NAME == companyName &&
+    x.CONTACT_PERSON == contactPerson &&
+    (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+    (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+) || await _context.BlockedProspects.AnyAsync(x =>
+    x.COMPANY_NAME == companyName &&
+    x.CONTACT_PERSON == contactPerson &&
+    (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+    (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+);
+
 
                     if (alreadyExists)
                     {
