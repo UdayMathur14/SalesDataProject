@@ -171,7 +171,7 @@ namespace SalesDataProject.Controllers
 
                     if (alreadyExists)
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Same Details Record already exists." });
+                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "This record already exists."});
                         continue;
                     }
 
@@ -291,9 +291,6 @@ namespace SalesDataProject.Controllers
                 return View("ViewRecords", new UploadResultViewModel());
             }
         }
-
-
-
 
 
         //[HttpPost]
@@ -867,7 +864,6 @@ namespace SalesDataProject.Controllers
                 {
                     model.BlockedCustomers = await _context.BlockedProspects
                         .Where(c =>
-                            c.BLOCKED_BY == "System" &&
                             (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
                             (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
                             (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))

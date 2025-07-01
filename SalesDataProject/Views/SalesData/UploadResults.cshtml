@@ -24,6 +24,8 @@
                             <th><em>Company Name</em></th>
                             <th><em>Email</em></th>
                             <th><em>Contact Number</em></th>
+                            <th><em>Category</em></th>
+                            <th><em>Blocked Reason</em></th>
                             <th><em>Blocked By</em></th>
                         </tr>
                     </thead>
@@ -34,6 +36,8 @@
                                 <td>@customer.COMPANY_NAME</td>
                                 <td><a href="mailto:@customer.CUSTOMER_EMAIL" class="text-decoration-none text-info"><em>@customer.CUSTOMER_EMAIL</em></a></td>
                                 <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
+                                <td>@customer.CATEGORY</td>
+                                <td>@customer.BLOCK_REASON</td>
                                 <td><em class="text-muted">@customer.BLOCKED_BY</em></td>
                             </tr>
                         }
@@ -59,6 +63,8 @@
                             <th><em>Company Name</em></th>
                             <th><em>Email</em></th>
                             <th><em>Contact Number</em></th>
+                            <th><em>Country</em></th>
+                            <th><em>Catergory</em></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,6 +74,8 @@
                                 <td>@customer.COMPANY_NAME</td>
                                 <td><a href="mailto:@customer.CUSTOMER_EMAIL" class="text-decoration-none text-info"><em>@customer.CUSTOMER_EMAIL</em></a></td>
                                 <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
+                                <td>@customer.COUNTRY</td>
+                                <td>@customer.CATEGORY</td>
                             </tr>
                         }
                     </tbody>
