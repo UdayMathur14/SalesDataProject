@@ -157,16 +157,17 @@ namespace SalesDataProject.Controllers
                     }
 
                     bool alreadyExists = await _context.CleanProspects.AnyAsync(x =>
-    x.COMPANY_NAME == companyName &&
-    x.CONTACT_PERSON == contactPerson &&
-    (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-    (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
-) || await _context.BlockedProspects.AnyAsync(x =>
-    x.COMPANY_NAME == companyName &&
-    x.CONTACT_PERSON == contactPerson &&
-    (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-    (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
-);
+                             x.COMPANY_NAME == companyName &&
+                             x.CONTACT_PERSON == contactPerson &&
+                            (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                            (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)) || 
+
+                            await _context.BlockedProspects.AnyAsync(x =>
+                                x.COMPANY_NAME == companyName &&
+                                x.CONTACT_PERSON == contactPerson &&
+                                (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                                (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+                             );
 
 
                     if (alreadyExists)
@@ -189,23 +190,21 @@ namespace SalesDataProject.Controllers
                     {
                         blockedByName = cleanMatch.CREATED_BY;
                         if (!string.IsNullOrWhiteSpace(customerEmail) && cleanMatch.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
-                            blockedReason = "Email already exists";
-                        else if (!string.IsNullOrWhiteSpace(customerNumber1) && cleanMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
-                            blockedReason = "Contact number already exists";
-                        else if (!string.IsNullOrWhiteSpace(emailDomain) && cleanMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
-                            blockedReason = "Email domain already exists";
-                        else if (!string.IsNullOrWhiteSpace(companyName) && cleanMatch.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower()))
-                            blockedReason = "Company name partially matched";
-                        else
-                            blockedReason = "Matched with company + person name";
+                            blockedReason += "Email already exists ";
+                         if (!string.IsNullOrWhiteSpace(customerNumber1) && cleanMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+                            blockedReason += "Number already exists";
+                         if (!string.IsNullOrWhiteSpace(emailDomain) && cleanMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
+                            blockedReason += "Domain already exists";
+                         if (!string.IsNullOrWhiteSpace(companyName) && cleanMatch.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower()))
+                            blockedReason += "Company Name partially matched";
                     }
                     else
                     {
                         var blockMatch = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
-                            (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
+                            (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) &&
                             (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
-                            (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                            (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) ||
+                            (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) &&
+                            (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) &&
                             ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) && (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower())));
 
                         if (blockMatch != null)
@@ -863,7 +862,7 @@ namespace SalesDataProject.Controllers
                 if (model.RecordType == "Blocked")
                 {
                     model.BlockedCustomers = await _context.BlockedProspects
-                        .Where(c =>
+                        .Where(c=>c.CREATED_BY == username &&
                             (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
                             (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
                             (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
@@ -891,7 +890,7 @@ namespace SalesDataProject.Controllers
 
                     model.BlockedCustomers = await _context.BlockedProspects
                         .Where(c =>
-                            c.BLOCKED_BY == "System" &&
+                            c.BLOCKED_BY == username &&
                             (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
                             (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
                             (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
