@@ -4,7 +4,7 @@
 }
 
 <div class="container mt-4">
-    <div class="header d-flex justify-content-between align-items-center mb-3 text-white rounded-2 p-3" style="background-color:cadetblue">
+    <div class="header d-flex justify-content-between align-items-center mb-3 text-white rounded-4 p-4" style="background-color:cadetblue;border-radius: 0.7rem">
         <h4 class="mb-0"><i class="bi bi-clipboard-check me-2"></i> Lead Data Management</h4>
         <div class="buttons d-flex gap-2">
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
@@ -24,11 +24,11 @@
         <form asp-action="ViewRecord" method="post">
             <div class="row g-3 align-items-center">
                 <div class="col-md-3">
-                    <label for="SelectedDate" class="form-label text-secondary small"><i class="bi bi-calendar-date me-1"></i> Date:</label>
+                    <label for="SelectedDate" class="form-label text-secondary small"><i class="bi bi-calendar-date me-1"></i> Date :</label>
                     <input asp-for="SelectedDate" class="form-select form-control-sm shadow-sm" type="date" placeholder="Choose date" onfocus="this.showPicker()" />
                 </div>
                 <div class="col-md-3">
-                    <label for="RecordType" class="form-label text-secondary small"><i class="bi bi-list-ul me-1"></i> Type:</label>
+                    <label for="RecordType" class="form-label text-secondary small"><i class="bi bi-list-ul me-1"></i> Type :</label>
                     <select asp-for="RecordType" class="form-select form-control-sm shadow-sm">
                         <option value="">-- Select --</option>
                         <option value="Blocked">Blocked</option>
@@ -36,7 +36,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="Category" class="form-label text-secondary small"><i class="bi bi-bookmark me-1"></i> Category:</label>
+                    <label for="Category" class="form-label text-secondary small"><i class="bi bi-bookmark me-1"></i> Category :</label>
                     <select asp-for="Category" class="form-select form-control-sm shadow-sm">
                         <option value="">-- Select --</option>
                         <option value="UNIVERSITY">University</option>
@@ -53,8 +53,8 @@
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100 shadow-sm"><i class="bi bi-filter me-1"></i> Search</button>
+                <div class="col-md-2" style="border-radius: 0.7rem">
+                    <button type="submit" class="btn btn-secondary w-100 shadow-sm"><i class="bi bi-filter me-1"></i> Search</button>
                 </div>
             </div>
         </form>
@@ -243,7 +243,7 @@
     .card {
         border: none;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05) !important; /* More pronounced card shadow */
-        border-radius: 0.4rem;
+        border-radius: 0.7rem;
     }
 
     .card-title {
@@ -257,17 +257,17 @@
 
     .form-control-sm {
         font-size: 0.875rem;
-        border-radius: 0.3rem;
+        border-radius: 0.7rem;
     }
 
     .btn-sm {
         font-size: 1rem;
-        border-radius: 0.8rem;
+        border-radius: 1.0rem;
     }
 
     .table-responsive {
         border: 1px solid #e3e6f0; /* Light border for tables */
-        border-radius: 0.4rem;
+        border-radius: 0.8rem;
     }
 
     .table thead th {
@@ -285,7 +285,7 @@
     }
 
     .alert {
-        border-radius: 0.3rem;
+        border-radius: 0.4rem;
         margin-bottom: 0; /* Remove default bottom margin in the grid layout */
     }
 

@@ -180,21 +180,6 @@
     });
 </script>
 
-@* <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const filterId = urlParams.get("filterId");
-
-        if (filterId) {
-            const row = document.getElementById(`record-${filterId}`);
-            if (row) {
-                row.scrollIntoView({ behavior: "smooth", block: "center" });
-                row.style.backgroundColor = "#ffff99";
-            }
-        }
-    });
-</script> *@
-
 <script>
     document.getElementById('clearButton').addEventListener('click', function () {
         document.getElementById('filterForm').reset();

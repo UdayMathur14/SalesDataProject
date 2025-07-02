@@ -154,7 +154,7 @@ namespace SalesDataProject.Controllers
             }
             var users = _context.Users.ToList(); // Fetch users from DB
             ViewBag.Users = users; // Pass it to the View
-            return View();
+            return View(new User());
         }
 
         // Create User POST
