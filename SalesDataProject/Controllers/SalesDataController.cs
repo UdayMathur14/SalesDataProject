@@ -164,7 +164,7 @@ namespace SalesDataProject.Controllers
                     }
 
 
-                    if (isEmailEmpty && isAllContactsEmpty)
+                    if (!isEmailEmpty && !isAllContactsEmpty)
                     {
                         var clean = await _context.CleanProspects.FirstOrDefaultAsync(x => x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
                                  (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
