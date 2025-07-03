@@ -91,6 +91,13 @@ namespace SalesDataProject.Controllers
             {
                 var username = HttpContext.Session.GetString("Username");
 
+                if(string.IsNullOrWhiteSpace(username)|| username==null || username=="")
+                {
+                    TempData["Message"] = "User not logged in.";
+                    TempData["MessageType"] = "Error";
+                    return RedirectToAction("Login", "Auth");
+                }
+
                 if (file == null || file.Length == 0)
                 {
                     TempData["Message"] = "No file uploaded.";
@@ -156,23 +163,39 @@ namespace SalesDataProject.Controllers
                         continue;
                     }
 
-                    bool alreadyExists = await _context.CleanProspects.AnyAsync(x =>
-                             x.COMPANY_NAME == companyName &&
-                             x.CONTACT_PERSON == contactPerson &&
-                            (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-                            (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)) ||
+                    var clean = await _context.CleanProspects.FirstOrDefaultAsync(x =>x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
+                                 (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                                 (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                            await _context.BlockedProspects.AnyAsync(x =>
-                                x.COMPANY_NAME == companyName &&
-                                x.CONTACT_PERSON == contactPerson &&
-                                (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-                                (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
-                             );
+                    var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
+                        x.COMPANY_NAME == companyName &&
+                        x.CONTACT_PERSON == contactPerson &&
+                        (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                        (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-
-                    if (alreadyExists)
+                    if (clean != null || blocked != null)
                     {
-                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "This record already exists." });
+                        var matchedBy = clean?.CREATED_BY ?? blocked?.CREATED_BY ?? "Unknown";
+
+                        blockedCustomers.Add(new ProspectCustomerBlocked
+                        {
+                            COMPANY_NAME = companyName,
+                            CONTACT_PERSON = contactPerson,
+                            CUSTOMER_CONTACT_NUMBER1 = customerNumber1,
+                            CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+                            CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
+                            CUSTOMER_EMAIL = customerEmail,
+                            EMAIL_DOMAIN = emailDomain,
+                            COUNTRY = country,
+                            COUNTRY_CODE = countryCode,
+                            STATE = state,
+                            CITY = city,
+                            CATEGORY = category,
+                            CREATED_BY = username,
+                            CREATED_ON = DateTime.UtcNow,
+                            BLOCKED_BY = matchedBy,
+                            BLOCK_REASON = $"Same Details already uploaded by '{matchedBy}'"
+                        });
                         continue;
                     }
 
