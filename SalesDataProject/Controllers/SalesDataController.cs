@@ -149,7 +149,7 @@ namespace SalesDataProject.Controllers
                     }
 
                     bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
-                    bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1) && string.IsNullOrWhiteSpace(customerNumber2) && string.IsNullOrWhiteSpace(customerNumber3);
+                    bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1) ;
 
                     if (isEmailEmpty && isAllContactsEmpty)
                     {
@@ -163,40 +163,44 @@ namespace SalesDataProject.Controllers
                         continue;
                     }
 
-                    var clean = await _context.CleanProspects.FirstOrDefaultAsync(x =>x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
+
+                    if (isEmailEmpty && isAllContactsEmpty)
+                    {
+                        var clean = await _context.CleanProspects.FirstOrDefaultAsync(x => x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
                                  (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
                                  (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                    var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
-                        x.COMPANY_NAME == companyName &&
-                        x.CONTACT_PERSON == contactPerson &&
-                        (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-                        (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
+                        var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
+                            x.COMPANY_NAME == companyName &&
+                            x.CONTACT_PERSON == contactPerson &&
+                            (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                            (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                    if (clean != null || blocked != null)
-                    {
-                        var matchedBy = clean?.CREATED_BY ?? blocked?.CREATED_BY ?? "Unknown";
-
-                        blockedCustomers.Add(new ProspectCustomerBlocked
+                        if (clean != null || blocked != null)
                         {
-                            COMPANY_NAME = companyName,
-                            CONTACT_PERSON = contactPerson,
-                            CUSTOMER_CONTACT_NUMBER1 = customerNumber1,
-                            CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
-                            CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
-                            CUSTOMER_EMAIL = customerEmail,
-                            EMAIL_DOMAIN = emailDomain,
-                            COUNTRY = country,
-                            COUNTRY_CODE = countryCode,
-                            STATE = state,
-                            CITY = city,
-                            CATEGORY = category,
-                            CREATED_BY = username,
-                            CREATED_ON = DateTime.UtcNow,
-                            BLOCKED_BY = matchedBy,
-                            BLOCK_REASON = $"Same Details already uploaded by '{matchedBy}'"
-                        });
-                        continue;
+                            var matchedBy = clean?.CREATED_BY ?? blocked?.CREATED_BY ?? "Unknown";
+
+                            blockedCustomers.Add(new ProspectCustomerBlocked
+                            {
+                                COMPANY_NAME = companyName,
+                                CONTACT_PERSON = contactPerson,
+                                CUSTOMER_CONTACT_NUMBER1 = customerNumber1,
+                                CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+                                CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
+                                CUSTOMER_EMAIL = customerEmail,
+                                EMAIL_DOMAIN = emailDomain,
+                                COUNTRY = country,
+                                COUNTRY_CODE = countryCode,
+                                STATE = state,
+                                CITY = city,
+                                CATEGORY = category,
+                                CREATED_BY = username,
+                                CREATED_ON = DateTime.UtcNow,
+                                BLOCKED_BY = matchedBy,
+                                BLOCK_REASON = $"Same Details already uploaded by '{matchedBy}'"
+                            });
+                            continue;
+                        }
                     }
 
                     string blockedReason = "";
