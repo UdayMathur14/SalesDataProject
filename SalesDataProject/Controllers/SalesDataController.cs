@@ -190,7 +190,7 @@ namespace SalesDataProject.Controllers
                          (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
                     );
 
-                    if (cleanMatch != null)
+                    if (cleanMatch != null && cleanMatch.CREATED_BY!=username)
                     {
                         blockedByName = cleanMatch.CREATED_BY;
 
