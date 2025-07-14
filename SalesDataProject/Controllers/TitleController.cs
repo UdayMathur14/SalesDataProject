@@ -15,6 +15,14 @@ namespace SalesDataProject.Controllers
         }
         public IActionResult Index(ValidationResultViewModel model)
         {
+            var username = HttpContext.Session.GetString("Username");
+
+            if (string.IsNullOrWhiteSpace(username) || username == null || username == "")
+            {
+                TempData["Message"] = "Session Expired";
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("Login", "Auth");
+            }
             try {
                 var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
                 var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
@@ -29,6 +37,14 @@ namespace SalesDataProject.Controllers
         }
         public async Task<IActionResult> ViewTitles()
         {
+            var username = HttpContext.Session.GetString("Username");
+
+            if (string.IsNullOrWhiteSpace(username) || username == null || username == "")
+            {
+                TempData["Message"] = "Session Expired, Please Login again";
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("Login", "Auth");
+            }
             try
             {
                 var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
