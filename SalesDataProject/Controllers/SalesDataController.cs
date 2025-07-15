@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
 using System.Text.RegularExpressions;
+using FuzzySharp;
 
 namespace SalesDataProject.Controllers
 {
@@ -207,7 +208,6 @@ namespace SalesDataProject.Controllers
                         }
                     }
 
-
                     if (!isEmailEmpty && !isAllContactsEmpty)
                     {
                         var clean = await _context.CleanProspects.FirstOrDefaultAsync(x => x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
@@ -256,16 +256,48 @@ namespace SalesDataProject.Controllers
                         (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
                         (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
                         (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) ||
                         ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) &&
                          (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
                     );
 
-                    if (cleanMatch != null && cleanMatch.CREATED_BY!=username)
+                    // ✅ Fuzzy Matching (only if no match found yet)
+                    if (cleanMatch == null && !string.IsNullOrWhiteSpace(companyName))
+                    {
+                        var allCleanCompanies = await _context.CleanProspects
+                            .Where(x => x.CREATED_BY != username && !string.IsNullOrWhiteSpace(x.COMPANY_NAME))
+                            .Select(x => new
+                            {
+                                x.COMPANY_NAME,
+                                x.CUSTOMER_EMAIL,
+                                x.CUSTOMER_CONTACT_NUMBER1,
+                                x.EMAIL_DOMAIN,
+                                x.CREATED_BY
+                            })
+                            .ToListAsync();
+
+                        var fuzzyMatch = allCleanCompanies
+                            .FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) > 50);
+
+                        if (fuzzyMatch != null)
+                        {
+                            cleanMatch = new ProspectCustomerClean
+                            {
+                                COMPANY_NAME = fuzzyMatch.COMPANY_NAME,
+                                CUSTOMER_EMAIL = fuzzyMatch.CUSTOMER_EMAIL,
+                                CUSTOMER_CONTACT_NUMBER1 = fuzzyMatch.CUSTOMER_CONTACT_NUMBER1,
+                                EMAIL_DOMAIN = fuzzyMatch.EMAIL_DOMAIN,
+                                CREATED_BY = fuzzyMatch.CREATED_BY
+                            };
+
+                            reasons.Add("Company Name (Fuzzy > 50)");
+                        }
+                    }
+
+                    if (cleanMatch != null && cleanMatch.CREATED_BY != username)
                     {
                         blockedByName = cleanMatch.CREATED_BY;
 
-                        if (!string.IsNullOrWhiteSpace(customerEmail) && cleanMatch.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
+                        if (!string.IsNullOrWhiteSpace(customerEmail) && cleanMatch.CUSTOMER_EMAIL?.ToLower() == customerEmail.ToLower())
                             reasons.Add("Email");
 
                         if (!string.IsNullOrWhiteSpace(customerNumber1) && cleanMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
@@ -274,11 +306,9 @@ namespace SalesDataProject.Controllers
                         if (!string.IsNullOrWhiteSpace(emailDomain) && !string.IsNullOrWhiteSpace(cleanMatch.EMAIL_DOMAIN) && cleanMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
                             reasons.Add("Domain");
 
-                        if (!string.IsNullOrWhiteSpace(companyName) && cleanMatch.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower()))
-                            reasons.Add("Company Name");
-
-                        blockedReason = string.Join(", ", reasons); // e.g., "Email, Domain, Company"
+                        blockedReason = string.Join(", ", reasons);
                     }
+
 
                     //else
                     //{
