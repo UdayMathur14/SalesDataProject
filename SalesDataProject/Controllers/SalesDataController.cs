@@ -172,6 +172,18 @@ namespace SalesDataProject.Controllers
                         invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Missing mandatory fields." });
                         continue;
                     }
+                    if (string.IsNullOrWhiteSpace(customerNumber1) || !customerNumber1.All(char.IsDigit))
+                    {
+                        invalidRecords.Add(new InvalidCustomerRecord
+                        {
+                            RowNumber = row,
+                            CompanyName = companyName,
+                            CustomerEmail = customerEmail,
+                            CustomerNumber = customerNumber1,
+                            ErrorMessage = "Invalid contact number. Only digits are allowed."
+                        });
+                        continue;
+                    }
 
                     bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
                     bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1) ;
