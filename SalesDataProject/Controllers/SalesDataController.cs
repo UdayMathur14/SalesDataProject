@@ -289,7 +289,7 @@ namespace SalesDataProject.Controllers
                             .ToListAsync();
 
                         var fuzzyMatch = allCleanCompanies
-                            .FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) > 75);
+                            .FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) >= 99);
 
                         if (fuzzyMatch != null)
                         {
