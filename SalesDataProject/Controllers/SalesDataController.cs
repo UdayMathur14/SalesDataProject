@@ -203,6 +203,9 @@ namespace SalesDataProject.Controllers
                     // ❌ Prevent same user from uploading the same email again
                     if (!string.IsNullOrWhiteSpace(customerEmail))
                     {
+                        var existsForSameUserInMaster = await _context.Customers
+                            .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+
                         var existsForSameUser = await _context.CleanProspects
                             .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() && x.CREATED_BY == username);
 
@@ -214,7 +217,20 @@ namespace SalesDataProject.Controllers
                                 CompanyName = companyName,
                                 CustomerEmail = customerEmail,
                                 CustomerNumber = customerNumber1,
-                                ErrorMessage = "This email is already uploaded by you."
+                                ErrorMessage = "Email already uploaded by you."
+                            });
+
+                            continue; // skip this row
+                        }
+                        if (existsForSameUser)
+                        {
+                            invalidRecords.Add(new InvalidCustomerRecord
+                            {
+                                RowNumber = row,
+                                CompanyName = companyName,
+                                CustomerEmail = customerEmail,
+                                CustomerNumber = customerNumber1,
+                                ErrorMessage = "Email already exist in master."
                             });
 
                             continue; // skip this row
@@ -223,7 +239,12 @@ namespace SalesDataProject.Controllers
 
                     if (!isEmailEmpty && !isAllContactsEmpty)
                     {
+
                         var clean = await _context.CleanProspects.FirstOrDefaultAsync(x => x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
+                                 (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                                 (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
+
+                        var master = await _context.Customers.FirstOrDefaultAsync(x => x.COMPANY_NAME == companyName && x.CONTACT_PERSON == contactPerson &&
                                  (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
                                  (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
@@ -273,11 +294,19 @@ namespace SalesDataProject.Controllers
                          (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
                     );
 
+                    var masters = await _context.Customers.FirstOrDefaultAsync(x =>
+                        (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
+                        (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
+                        (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
+                        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) &&
+                         (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
+                    );
+
                     // ✅ Fuzzy Matching (only if no match found yet)
                     if (cleanMatch == null && !string.IsNullOrWhiteSpace(companyName))
                     {
                         var allCleanCompanies = await _context.CleanProspects
-                            .Where(x => x.CREATED_BY != username && !string.IsNullOrWhiteSpace(x.COMPANY_NAME))
+                            .Where(x => x.CREATED_BY != username)
                             .Select(x => new
                             {
                                 x.COMPANY_NAME,
@@ -288,10 +317,7 @@ namespace SalesDataProject.Controllers
                             })
                             .ToListAsync();
 
-                        var fuzzyMatch = allCleanCompanies.FirstOrDefault(x => Math.Max(
-                                FuzzySharp.Fuzz.PartialRatio(companyName, x.COMPANY_NAME),
-                                FuzzySharp.Fuzz.TokenSetRatio(companyName, x.COMPANY_NAME)
-                            ) >= 75);
+                        var fuzzyMatch = allCleanCompanies.FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) >= 99);
 
 
                         if (fuzzyMatch != null)
@@ -309,17 +335,23 @@ namespace SalesDataProject.Controllers
                         }
                     }
 
-                    if (cleanMatch != null && cleanMatch.CREATED_BY != username)
+                    if ((cleanMatch != null || masters != null) &&
+               ((cleanMatch != null && cleanMatch.CREATED_BY != username) ||
+                (masters != null && masters.CREATED_BY != username)))
                     {
-                        blockedByName = cleanMatch.CREATED_BY;
+                        blockedByName = cleanMatch?.CREATED_BY ?? masters?.CREATED_BY;
 
-                        if (!string.IsNullOrWhiteSpace(customerEmail) && cleanMatch.CUSTOMER_EMAIL?.ToLower() == customerEmail.ToLower())
+                        if (!string.IsNullOrWhiteSpace(customerEmail) &&
+                            cleanMatch?.CUSTOMER_EMAIL?.ToLower() == customerEmail.ToLower())
                             reasons.Add("Email");
 
-                        if (!string.IsNullOrWhiteSpace(customerNumber1) && cleanMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
+                        if (!string.IsNullOrWhiteSpace(customerNumber1) &&
+                            cleanMatch?.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
                             reasons.Add("Contact Number");
 
-                        if (!string.IsNullOrWhiteSpace(emailDomain) && !string.IsNullOrWhiteSpace(cleanMatch.EMAIL_DOMAIN) && cleanMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
+                        if (!string.IsNullOrWhiteSpace(emailDomain) &&
+                            !string.IsNullOrWhiteSpace(cleanMatch?.EMAIL_DOMAIN) &&
+                            cleanMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
                             reasons.Add("Domain");
 
                         blockedReason = string.Join(", ", reasons);
