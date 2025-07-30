@@ -1,11 +1,12 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using FuzzySharp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SalesDataProject.Models;
 using System.Text.RegularExpressions;
-using FuzzySharp;
 
 namespace SalesDataProject.Controllers
 {
@@ -248,13 +249,13 @@ namespace SalesDataProject.Controllers
                                  (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
                                  (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                        var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
-                            (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-                            (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
+                        //var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
+                        //    (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                        //    (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                        if (clean != null || blocked != null || master != null)
+                        if (clean != null || master != null)
                         {
-                            var matchedBy = clean?.CREATED_BY ?? blocked?.CREATED_BY ?? "Unknown";
+                            var matchedBy = clean?.CREATED_BY ?? master?.CREATED_BY ?? "Unknown";
 
                             blockedCustomersUI.Add(new ProspectCustomerBlocked
                             {
@@ -297,9 +298,9 @@ namespace SalesDataProject.Controllers
                         (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToUpper() == companyName.ToUpper()));
 
 
-                    if (cleanMatch != null && cleanMatch.CREATED_BY != username)
+                    if ((cleanMatch != null || masters!=null)  && cleanMatch.CREATED_BY != username)
                     {
-                        blockedByName = cleanMatch?.CREATED_BY;
+                        blockedByName = cleanMatch?.CREATED_BY ?? masters?.CREATED_BY ?? "Unknown";
 
                         if (!string.IsNullOrWhiteSpace(customerEmail) &&
                             cleanMatch?.CUSTOMER_EMAIL?.ToLower() == customerEmail.ToLower())
