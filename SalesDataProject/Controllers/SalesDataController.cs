@@ -115,7 +115,7 @@ namespace SalesDataProject.Controllers
             {
                 var username = HttpContext.Session.GetString("Username");
 
-                if(string.IsNullOrWhiteSpace(username)|| username==null || username=="")
+                if (string.IsNullOrWhiteSpace(username) || username == null || username == "")
                 {
                     TempData["Message"] = "Session Expired";
                     TempData["MessageType"] = "Error";
@@ -187,7 +187,7 @@ namespace SalesDataProject.Controllers
                     }
 
                     bool isEmailEmpty = string.IsNullOrWhiteSpace(customerEmail);
-                    bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1) ;
+                    bool isAllContactsEmpty = string.IsNullOrWhiteSpace(customerNumber1);
 
                     if (isEmailEmpty && isAllContactsEmpty)
                     {
@@ -254,7 +254,7 @@ namespace SalesDataProject.Controllers
                             (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
                             (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                        if (clean != null || blocked != null)
+                        if (clean != null || blocked != null || master != null)
                         {
                             var matchedBy = clean?.CREATED_BY ?? blocked?.CREATED_BY ?? "Unknown";
 
@@ -290,50 +290,46 @@ namespace SalesDataProject.Controllers
                         (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
                         (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
                         (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) &&
-                         (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
-                    );
+                        (!string.IsNullOrWhiteSpace(companyName) && companyName.ToUpper() == companyName.ToUpper()));
 
                     var masters = await _context.Customers.FirstOrDefaultAsync(x =>
                         (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
                         (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
                         (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) &&
-                         (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower()))
-                    );
+                        (!string.IsNullOrWhiteSpace(companyName) && companyName.ToUpper() == companyName.ToUpper()));
 
                     // ✅ Fuzzy Matching (only if no match found yet)
-                    if (cleanMatch == null && !string.IsNullOrWhiteSpace(companyName))
-                    {
-                        var allCleanCompanies = await _context.CleanProspects
-                            .Where(x => x.CREATED_BY != username)
-                            .Select(x => new
-                            {
-                                x.COMPANY_NAME,
-                                x.CUSTOMER_EMAIL,
-                                x.CUSTOMER_CONTACT_NUMBER1,
-                                x.EMAIL_DOMAIN,
-                                x.CREATED_BY
-                            })
-                            .ToListAsync();
+                    //if (cleanMatch == null && !string.IsNullOrWhiteSpace(companyName))
+                    //{
+                    //    var allCleanCompanies = await _context.CleanProspects
+                    //        .Where(x => x.CREATED_BY != username)
+                    //        .Select(x => new
+                    //        {
+                    //            x.COMPANY_NAME,
+                    //            x.CUSTOMER_EMAIL,
+                    //            x.CUSTOMER_CONTACT_NUMBER1,
+                    //            x.EMAIL_DOMAIN,
+                    //            x.CREATED_BY
+                    //        })
+                    //        .ToListAsync();
 
-                        var fuzzyMatch = allCleanCompanies.FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) >= 99);
+                    //    var fuzzyMatch = allCleanCompanies.FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) >= 99);
 
 
-                        if (fuzzyMatch != null)
-                        {
-                            cleanMatch = new ProspectCustomerClean
-                            {
-                                COMPANY_NAME = fuzzyMatch.COMPANY_NAME,
-                                CUSTOMER_EMAIL = fuzzyMatch.CUSTOMER_EMAIL,
-                                CUSTOMER_CONTACT_NUMBER1 = fuzzyMatch.CUSTOMER_CONTACT_NUMBER1,
-                                EMAIL_DOMAIN = fuzzyMatch.EMAIL_DOMAIN,
-                                CREATED_BY = fuzzyMatch.CREATED_BY
-                            };
+                    //    if (fuzzyMatch != null)
+                    //    {
+                    //        cleanMatch = new ProspectCustomerClean
+                    //        {
+                    //            COMPANY_NAME = fuzzyMatch.COMPANY_NAME,
+                    //            CUSTOMER_EMAIL = fuzzyMatch.CUSTOMER_EMAIL,
+                    //            CUSTOMER_CONTACT_NUMBER1 = fuzzyMatch.CUSTOMER_CONTACT_NUMBER1,
+                    //            EMAIL_DOMAIN = fuzzyMatch.EMAIL_DOMAIN,
+                    //            CREATED_BY = fuzzyMatch.CREATED_BY
+                    //        };
 
-                            reasons.Add("Company Name (Fuzzy > 50)");
-                        }
-                    }
+                    //        reasons.Add("Company Name (Fuzzy > 50)");
+                    //    }
+                    //}
 
                     if ((cleanMatch != null || masters != null) &&
                ((cleanMatch != null && cleanMatch.CREATED_BY != username) ||
@@ -348,6 +344,10 @@ namespace SalesDataProject.Controllers
                         if (!string.IsNullOrWhiteSpace(customerNumber1) &&
                             cleanMatch?.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
                             reasons.Add("Contact Number");
+
+                        if (!string.IsNullOrWhiteSpace(companyName) &&
+                            cleanMatch?.COMPANY_NAME == companyName)
+                            reasons.Add("Company Name");
 
                         if (!string.IsNullOrWhiteSpace(emailDomain) &&
                             !string.IsNullOrWhiteSpace(cleanMatch?.EMAIL_DOMAIN) &&
