@@ -207,7 +207,7 @@ namespace SalesDataProject.Controllers
                             .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
 
                         var existsForSameUser = await _context.CleanProspects
-                            .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower() && x.CREATED_BY == username);
+                            .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
 
                         if (existsForSameUser)
                         {
@@ -222,7 +222,7 @@ namespace SalesDataProject.Controllers
 
                             continue; // skip this row
                         }
-                        if (existsForSameUser)
+                        if (existsForSameUserInMaster)
                         {
                             invalidRecords.Add(new InvalidCustomerRecord
                             {
@@ -249,8 +249,6 @@ namespace SalesDataProject.Controllers
                                  (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
                         var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
-                            x.COMPANY_NAME == companyName &&
-                            x.CONTACT_PERSON == contactPerson &&
                             (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
                             (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
@@ -298,44 +296,10 @@ namespace SalesDataProject.Controllers
                         (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
                         (!string.IsNullOrWhiteSpace(companyName) && companyName.ToUpper() == companyName.ToUpper()));
 
-                    // ✅ Fuzzy Matching (only if no match found yet)
-                    //if (cleanMatch == null && !string.IsNullOrWhiteSpace(companyName))
-                    //{
-                    //    var allCleanCompanies = await _context.CleanProspects
-                    //        .Where(x => x.CREATED_BY != username)
-                    //        .Select(x => new
-                    //        {
-                    //            x.COMPANY_NAME,
-                    //            x.CUSTOMER_EMAIL,
-                    //            x.CUSTOMER_CONTACT_NUMBER1,
-                    //            x.EMAIL_DOMAIN,
-                    //            x.CREATED_BY
-                    //        })
-                    //        .ToListAsync();
-
-                    //    var fuzzyMatch = allCleanCompanies.FirstOrDefault(x => FuzzySharp.Fuzz.Ratio(companyName, x.COMPANY_NAME) >= 99);
-
-
-                    //    if (fuzzyMatch != null)
-                    //    {
-                    //        cleanMatch = new ProspectCustomerClean
-                    //        {
-                    //            COMPANY_NAME = fuzzyMatch.COMPANY_NAME,
-                    //            CUSTOMER_EMAIL = fuzzyMatch.CUSTOMER_EMAIL,
-                    //            CUSTOMER_CONTACT_NUMBER1 = fuzzyMatch.CUSTOMER_CONTACT_NUMBER1,
-                    //            EMAIL_DOMAIN = fuzzyMatch.EMAIL_DOMAIN,
-                    //            CREATED_BY = fuzzyMatch.CREATED_BY
-                    //        };
-
-                    //        reasons.Add("Company Name (Fuzzy > 50)");
-                    //    }
-                    //}
-
-                    if ((cleanMatch != null || masters != null) &&
-               ((cleanMatch != null && cleanMatch.CREATED_BY != username) ||
-                (masters != null && masters.CREATED_BY != username)))
+                    
+                    if (cleanMatch != null && cleanMatch.CREATED_BY!=username)
                     {
-                        blockedByName = cleanMatch?.CREATED_BY ?? masters?.CREATED_BY;
+                        blockedByName = cleanMatch?.CREATED_BY ;
 
                         if (!string.IsNullOrWhiteSpace(customerEmail) &&
                             cleanMatch?.CUSTOMER_EMAIL?.ToLower() == customerEmail.ToLower())
@@ -356,34 +320,6 @@ namespace SalesDataProject.Controllers
 
                         blockedReason = string.Join(", ", reasons);
                     }
-
-
-                    //else
-                    //{
-                    //    var blockMatch = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
-                    //        (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) &&
-                    //        (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
-                    //        (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) &&
-                    //        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower())) &&
-                    //        ((!string.IsNullOrWhiteSpace(companyName) && !string.IsNullOrWhiteSpace(contactPerson)) && (x.COMPANY_NAME + x.CONTACT_PERSON).ToLower().Contains((companyName + contactPerson).Substring(0, Math.Max(3, (companyName + contactPerson).Length / 2)).ToLower())));
-
-                    //    if (blockMatch != null)
-                    //    {
-                    //        if (!string.IsNullOrWhiteSpace(customerEmail) && blockMatch.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
-                    //            reasons.Add("Email");
-
-                    //        if (!string.IsNullOrWhiteSpace(customerNumber1) && blockMatch.CUSTOMER_CONTACT_NUMBER1 == customerNumber1)
-                    //            reasons.Add("Contact Number");
-
-                    //        if (!string.IsNullOrWhiteSpace(emailDomain) && blockMatch.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower())
-                    //            reasons.Add("Domain");
-
-                    //        if (!string.IsNullOrWhiteSpace(companyName) && blockMatch.COMPANY_NAME.ToLower().Contains(companyName.Substring(0, Math.Max(2, companyName.Length / 2)).ToLower()))
-                    //            reasons.Add("Company Name");
-
-                    //        blockedReason = string.Join(", ", reasons);
-                    //    }
-                    //}
 
                     if (!string.IsNullOrWhiteSpace(blockedReason))
                     {
