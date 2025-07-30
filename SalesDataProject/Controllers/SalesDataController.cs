@@ -288,18 +288,18 @@ namespace SalesDataProject.Controllers
                         (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
                         (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
                         (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(companyName) && companyName.ToUpper() == companyName.ToUpper()));
+                        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToUpper() == companyName.ToUpper()));
 
                     var masters = await _context.Customers.FirstOrDefaultAsync(x =>
                         (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower()) ||
                         (!string.IsNullOrWhiteSpace(customerNumber1) && x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1) ||
                         (!string.IsNullOrWhiteSpace(emailDomain) && x.EMAIL_DOMAIN.ToLower() == emailDomain.ToLower()) ||
-                        (!string.IsNullOrWhiteSpace(companyName) && companyName.ToUpper() == companyName.ToUpper()));
+                        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToUpper() == companyName.ToUpper()));
 
-                    
-                    if (cleanMatch != null && cleanMatch.CREATED_BY!=username)
+
+                    if (cleanMatch != null && cleanMatch.CREATED_BY != username)
                     {
-                        blockedByName = cleanMatch?.CREATED_BY ;
+                        blockedByName = cleanMatch?.CREATED_BY;
 
                         if (!string.IsNullOrWhiteSpace(customerEmail) &&
                             cleanMatch?.CUSTOMER_EMAIL?.ToLower() == customerEmail.ToLower())
