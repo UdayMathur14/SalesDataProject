@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using FuzzySharp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -182,7 +183,7 @@ namespace SalesDataProject.Controllers
                             CompanyName = companyName,
                             CustomerEmail = customerEmail,
                             CustomerNumber = customerNumber1,
-                            ErrorMessage = "Invalid contact number. Only digits are allowed."
+                            ErrorMessage = "Invalid contact number"
                         });
                         continue;
                     }
@@ -204,13 +205,12 @@ namespace SalesDataProject.Controllers
                     // ❌ Prevent same user from uploading the same email again
                     if (!string.IsNullOrWhiteSpace(customerEmail))
                     {
-                        var existsForSameUserInMaster = await _context.Customers
-                            .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+                        var masterRecord = await _context.Customers.FirstOrDefaultAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
 
-                        var existsForSameUser = await _context.CleanProspects
-                            .AnyAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
+                        var cleanRecord = await _context.CleanProspects
+                            .FirstOrDefaultAsync(x => x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower());
 
-                        if (existsForSameUser)
+                        if (masterRecord != null)
                         {
                             invalidRecords.Add(new InvalidCustomerRecord
                             {
@@ -218,12 +218,12 @@ namespace SalesDataProject.Controllers
                                 CompanyName = companyName,
                                 CustomerEmail = customerEmail,
                                 CustomerNumber = customerNumber1,
-                                ErrorMessage = "Email already uploaded by you."
+                                ErrorMessage = "Email already exist in master."  //name 
                             });
 
                             continue; // skip this row
                         }
-                        if (existsForSameUserInMaster)
+                        if (cleanRecord!=null)
                         {
                             invalidRecords.Add(new InvalidCustomerRecord
                             {
@@ -231,13 +231,14 @@ namespace SalesDataProject.Controllers
                                 CompanyName = companyName,
                                 CustomerEmail = customerEmail,
                                 CustomerNumber = customerNumber1,
-                                ErrorMessage = "Email already exist in master."
+                                ErrorMessage = $"Email already uploaded by {cleanRecord.CREATED_BY}."
                             });
 
                             continue; // skip this row
                         }
                     }
 
+                    //full row is checking for duplicate in clean and master table
                     if (!isEmailEmpty && !isAllContactsEmpty)
                     {
 
@@ -249,13 +250,16 @@ namespace SalesDataProject.Controllers
                                  (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
                                  (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                        //var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
-                        //    (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
-                        //    (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
+                        var blocked = await _context.BlockedProspects.FirstOrDefaultAsync(x =>
+                            (string.IsNullOrWhiteSpace(customerEmail) || x.CUSTOMER_EMAIL == customerEmail) &&
+                            (string.IsNullOrWhiteSpace(customerNumber1) || x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1));
 
-                        if (clean != null || master != null)
+                        if (clean != null || master != null || blocked!=null)
                         {
-                            var matchedBy = clean?.CREATED_BY ?? master?.CREATED_BY ?? "Unknown";
+                            var matchedBy =(clean != null && !string.IsNullOrWhiteSpace(clean.CREATED_BY)) ? clean.CREATED_BY :
+        (master != null && !string.IsNullOrWhiteSpace(master.CREATED_BY)) ? master.CREATED_BY :
+        (blocked != null && !string.IsNullOrWhiteSpace(blocked.CREATED_BY)) ? blocked.CREATED_BY :
+        "Unknown";
 
                             blockedCustomersUI.Add(new ProspectCustomerBlocked
                             {
