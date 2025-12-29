@@ -213,7 +213,8 @@ namespace SalesDataProject.Controllers
                             titlesInExcel.Add(concatenatedTitle);
                         }
 
-                        var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber);
+                        //var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber);
+                        var isInvoiceExists = allTitles.Any(t =>t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
 
                         if (isInvoiceExists )
                         {
@@ -225,7 +226,7 @@ namespace SalesDataProject.Controllers
                                 Title = cleantitle,
                                 InvoiceNumber = invoiceNumber,
                                 CodeReference = codeReference,
-                                Status = "Invoice No already exists",
+                                Status = "Invoice with codeRef already exists",
                                 TitleYear = yearTtile
                             });
 
