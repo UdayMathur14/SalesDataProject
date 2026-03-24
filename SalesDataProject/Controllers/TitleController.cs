@@ -986,10 +986,10 @@ namespace SalesDataProject.Controllers
         public IActionResult GetDropdownData1()
         {
             var paperId = _context.Titles
-                .Where(x => !string.IsNullOrEmpty(x.PaperId) && x.UpdatedTitle!=null)
-                .Select(x => x.PaperId)
-                .Distinct()
-                .ToList();
+     .Where(x => !string.IsNullOrEmpty(x.PaperId) && !string.IsNullOrEmpty(x.UpdatedTitle))
+     .Select(x => x.PaperId)
+     .Distinct()
+     .ToList();
 
             return Json(new { paperId });
         }

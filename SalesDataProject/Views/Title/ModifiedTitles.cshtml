@@ -235,39 +235,38 @@
     setTimeout(closeAlertMessage, 3500);
 </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const uploadAndSaveButton = document.getElementById('uploadAndSaveButton');
-        const fileUpload = document.getElementById('fileUpload');
-        const uploadForm = document.getElementById('uploadForm');
+document.addEventListener('DOMContentLoaded', function () {
+    const uploadAndSaveButton = document.getElementById('uploadAndSaveButton');
+    const fileUpload = document.getElementById('fileUpload');
+    const uploadForm = document.getElementById('uploadForm');
 
-        if (uploadAndSaveButton  && fileUpload && uploadForm ) {
+    if (uploadAndSaveButton && fileUpload && uploadForm) {
 
-            uploadAndSaveButton.addEventListener('click', function () { // Set testMode = false for Upload and Save
-                fileUpload.click();
-            });
+        uploadAndSaveButton.addEventListener('click', function () {
+            fileUpload.value = '';   // 🔥 RESET (main fix)
+            fileUpload.click();
+        });
 
-            fileUpload.addEventListener('change', function () {
-                if (fileUpload.files.length > 0) {
-                    showSpinner(); // Show loader
-                    uploadForm.submit();
-                }
-            });
-        }
-    });
-
-    function showSpinner() {
-        document.getElementById("spinner-overlay").style.display = "flex";
+        fileUpload.addEventListener('change', function () {
+            if (fileUpload.files.length > 0) {
+                showSpinner();
+                uploadForm.submit();
+            }
+        });
     }
+});
 
-    function hideSpinner() {
-        document.getElementById("spinner-overlay").style.display = "none";
-    }
+function showSpinner() {
+    document.getElementById("spinner-overlay").style.display = "flex";
+}
 
-    window.addEventListener('load', function () {
-        hideSpinner();
-    });
-</script>
+function hideSpinner() {
+    document.getElementById("spinner-overlay").style.display = "none";
+}
+
+window.addEventListener('load', function () {
+    hideSpinner();
+});
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
