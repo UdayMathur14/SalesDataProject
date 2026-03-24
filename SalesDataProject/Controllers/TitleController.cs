@@ -904,45 +904,6 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        //public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber,string titleYear)
-        //{
-        //    // Pass filters back to the view
-        //    ViewData["FilterId"] = filterId;
-        //    ViewData["FilterCodeReference"] = filterCodeReference;
-        //    ViewData["FilterInvoiceNumber"] = filterInvoiceNumber;
-        //    ViewData["TitleYear"] = titleYear;
-
-        //    // Fetch data and filter based on inputs
-        //    var query = _context.Titles.AsQueryable();
-
-        //    if (!string.IsNullOrEmpty(filterId) && int.TryParse(filterId, out int id))
-        //    {
-        //        query = query.Where(x => x.Id == id);
-        //    }
-
-        //    if (!string.IsNullOrEmpty(filterCodeReference))
-        //    {
-        //        query = query.Where(x => x.CodeReference.Contains(filterCodeReference));
-        //    }
-
-        //    if (!string.IsNullOrEmpty(filterInvoiceNumber))
-        //    {
-        //        query = query.Where(x => x.InvoiceNumber.Contains(filterInvoiceNumber));
-        //    }
-
-        //    if (!string.IsNullOrEmpty(titleYear))
-        //    {
-        //        query = query.Where(x => x.TitleYear.Contains(titleYear));
-        //    }
-
-        //    var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
-        //    ViewData["CanDeleteTitles"] = canDeleteTitle;
-
-
-        //    var model = await query.ToListAsync();
-        //    return View("ViewTitles", model);
-        //}
-
         public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber, string titleYear)
         {
             // Filtering logic as before
@@ -976,6 +937,30 @@ namespace SalesDataProject.Controllers
             return View("ViewTitles", model);
         }
 
+        public async Task<IActionResult> querydata1(string filterId, string PaperId)
+        {
+            var query = _context.Titles.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filterId) && int.TryParse(filterId, out int id))
+            {
+                query = query.Where(x => x.Id == id);
+            }
+
+            if (!string.IsNullOrEmpty(PaperId))
+            {
+                query = query.Where(x => x.PaperId.Contains(PaperId));
+            }
+
+            var model = await query.ToListAsync();
+
+            ViewData["FilteredCount"] = model.Count;
+
+            // retain values
+            ViewData["PaperId"] = PaperId;
+            ViewData["FilterId"] = filterId;
+
+            return View("ModifiedTitles", model);
+        }
 
         [HttpGet]
         public IActionResult GetDropdownData()
@@ -995,6 +980,18 @@ namespace SalesDataProject.Controllers
             
 
             return Json(new { codeReferences, invoiceNumbers });
+        }
+
+        [HttpGet]
+        public IActionResult GetDropdownData1()
+        {
+            var paperId = _context.Titles
+                .Where(x => !string.IsNullOrEmpty(x.PaperId) && x.UpdatedTitle!=null)
+                .Select(x => x.PaperId)
+                .Distinct()
+                .ToList();
+
+            return Json(new { paperId });
         }
 
         public async Task<IActionResult> DownloadExcel()
