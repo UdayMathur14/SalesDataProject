@@ -23,34 +23,72 @@
         </a>
     </div>
 
-    <form id="filterForm" method="get" asp-action="ViewTitles"
+    <form method="get" asp-action="querydata"
           class="p-4 rounded-4 shadow-sm mb-4"
           style="background: white; border: 1px solid #e3e6ea; border-radius:16px">
 
         <div class="row g-3 align-items-end">
-            <div class="col-md-3">
+
+            <!-- Code Reference -->
+            <div class="col-md-3 position-relative">
                 <label class="form-label fw-semibold text-muted">Code Reference</label>
-                <input type="text" name="filterCodeReference" value="@ViewData["FilterCodeReference"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 Search Code Ref">
+
+                <input type="text" id="filterCodeReference" name="filterCodeReference"
+                       value="@ViewData["FilterCodeReference"]"
+                       class="form-control form-control-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Search Code Ref">
+
+                <ul id="codeReferenceList"
+                    class="dropdown-menu w-100"
+                    style="max-height:200px; overflow-y:auto; display:none; position:absolute;">
+                </ul>
             </div>
 
-            <div class="col-md-3">
+            <!-- Invoice Number -->
+            <div class="col-md-3 position-relative">
                 <label class="form-label fw-semibold text-muted">Invoice Number</label>
-                <input type="text" name="filterInvoiceNumber" value="@ViewData["FilterInvoiceNumber"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 Search Invoice No">
+
+                <input type="text" id="filterInvoiceNumber" name="filterInvoiceNumber"
+                       value="@ViewData["FilterInvoiceNumber"]"
+                       class="form-control form-control-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Search Invoice No">
+
+                <ul id="invoiceNumberList"
+                    class="dropdown-menu w-100"
+                    style="max-height:200px; overflow-y:auto; display:none; position:absolute;">
+                </ul>
             </div>
 
+            <!-- ID -->
             <div class="col-md-2">
                 <label class="form-label fw-semibold text-muted">Filter by ID</label>
-                <input type="text" name="filterId" value="@ViewData["FilterId"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 ID">
+                <input type="text" name="filterId"
+                       value="@ViewData["FilterId"]"
+                       class="form-control form-control-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 ID">
             </div>
 
+            <!-- Year -->
             <div class="col-md-2">
                 <label class="form-label fw-semibold text-muted">Financial Year</label>
-                <input type="text" name="titleYear" value="@ViewData["TitleYear"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="📅 2023-24">
+                <input type="text" name="titleYear"
+                       value="@ViewData["TitleYear"]"
+                       class="form-control form-control-sm rounded-3 border-primary-subtle"
+                       placeholder="📅 2023-24">
             </div>
 
+            <!-- Buttons -->
             <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary btn-sm fw-semibold w-100 rounded-pill shadow-sm">🔍 Filter</button>
-                <a href="@Url.Action("ViewTitles")" class="btn btn-danger btn-sm fw-semibold w-100 rounded-pill shadow-sm">❌ Clear</a>
+                <button type="submit"
+                        class="btn btn-primary btn-sm fw-semibold w-100 rounded-pill shadow-sm">
+                    🔍 Filter
+                </button>
+
+                <a id="clearButton"
+                   href="@Url.Action("ViewTitles")"
+                   class="btn btn-danger btn-sm fw-semibold w-100 rounded-pill shadow-sm">
+                    ❌ Clear
+                </a>
             </div>
         </div>
 
@@ -78,6 +116,7 @@
                         <th>Invoice No</th>
                         <th>Paper Id</th>
                         <th>Title</th>
+                        <th>Mofified Title</th>
                         <th>Created By</th>
                         <th>FinancialYear</th>
                         <th>Date</th>
@@ -99,6 +138,7 @@
                                 <td>@record.InvoiceNumber</td>
                                 <td>@record.PaperId</td>
                                 <td style="max-width: 350px; white-space: normal;">@record.Title</td>
+                                <td style="max-width: 350px; white-space: normal;">@record.UpdatedTitle</td>
                                 <td>@record.CREATED_BY</td>
                                 <td>@record.TitleYear</td>
                                 <td>@record.CREATED_ON.ToString("dd-MM-yyyy")</td>
@@ -329,52 +369,72 @@
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Fetch dropdown data
+
         fetch('/Title/GetDropdownData')
             .then(response => response.json())
             .then(data => {
                 populateDropdown('filterCodeReference', 'codeReferenceList', data.codeReferences);
                 populateDropdown('filterInvoiceNumber', 'invoiceNumberList', data.invoiceNumbers);
             })
-            .catch(error => console.error('Error fetching dropdown data:', error));
+            .catch(error => console.error('Error:', error));
 
         function populateDropdown(inputId, listId, items) {
+
             const input = document.getElementById(inputId);
             const list = document.getElementById(listId);
 
+            if (!input || !list) return;
+
             input.addEventListener('input', function () {
+
                 const filter = this.value.toLowerCase();
                 list.innerHTML = '';
 
-                const filtered = items.filter(item => item.toLowerCase().includes(filter));
+                if (!filter) {
+                    list.style.display = 'none';
+                    return;
+                }
+
+                const filtered = items.filter(item =>
+                    item.toLowerCase().includes(filter)
+                );
+
                 filtered.forEach(item => {
                     const li = document.createElement('li');
                     li.textContent = item;
                     li.className = 'dropdown-item';
+
                     li.addEventListener('click', function () {
                         input.value = item;
                         list.innerHTML = '';
+                        list.style.display = 'none';
                     });
+
                     list.appendChild(li);
                 });
 
                 list.style.display = filtered.length ? 'block' : 'none';
             });
 
-            // Hide dropdown when clicking outside
+            // click outside hide
             document.addEventListener('click', function (e) {
                 if (!input.contains(e.target) && !list.contains(e.target)) {
-                    list.innerHTML = '';
+                    list.style.display = 'none';
                 }
             });
         }
 
-        // Clear Button
-        document.getElementById('clearButton').addEventListener('click', function () {
-            document.getElementById('filterForm').reset();
-            document.getElementById('codeReferenceList').innerHTML = '';
-            document.getElementById('invoiceNumberList').innerHTML = '';
-        });
+        // Clear Button Fix
+        const clearBtn = document.getElementById('clearButton');
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                document.getElementById('filterForm').reset();
+
+                document.getElementById('codeReferenceList').innerHTML = '';
+                document.getElementById('invoiceNumberList').innerHTML = '';
+            });
+        }
     });
 </script>
 

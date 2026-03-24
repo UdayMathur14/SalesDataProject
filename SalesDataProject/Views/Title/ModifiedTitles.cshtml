@@ -240,3 +240,54 @@
         hideSpinner();
     });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch dropdown data
+        fetch('/Title/GetDropdownData')
+            .then(response => response.json())
+            .then(data => {
+                populateDropdown('filterCodeReference', 'codeReferenceList', data.codeReferences);
+                populateDropdown('filterInvoiceNumber', 'invoiceNumberList', data.invoiceNumbers);
+            })
+            .catch(error => console.error('Error fetching dropdown data:', error));
+
+        function populateDropdown(inputId, listId, items) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            input.addEventListener('input', function () {
+                const filter = this.value.toLowerCase();
+                list.innerHTML = '';
+
+                const filtered = items.filter(item => item.toLowerCase().includes(filter));
+                filtered.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    li.className = 'dropdown-item';
+                    li.addEventListener('click', function () {
+                        input.value = item;
+                        list.innerHTML = '';
+                    });
+                    list.appendChild(li);
+                });
+
+                list.style.display = filtered.length ? 'block' : 'none';
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (!input.contains(e.target) && !list.contains(e.target)) {
+                    list.innerHTML = '';
+                }
+            });
+        }
+
+        // Clear Button
+        document.getElementById('clearButton').addEventListener('click', function () {
+            document.getElementById('filterForm').reset();
+            document.getElementById('codeReferenceList').innerHTML = '';
+            document.getElementById('invoiceNumberList').innerHTML = '';
+        });
+    });
+</script>
