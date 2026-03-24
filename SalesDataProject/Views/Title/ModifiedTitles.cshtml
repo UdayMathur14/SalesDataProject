@@ -1,0 +1,242 @@
+﻿<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+@model List<SalesDataProject.Models.TitleValidationViewModel>
+
+<div class="container mt-4 ">
+    <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-lg"
+         style="background: linear-gradient(135deg, #e0f7fa, #ffffff); border: 1px solid #d0e9f7; box-shadow: 0 8px 16px rgb(0,0,1,0.05);border-radius:16px">
+        <div class="d-flex gap-2 justify-content-betweens">
+            <div>
+                <h1 class="m-0 fw-bold d-flex align-items-center" style="font-size: 2rem; gap: 0.5rem;">
+                    <span style="color: antiquewhite; font-size: 2.5rem; filter: drop-shadow(0 0 5px rgb(0, 1, 255, 0.5));">📖</span>
+                    <span style="color: cornflowerblue"><i>Modified Titles</i></span>
+                </h1>
+                <small class="text-muted" style="font-size: 0.9rem;">Modified Your Old Titles</small>
+            </div>
+            <div>
+                <form asp-action="ModifiedTitleExcel" method="post" enctype="multipart/form-data" id="uploadForm" class="d-flex gap-2">
+                    <input type="file" id="fileUpload" name="file" class="d-none" required />
+                    <button type="button" id="uploadAndSaveButton" class="btn btn-primary fw-semibold px-3 py-2 shadow-sm">
+                        <i class="bi bi-upload me-1"></i> Upload & Save
+                    </button>
+                </form>
+            </div>
+            <div>
+                <form>
+                    <button type="submit" class="btn btn-success fw-semibold px-3 py-2 shadow-sm" id="downloadBtn">
+                        <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Template
+                    </button>
+                </form>
+            </div>
+            <div>
+                <a href="@Url.Action("Index", "Title")"
+                   class="btn fw-semibold shadow-sm px-4 rounded-pill"
+                   style="background: linear-gradient(45deg, #ff4e50, #f9d423); color: white; font-weight: 600;">
+                    ⬅️ Back
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <form id="filterForm" method="get" asp-action="ModifiedTitles"
+          class="p-4 rounded-4 shadow-sm mb-4"
+          style="background: white; border: 1px solid #e3e6ea; border-radius:16px">
+
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-muted">Paper Id</label>
+                <input type="text" name="filterInvoiceNumber" value="@ViewData["FilterInvoiceNumber"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 Search Paper Id">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-muted">Filter by ID</label>
+                <input type="text" name="filterId" value="@ViewData["FilterId"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 ID">
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm fw-semibold w-100 rounded-pill shadow-sm">🔍 Filter</button>
+                <a href="@Url.Action("ModifiedTitles")" class="btn btn-danger btn-sm fw-semibold w-100 rounded-pill shadow-sm">❌ Clear</a>
+            </div>
+        </div>
+
+        @if (ViewData["FilteredCount"] != null)
+        {
+            <div class="mt-3">
+                <span class="badge bg-secondary px-3 py-2 rounded-pill">
+                    Records Found: <strong>@ViewData["FilteredCount"]</strong>
+                </span>
+            </div>
+        }
+    </form>
+
+    <form id="deleteForm" method="post" action="/Title/DeleteSelected">
+        <div class="table-responsive shadow-sm rounded-4" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white;">
+            <table class="table table-hover text-start align-middle m-0">
+                <thead style="background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; position: sticky; top: 0; z-index: 10;">
+                    <tr>
+
+                        <th>Id</th>
+                        <th>Paper Id</th>
+                        <th>Title</th>
+                        <th>Updated Title</th>
+                        <th>Created By</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var record in Model)
+                        {
+                            <tr>
+
+                                <td>@record.Id</td>
+                                <td>@record.PaperId</td>
+                                <td style="max-width: 350px; white-space: normal;">@record.Title</td>
+                                <td style="max-width: 350px; white-space: normal;">@record.UpdatedTitle</td>
+                                <td>@record.CREATED_BY</td>
+                                <td>@record.CREATED_ON.ToString("dd-MM-yyyy")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-5 text-muted">No records found matching your criteria.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+            </div>
+
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav>
+                    <ul class="pagination pagination-sm m-0 shadow-sm">
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ModifiedTitles", new { page = ViewBag.CurrentPage - 1, filterCodeReference = ViewData["FilterCodeReference"], filterInvoiceNumber = ViewData["FilterInvoiceNumber"], filterId = ViewData["FilterId"], titleYear = ViewData["TitleYear"] })">Previous</a>
+                        </li>
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("ModifiedTitles", new { page = i, filterCodeReference = ViewData["FilterCodeReference"], filterInvoiceNumber = ViewData["FilterInvoiceNumber"], filterId = ViewData["FilterId"], titleYear = ViewData["TitleYear"] })">@i</a>
+                                </li>
+                            }
+                        }
+
+                        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ModifiedTitles", new { page = ViewBag.CurrentPage + 1, filterCodeReference = ViewData["FilterCodeReference"], filterInvoiceNumber = ViewData["FilterInvoiceNumber"], filterId = ViewData["FilterId"], titleYear = ViewData["TitleYear"] })">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the download button
+        const downloadBtn = document.getElementById("downloadBtn");
+        if (!downloadBtn) {
+            console.error("Download button not found in the DOM.");
+            return;
+        }
+
+        downloadBtn.addEventListener("click", function (event) {
+            // Prevent any default behavior (e.g., if inside a form)
+            event.preventDefault();
+
+            // Get the spinner element
+            const spinner = document.getElementById("spinner-overlay");
+            if (!spinner) {
+                console.error("Spinner overlay element not found!");
+                return;
+            }
+
+            // Show the loader
+            spinner.style.display = "flex";
+
+            // Fetch the file from the server
+            fetch('/Title/DownloadTitleTemplate', { method: 'GET', cache: 'no-store' })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Server responded with " + response.status);
+                    }
+                    return response.blob(); // Convert response to Blob
+                })
+                .then(blob => {
+                    // Hide the loader
+                    spinner.style.display = "none";
+
+                    // Create a temporary link element to trigger the download
+                    const link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "UpdatedTitles.xlsx"; // Set the file name
+                    document.body.appendChild(link);
+                    link.click(); // Trigger the download
+                    document.body.removeChild(link); // Clean up the temporary link
+                })
+                .catch(error => {
+                    // Hide the loader if an error occurs
+                    spinner.style.display = "none";
+                    console.error("Error downloading file:", error);
+                    alert("Error downloading file: " + error.message);
+                });
+        });
+    });
+</script>
+
+<script>
+        function closeAlertMessage() {
+        const alertMessage = document.getElementById('alertMessage');
+        if (alertMessage) {
+            alertMessage.classList.add('fade-out');
+            setTimeout(() => alertMessage.style.display = 'none', 500); // Wait for fade-out to complete
+        }
+    }
+    setTimeout(closeAlertMessage, 3500);
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadAndSaveButton = document.getElementById('uploadAndSaveButton');
+        const fileUpload = document.getElementById('fileUpload');
+        const uploadForm = document.getElementById('uploadForm');
+
+        if (uploadAndSaveButton  && fileUpload && uploadForm ) {
+
+            uploadAndSaveButton.addEventListener('click', function () { // Set testMode = false for Upload and Save
+                fileUpload.click();
+            });
+
+            fileUpload.addEventListener('change', function () {
+                if (fileUpload.files.length > 0) {
+                    showSpinner(); // Show loader
+                    uploadForm.submit();
+                }
+            });
+        }
+    });
+
+    function showSpinner() {
+        document.getElementById("spinner-overlay").style.display = "flex";
+    }
+
+    function hideSpinner() {
+        document.getElementById("spinner-overlay").style.display = "none";
+    }
+
+    window.addEventListener('load', function () {
+        hideSpinner();
+    });
+</script>

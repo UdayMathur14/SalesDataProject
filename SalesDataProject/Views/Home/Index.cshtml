@@ -14,7 +14,7 @@
     <h2 class="mb-5 text-center display-5 text-dark" style="font-weight: bold; font-style: italic; font-size: 2.0rem">Explore Our Modules</h2>
     <div class="row">
         <!-- Customer Module Card -->
-        @if (canAccessCustomer)
+       @*  @if (canAccessCustomer)
         {
             <div class="col-md-3 col-lg-3 mb-5">
                 <div class="card custom-card shadow-lg border-0 rounded-3">
@@ -46,7 +46,7 @@
                     </div>
                 </div>
             </div>
-        }
+        } *@
         @if (canAccessUserManagement)
         {
             <div class="col-md-3 col-lg-3 mb-5">
@@ -73,7 +73,7 @@
                         <i class="fas fa-chart-line fa-3x"></i>
                     </div>
                     <div class="card-content">
-                        <h5 class="card-title" style="color:green">Title <br> Validation</h5>
+                        <h5 class="card-title" style="color:green">Title Publication <br> Validation</h5>
                         <p class="card-text">Validate your Titiles here and upload insert or delete titles </p>
                         <a href="@Url.Action("Index", "Title")" class="btn btn-primary">Explore</a>
                     </div>

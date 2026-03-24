@@ -11,11 +11,15 @@ namespace SalesDataProject.Models
         public int RowNumber { get; set; } // Row number in the file
         public string? CodeReference  { get; set; }
         public string? InvoiceNumber { get; set; }
+        public string? PaperId { get; set; }
         public string? Title { get; set; }
+        public string? UpdatedTitle { get; set; }
         public string? CREATED_BY { get; set; }
         public DateOnly CREATED_ON { get; set; } 
         public string? Status { get; set; } // "Blocked" or "Clean"
         public string? ReferenceTitle { get; set; } // "Blocked" or "Clean"
+        public string? UpdatedReferenceTitle { get; set; } // "Blocked" or "Clean"
+        public string? UpdatedTitleBy { get; set; } // "Blocked" or "Clean"
         [NotMapped]
         public int? BlockedId { get; set; }
         public string? TitleYear { get; set; }

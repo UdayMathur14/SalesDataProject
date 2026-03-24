@@ -9,120 +9,78 @@
 <div class="container mt-4 ">
     <div class="d-flex justify-content-between align-items-center mb-4 p-4 rounded-4 shadow-lg"
          style="background: linear-gradient(135deg, #e0f7fa, #ffffff); border: 1px solid #d0e9f7; box-shadow: 0 8px 16px rgba(0,0,0,0.05);border-radius:16px">
-
         <div>
             <h1 class="m-0 fw-bold d-flex align-items-center" style="font-size: 2rem; gap: 0.5rem;">
                 <span style="color: #007bff; font-size: 2.5rem; filter: drop-shadow(0 0 5px rgba(0, 123, 255, 0.5));">📖</span>
-                <span style="color: #333;"><i>Title Records</i></span>
+                <span style="color: #333;"><i>Title Records Publication</i></span>
             </h1>
             <small class="text-muted" style="font-size: 0.9rem;">Manage and filter your title records easily.</small>
         </div>
         <a href="@Url.Action("Index", "Title")"
            class="btn fw-semibold shadow-sm px-4 rounded-pill"
-           style="background: linear-gradient(45deg, #ff4e50, #f9d423); color: white; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;">
+           style="background: linear-gradient(45deg, #ff4e50, #f9d423); color: white; font-weight: 600;">
             ⬅️ Back
         </a>
     </div>
 
-    <!-- Filter Form -->
-    <form id="filterForm" method="get" action="/Title/querydata"
-          class="p-4 rounded-4 shadow-sm"
-          style="background: white; border: 1px solid #e3e6ea;border-radius:16px">
+    <form id="filterForm" method="get" asp-action="ViewTitles"
+          class="p-4 rounded-4 shadow-sm mb-4"
+          style="background: white; border: 1px solid #e3e6ea; border-radius:16px">
 
         <div class="row g-3 align-items-end">
-
-            <!-- Code Reference -->
-            <div class="col-md-3 position-relative">
-                <label class="form-label fw-semibold text-muted ">Code Reference</label>
-                <input type="text" name="filterCodeReference" id="filterCodeReference"
-                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Search Code Reference" autocomplete="off">
-                <ul id="codeReferenceList" class="dropdown-list"></ul>
-            </div>
-
-            <!-- Invoice Number -->
-            <div class="col-md-3 position-relative">
-                <label class="form-label fw-semibold text-muted ">Invoice Number</label>
-                <input type="text" name="filterInvoiceNumber" id="filterInvoiceNumber"
-                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Search Invoice Number" autocomplete="off">
-                <ul id="invoiceNumberList" class="dropdown-list"></ul>
-            </div>
-
-            <!-- Filter by ID -->
             <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted ">Filter by ID</label>
-                <input type="text" name="filterId"
-                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 ID" value="@ViewData["FilterId"]" />
+                <label class="form-label fw-semibold text-muted">Code Reference</label>
+                <input type="text" name="filterCodeReference" value="@ViewData["FilterCodeReference"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 Search Code Ref">
             </div>
 
-            <!-- Financial Year -->
             <div class="col-md-3">
-                <label class="form-label fw-semibold text-muted ">Financial Year</label>
-                <input type="text" name="titleYear"
-                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
-                       placeholder="📅 e.g. 2023-24" value="@ViewData["TitleYear"]" />
+                <label class="form-label fw-semibold text-muted">Invoice Number</label>
+                <input type="text" name="filterInvoiceNumber" value="@ViewData["FilterInvoiceNumber"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 Search Invoice No">
             </div>
 
-            <!-- Buttons -->
-            <div class="col-md-6 d-flex gap-2 mt-3 align-items-center flex-wrap">
-                <button type="submit" class="btn fw-semibold shadow-sm px-4 rounded-pill"
-                        style="background: linear-gradient(45deg, #36d1dc, #5b86e5); border: none; color: white;">
-                    🔍 Filter
-                </button>
-
-                <button type="button" class="btn fw-semibold shadow-sm px-4 rounded-pill" id="clearButton"
-                        style="background: linear-gradient(45deg, #ff6a00, #ee0979); border: none; color: white;">
-                    ❌ Clear
-                </button>
-
-                <!-- 🧮 Filtered Count Display -->
-                @if (ViewData["FilteredCount"] != null)
-                {
-                    <span class="badge bg-secondary px-3 py-2 rounded-pill">
-                        Records Found: <strong>@ViewData["FilteredCount"]</strong>
-                    </span>
-                }
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-muted">Filter by ID</label>
+                <input type="text" name="filterId" value="@ViewData["FilterId"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="🔎 ID">
             </div>
 
-
-            <div class="col-md-6 mt-3 text-md-end">
-                <a href="/Title/DownloadExcel" class="btn fw-semibold shadow-sm px-4 rounded-pill"
-                   style="background: linear-gradient(45deg, #00b09b, #96c93d); border: none; color: white;">
-                    ⬇️ Export to Excel
-                </a>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold text-muted">Financial Year</label>
+                <input type="text" name="titleYear" value="@ViewData["TitleYear"]" class="form-control form-control-sm rounded-3 border-primary-subtle" placeholder="📅 2023-24">
             </div>
 
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm fw-semibold w-100 rounded-pill shadow-sm">🔍 Filter</button>
+                <a href="@Url.Action("ViewTitles")" class="btn btn-danger btn-sm fw-semibold w-100 rounded-pill shadow-sm">❌ Clear</a>
+            </div>
         </div>
+
+        @if (ViewData["FilteredCount"] != null)
+        {
+            <div class="mt-3">
+                <span class="badge bg-secondary px-3 py-2 rounded-pill">
+                    Records Found: <strong>@ViewData["FilteredCount"]</strong>
+                </span>
+            </div>
+        }
     </form>
 
-
- 
-
-
-
-
-
-
-
-    <!-- Table -->
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
-        <div class="table-responsive mt-4 shadow-sm rounded-4" style="max-height: 820px; overflow-y: auto; border: 1px solid #ddd; background: white;">
-            <table class="table table-hover text-start align-left">
-                <thead style="background: linear-gradient(45deg, #4facfe, #00f2fe); color: white;">
+        <div class="table-responsive shadow-sm rounded-4" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white;">
+            <table class="table table-hover text-start align-middle m-0">
+                <thead style="background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; position: sticky; top: 0; z-index: 10;">
                     <tr>
                         @if (hasDeleteAccess == "True")
                         {
-                            <th class="rounded-start"><input type="checkbox" id="selectAll" class="form-check-input" /></th>
+                            <th class="ps-3"><input type="checkbox" id="selectAll" class="form-check-input" /></th>
                         }
                         <th>Id</th>
                         <th>Code Ref</th>
                         <th>Invoice No</th>
-                        <th class="text-center">Title</th>
+                        <th>Paper Id</th>
+                        <th>Title</th>
                         <th>Created By</th>
-                        <th style="min-width: 100px;">FinancialYear</th>
-                        <th style="min-width: 100px;">Date</th>
+                        <th>FinancialYear</th>
+                        <th>Date</th>
                         <th class="rounded-end">Status</th>
                     </tr>
                 </thead>
@@ -131,45 +89,69 @@
                     {
                         foreach (var record in Model)
                         {
-                            <tr id="record-@record.Id">
+                            <tr>
                                 @if (hasDeleteAccess == "True")
                                 {
-                                    <td>
-                                        <input type="checkbox" name="selectedIds" value="@record.Id" class="form-check-input" />
-                                    </td>
+                                    <td class="ps-3"><input type="checkbox" name="selectedIds" value="@record.Id" class="form-check-input" /></td>
                                 }
                                 <td>@record.Id</td>
                                 <td>@record.CodeReference</td>
                                 <td>@record.InvoiceNumber</td>
-                                <td class="text-start" style="white-space: normal; max-width: 400px;">@record.Title</td>
+                                <td>@record.PaperId</td>
+                                <td style="max-width: 350px; white-space: normal;">@record.Title</td>
                                 <td>@record.CREATED_BY</td>
                                 <td>@record.TitleYear</td>
-                                <td>@record.CREATED_ON</td>
-                                <td>
-                                    <span class="badge bg-success rounded-pill px-3 py-2">@record.Status</span>
-                                </td>
+                                <td>@record.CREATED_ON.ToString("dd-MM-yyyy")</td>
+                                <td><span class="badge bg-success rounded-pill px-3 py-1">@record.Status</span></td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted">No records found</td>
+                            <td colspan="9" class="text-center py-5 text-muted">No records found matching your criteria.</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
 
-        @if (hasDeleteAccess == "True")
-        {
-            <button type="submit" class="btn fw-semibold shadow-sm mt-3 px-4 rounded-pill"
-                    style="background: linear-gradient(45deg, #ff4e50, #f9d423); border: none; color: white;">
-                🗑️ Delete Selected
-            </button>
-        }
-    </form>
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+                @if (hasDeleteAccess == "True")
+                {
+                    <button type="submit" class="btn fw-semibold shadow-sm px-4 rounded-pill btn-danger" onclick="return confirm('Are you sure you want to delete selected records?')">
+                        🗑️ Delete Selected
+                    </button>
+                }
+            </div>
 
+            @if (ViewBag.TotalPages > 1)
+            {
+                <nav>
+                    <ul class="pagination pagination-sm m-0 shadow-sm">
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ViewTitles", new { page = ViewBag.CurrentPage - 1, filterCodeReference = ViewData["FilterCodeReference"], filterInvoiceNumber = ViewData["FilterInvoiceNumber"], filterId = ViewData["FilterId"], titleYear = ViewData["TitleYear"] })">Previous</a>
+                        </li>
+
+                        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                        {
+                            if (i == 1 || i == ViewBag.TotalPages || (i >= ViewBag.CurrentPage - 2 && i <= ViewBag.CurrentPage + 2))
+                            {
+                                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("ViewTitles", new { page = i, filterCodeReference = ViewData["FilterCodeReference"], filterInvoiceNumber = ViewData["FilterInvoiceNumber"], filterId = ViewData["FilterId"], titleYear = ViewData["TitleYear"] })">@i</a>
+                                </li>
+                            }
+                        }
+
+                        <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ViewTitles", new { page = ViewBag.CurrentPage + 1, filterCodeReference = ViewData["FilterCodeReference"], filterInvoiceNumber = ViewData["FilterInvoiceNumber"], filterId = ViewData["FilterId"], titleYear = ViewData["TitleYear"] })">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+    </form>
 </div>
 
 <script>
