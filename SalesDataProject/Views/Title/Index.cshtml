@@ -4,6 +4,7 @@
     var canDeleteTitle = ViewData["CanDeleteTitles"]?.ToString();
     ViewBag.CanAccessTitle = "True";
     ViewBag.CanDeleteTitle = "True";
+    var isModified = ViewBag.IsModifiedUpload ?? false;
 }
 
 @model ValidationResultViewModel
@@ -59,115 +60,131 @@
         </div>
     </div>
 
-    @if (Model != null && (Model.BlockedTitles?.Any() == true || Model.CleanTitles?.Any() == true || Model.DuplicateTitlesInExcel?.Any() == true))
-    {
+@if (Model != null && (Model.BlockedTitles?.Any() == true || Model.CleanTitles?.Any() == true || Model.DuplicateTitlesInExcel?.Any() == true))
+{
         <div class="card shadow rounded mb-4">
             <div class="card-body">
+
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title text-dark fw-bold m-0"><i class="bi bi-check-circle"></i> Validation Result</h5>
-                    @if (ViewBag.TotalPages > 1)
-                    {
-                        <span class="badge bg-secondary">Page @ViewBag.CurrentPage of @ViewBag.TotalPages</span>
-                    }
+                    <h5 class="card-title text-dark fw-bold m-0">
+                        <i class="bi bi-check-circle"></i> Validation Result
+                    </h5>
                 </div>
 
                 <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover align-middle table-bordered">
-                        <thead class="table-dark text-center" style="position: sticky; top: 0; z-index: 1;">
+
+                        <!-- 🔥 HEADER -->
+                        <thead class="table-dark text-center">
                             <tr>
                                 <th>Row No</th>
-                                <th>Invoice No</th>
                                 <th>Paper Id</th>
-                                <th>CodeRef</th>
-                                <th>Title</th>
+
+                                @if (!isModified)
+                                {
+                                    <th>Invoice No</th>
+                                    <th>CodeRef</th>
+                                    <th>Title</th>
+                                    <th>FinancialYear</th>
+                                    <th>BlockedByRow</th>
+                                    <th>BlockInvoiceNo</th>
+                                    <th>BlockCodeRef</th>
+                                }
+
                                 <th>Modified Title</th>
-                                <th>FinancialYear</th>
                                 <th>Status</th>
-                                <th>BlockedByRow</th>
-                                <th>BlockInvoiceNo</th>
-                                <th>BlockCodeRef</th>
                             </tr>
                         </thead>
+
                         <tbody>
+
+                            <!-- ✅ CLEAN -->
                             @foreach (var title in Model.CleanTitles)
                             {
                                 <tr class="table-success text-center">
                                     <td>@title.RowNumber</td>
-                                    <td>@title.InvoiceNumber</td>
                                     <td>@title.PaperId</td>
-                                    <td>@title.CodeReference</td>
-                                    <td class="text-start">@title.Title</td>
+
+                                    @if (!isModified)
+                                    {
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td class="text-start">@title.Title</td>
+                                        <td>@(title.TitleYear ?? "-")</td>
+                                        <td>-</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    }
+
                                     <td class="text-start">@title.UpdatedTitle</td>
-                                    <td>@(title.TitleYear ?? "-")</td>
-                                    <td><span class="badge bg-success">@title.Status</span></td>
-                                    <td>-</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            @(isModified ? "PASS" : title.Status)
+                                        </span>
+                                    </td>
                                 </tr>
                             }
+
+                            <!-- ⚠️ BLOCKED -->
                             @foreach (var title in Model.BlockedTitles)
                             {
                                 <tr class="table-warning text-center">
                                     <td>@title.RowNumber</td>
-                                    <td>@title.InvoiceNumber</td>
                                     <td>@title.PaperId</td>
-                                    <td>@title.CodeReference</td>
-                                    <td class="text-start">@title.Title</td>
+
+                                    @if (!isModified)
+                                    {
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td class="text-start">@title.Title</td>
+                                        <td>@(title.TitleYear ?? "-")</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    }
+
                                     <td class="text-start">@title.UpdatedTitle</td>
-                                    <td>@(title.TitleYear ?? "-")</td>
-                                    <td><span class="badge bg-warning text-dark">@title.Status</span></td>
-                                    <td>@title.BlockedId</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            @(isModified ? "FAIL" : title.Status)
+                                        </span>
+                                    </td>
                                 </tr>
                             }
+
+                            <!-- ❌ DUPLICATE -->
                             @foreach (var title in Model.DuplicateTitlesInExcel)
                             {
                                 <tr class="table-danger text-center">
                                     <td>@title.RowNumber</td>
-                                    <td>@title.InvoiceNumber</td>
                                     <td>@title.PaperId</td>
-                                    <td>@title.CodeReference</td>
-                                    <td class="text-start">@title.Title</td>
+
+                                    @if (!isModified)
+                                    {
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td class="text-start">@title.Title</td>
+                                        <td>@(title.TitleYear ?? "-")</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    }
+
                                     <td class="text-start">@title.UpdatedTitle</td>
-                                    <td>@(title.TitleYear ?? "-")</td>
-                                    <td><span class="badge bg-danger">@title.Status</span></td>
-                                    <td>@title.BlockedId</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    <td>
+                                        <span class="badge bg-danger">
+                                            @(isModified ? "FAIL" : title.Status)
+                                        </span>
+                                    </td>
                                 </tr>
                             }
+
                         </tbody>
                     </table>
                 </div>
-
-                @if (ViewBag.TotalPages > 1)
-                {
-                    <div class="d-flex justify-content-center mt-4">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination shadow-sm">
-                                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-                                    <a class="page-link" href="@Url.Action("UploadExcel", new { page = ViewBag.CurrentPage - 1, pageSize = ViewBag.PageSize })">Previous</a>
-                                </li>
-
-                                @for (int i = 1; i <= ViewBag.TotalPages; i++)
-                                {
-                                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                                        <a class="page-link" href="@Url.Action("UploadExcel", new { page = i, pageSize = ViewBag.PageSize })">@i</a>
-                                    </li>
-                                }
-
-                                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-                                    <a class="page-link" href="@Url.Action("UploadExcel", new { page = ViewBag.CurrentPage + 1, pageSize = ViewBag.PageSize })">Next</a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                }
             </div>
         </div>
-    }
-</div>
+}
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

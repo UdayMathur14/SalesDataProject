@@ -606,8 +606,6 @@ namespace SalesDataProject.Controllers
                     return RedirectToAction("Login", "Auth");
                 }
 
-                ViewBag.Username = username;
-
                 ValidationResultViewModel result = new ValidationResultViewModel();
 
                 if (file != null && file.Length > 0)
@@ -621,12 +619,22 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= rowCount; row++)
                         {
+                            
                             var paperId = worksheet.Cells[row, 1].Text?.Trim();
                             var updatedTitle = worksheet.Cells[row, 2].Text?.Trim();
+
+                            string concatenatedTitle = CleanTitle(updatedTitle);
 
                             if (string.IsNullOrWhiteSpace(paperId)) continue;
 
                             var existingRecord = allTitles.FirstOrDefault(t => t.PaperId == paperId);
+                            var checkRecord = allTitles.FirstOrDefault(t =>
+(
+    !string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+        ? t.UpdatedReferenceTitle
+        : t.ReferenceTitle
+) == concatenatedTitle
+);
 
                             if (existingRecord != null)
                             {
@@ -638,7 +646,7 @@ namespace SalesDataProject.Controllers
                                 {
                                     RowNumber = row,
                                     PaperId = paperId,
-                                    Title = updatedTitle,
+                                    UpdatedTitle = updatedTitle,
                                     UpdatedTitleBy = username
                                 });
                             }
@@ -649,7 +657,7 @@ namespace SalesDataProject.Controllers
                                 {
                                     RowNumber = row,
                                     PaperId = paperId,
-                                    Title = updatedTitle,
+                                    UpdatedTitle = updatedTitle,
                                 });
                             }
                         }
@@ -698,6 +706,7 @@ namespace SalesDataProject.Controllers
 
                 ViewData["CanViewTitles"] = HttpContext.Session.GetString("CanViewTitles");
                 ViewData["CanDeleteTitles"] = HttpContext.Session.GetString("CanDeleteTitles");
+                ViewBag.IsModifiedUpload = true; // 🔥 IMPORTANT
 
                 return View("Index", pagedResult);
             }
@@ -793,7 +802,7 @@ namespace SalesDataProject.Controllers
                     
 
                     // Apply style to header rows
-                    var headerRange = worksheet.Range("A1:E1");
+                    var headerRange = worksheet.Range("A1:B1");
                     headerRange.Style.Font.Bold = true;
                     headerRange.Style.Font.FontColor = XLColor.Red;
                     headerRange.Style.Fill.BackgroundColor = XLColor.LightYellow; // Light background for visibility
