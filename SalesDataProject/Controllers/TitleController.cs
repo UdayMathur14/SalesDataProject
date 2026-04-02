@@ -460,9 +460,15 @@ namespace SalesDataProject.Controllers
                             result.DuplicateTitlesInExcel.Add(titleValidation);
                             continue;
                         }
+                        if (string.IsNullOrWhiteSpace(paperId))
+                        { 
+                             titleValidation.Status = "Paper Id";
+                                result.DuplicateTitlesInExcel.Add(titleValidation);
+                                continue;
+                        }
                         if (string.IsNullOrWhiteSpace(invoiceNumber))
                         {
-                            titleValidation.Status = "Invoice No is Missing";
+                            titleValidation.Status = "Lot Number is Missing";
                             result.DuplicateTitlesInExcel.Add(titleValidation);
                             continue;
                         }
@@ -489,13 +495,20 @@ namespace SalesDataProject.Controllers
                         titlesInExcel.Add(concatenatedTitle);
 
                         // 3. Database Check
-                        var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
-                        if (isInvoiceExists)
-                        {
-                            titleValidation.Status = "Invoice with codeRef already exists";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
+                        //var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
+                        //if (isInvoiceExists)
+                        //{
+                        //    titleValidation.Status = "Invoice with codeRef already exists";
+                        //    result.DuplicateTitlesInExcel.Add(titleValidation);
+                        //    continue;
+                        //}
+                            var isPaperIdExists = allTitles.Any(t => t.PaperId == paperId);
+                            if (isPaperIdExists)
+                            {
+                                titleValidation.Status = "Paper Id Already Exist";
+                                result.DuplicateTitlesInExcel.Add(titleValidation);
+                                continue;
+                            }
 
                             //var existingTitle = allTitles.FirstOrDefault(t => t.ReferenceTitle == concatenatedTitle);
                             var existingTitle = allTitles.FirstOrDefault(t =>
@@ -612,6 +625,17 @@ namespace SalesDataProject.Controllers
                 {
                     var allTitles = await _context.Titles.ToListAsync();
 
+                    // 🔥 FAST LOOKUP (PaperId)
+                    var titleDict = allTitles.ToDictionary(t => t.PaperId);
+
+                    // 🔥 EXISTING CLEAN TITLES SET
+                    var titleSet = new HashSet<string>(
+                        allTitles.Select(t =>
+                            CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+                                ? t.UpdatedReferenceTitle
+                                : t.ReferenceTitle))
+                    );
+
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
                         var worksheet = package.Workbook.Worksheets[0];
@@ -619,51 +643,57 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= rowCount; row++)
                         {
-                            
                             var paperId = worksheet.Cells[row, 1].Text?.Trim();
                             var updatedTitle = worksheet.Cells[row, 2].Text?.Trim();
 
-                            string concatenatedTitle = CleanTitle(updatedTitle);
+                            if (string.IsNullOrWhiteSpace(paperId) || string.IsNullOrWhiteSpace(updatedTitle))
+                                continue;
 
-                            if (string.IsNullOrWhiteSpace(paperId)) continue;
+                            string cleanTitle = CleanTitle(updatedTitle);
 
-                            var existingRecord = allTitles.FirstOrDefault(t => t.PaperId == paperId);
-                            var checkRecord = allTitles.FirstOrDefault(t =>
-(
-    !string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
-        ? t.UpdatedReferenceTitle
-        : t.ReferenceTitle
-) == concatenatedTitle
-);
-
-                            if (existingRecord != null || checkRecord !=null)
+                            // 🔥 1. PaperId must exist
+                            if (!titleDict.TryGetValue(paperId, out var existingRecord))
                             {
-                                // ✅ UPDATE
-                                existingRecord.UpdatedTitle = updatedTitle;
-                                existingRecord.UpdatedReferenceTitle = CleanTitle(updatedTitle);
-
-                                result.CleanTitles.Add(new TitleValidationViewModel
-                                {
-                                    RowNumber = row,
-                                    PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
-                                    UpdatedTitleBy = username
-                                });
-                            }
-                            else
-                            {
-                                // ❌ NOT FOUND
                                 result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
                                 {
                                     RowNumber = row,
                                     PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
+                                    UpdatedTitle = updatedTitle
                                 });
+                                continue;
                             }
+
+                            // 🔥 2. Duplicate check (DB + runtime)
+                            if (titleSet.Contains(cleanTitle))
+                            {
+                                result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                                {
+                                    RowNumber = row,
+                                    PaperId = paperId,
+                                    UpdatedTitle = updatedTitle
+                                });
+                                continue;
+                            }
+
+                            // ✅ UPDATE
+                            existingRecord.UpdatedTitle = updatedTitle;
+                            existingRecord.UpdatedReferenceTitle = cleanTitle;
+                            existingRecord.UpdatedTitleBy = username;
+
+                            // 🔥 VERY IMPORTANT (runtime duplicate avoid)
+                            titleSet.Add(cleanTitle);
+
+                            result.CleanTitles.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                PaperId = paperId,
+                                UpdatedTitle = updatedTitle,
+                                UpdatedTitleBy = username
+                            });
                         }
                     }
 
-                    // ✅ Save changes
+                    // ✅ SAVE
                     if (result.CleanTitles.Any())
                     {
                         await _context.SaveChangesAsync();
@@ -676,7 +706,6 @@ namespace SalesDataProject.Controllers
                         TempData["MessageType"] = "Info";
                     }
 
-                    // Store in session
                     var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
                     HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
                 }
@@ -688,14 +717,14 @@ namespace SalesDataProject.Controllers
                     result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
                 }
 
-                // --- Pagination ---
+                // 🔥 PAGINATION
                 int skip = (page - 1) * pageSize;
 
                 var pagedResult = new ValidationResultViewModel
                 {
                     CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList(),
                     DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList(),
-                    BlockedTitles = new List<TitleValidationViewModel>() // not used now
+                    BlockedTitles = new List<TitleValidationViewModel>()
                 };
 
                 int maxRows = Math.Max(result.CleanTitles.Count, result.DuplicateTitlesInExcel.Count);
@@ -706,7 +735,7 @@ namespace SalesDataProject.Controllers
 
                 ViewData["CanViewTitles"] = HttpContext.Session.GetString("CanViewTitles");
                 ViewData["CanDeleteTitles"] = HttpContext.Session.GetString("CanDeleteTitles");
-                ViewBag.IsModifiedUpload = true; // 🔥 IMPORTANT
+                ViewBag.IsModifiedUpload = true;
 
                 return View("Index", pagedResult);
             }
@@ -728,7 +757,7 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("UploadTitles");
 
                     // Define the headers
-                    worksheet.Cell(1, 1).Value = "Invoice No (Required)";
+                    worksheet.Cell(1, 1).Value = "Lot Number(Required)";
                     worksheet.Cell(1, 2).Value = "Paper Id (Required)";
                     worksheet.Cell(1, 3).Value = "Code Ref (Required)";
                     worksheet.Cell(1, 4).Value = "Title (Required)";
@@ -1016,7 +1045,7 @@ namespace SalesDataProject.Controllers
                     // Add Header
                     worksheet.Cells[1, 1].Value = "Id";
                     worksheet.Cells[1, 2].Value = "Code Ref";
-                    worksheet.Cells[1, 3].Value = "Invoice No";
+                    worksheet.Cells[1, 3].Value = "Lot No";
                     worksheet.Cells[1, 4].Value = "Paper Id";
                     worksheet.Cells[1, 5].Value = "Title";
                     worksheet.Cells[1, 6].Value = "Created By";
