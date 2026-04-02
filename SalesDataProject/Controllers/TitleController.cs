@@ -636,7 +636,7 @@ namespace SalesDataProject.Controllers
 ) == concatenatedTitle
 );
 
-                            if (existingRecord != null)
+                            if (existingRecord != null || checkRecord !=null)
                             {
                                 // ✅ UPDATE
                                 existingRecord.UpdatedTitle = updatedTitle;
