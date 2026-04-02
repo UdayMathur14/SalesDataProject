@@ -612,6 +612,17 @@ namespace SalesDataProject.Controllers
                 {
                     var allTitles = await _context.Titles.ToListAsync();
 
+                    // 🔥 FAST LOOKUP (PaperId)
+                    var titleDict = allTitles.ToDictionary(t => t.PaperId);
+
+                    // 🔥 EXISTING CLEAN TITLES SET
+                    var titleSet = new HashSet<string>(
+                        allTitles.Select(t =>
+                            CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+                                ? t.UpdatedReferenceTitle
+                                : t.ReferenceTitle))
+                    );
+
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
                         var worksheet = package.Workbook.Worksheets[0];
@@ -619,51 +630,57 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= rowCount; row++)
                         {
-                            
                             var paperId = worksheet.Cells[row, 1].Text?.Trim();
                             var updatedTitle = worksheet.Cells[row, 2].Text?.Trim();
 
-                            string concatenatedTitle = CleanTitle(updatedTitle);
+                            if (string.IsNullOrWhiteSpace(paperId) || string.IsNullOrWhiteSpace(updatedTitle))
+                                continue;
 
-                            if (string.IsNullOrWhiteSpace(paperId)) continue;
+                            string cleanTitle = CleanTitle(updatedTitle);
 
-                            var existingRecord = allTitles.FirstOrDefault(t => t.PaperId == paperId);
-                            var checkRecord = allTitles.FirstOrDefault(t =>
-(
-    !string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
-        ? t.UpdatedReferenceTitle
-        : t.ReferenceTitle
-) == concatenatedTitle
-);
-
-                            if (existingRecord != null)
+                            // 🔥 1. PaperId must exist
+                            if (!titleDict.TryGetValue(paperId, out var existingRecord))
                             {
-                                // ✅ UPDATE
-                                existingRecord.UpdatedTitle = updatedTitle;
-                                existingRecord.UpdatedReferenceTitle = CleanTitle(updatedTitle);
-
-                                result.CleanTitles.Add(new TitleValidationViewModel
-                                {
-                                    RowNumber = row,
-                                    PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
-                                    UpdatedTitleBy = username
-                                });
-                            }
-                            else
-                            {
-                                // ❌ NOT FOUND
                                 result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
                                 {
                                     RowNumber = row,
                                     PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
+                                    UpdatedTitle = updatedTitle
                                 });
+                                continue;
                             }
+
+                            // 🔥 2. Duplicate check (DB + runtime)
+                            if (titleSet.Contains(cleanTitle))
+                            {
+                                result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                                {
+                                    RowNumber = row,
+                                    PaperId = paperId,
+                                    UpdatedTitle = updatedTitle
+                                });
+                                continue;
+                            }
+
+                            // ✅ UPDATE
+                            existingRecord.UpdatedTitle = updatedTitle;
+                            existingRecord.UpdatedReferenceTitle = cleanTitle;
+                            existingRecord.UpdatedTitleBy = username;
+
+                            // 🔥 VERY IMPORTANT (runtime duplicate avoid)
+                            titleSet.Add(cleanTitle);
+
+                            result.CleanTitles.Add(new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                PaperId = paperId,
+                                UpdatedTitle = updatedTitle,
+                                UpdatedTitleBy = username
+                            });
                         }
                     }
 
-                    // ✅ Save changes
+                    // ✅ SAVE
                     if (result.CleanTitles.Any())
                     {
                         await _context.SaveChangesAsync();
@@ -676,7 +693,6 @@ namespace SalesDataProject.Controllers
                         TempData["MessageType"] = "Info";
                     }
 
-                    // Store in session
                     var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
                     HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
                 }
@@ -688,14 +704,14 @@ namespace SalesDataProject.Controllers
                     result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
                 }
 
-                // --- Pagination ---
+                // 🔥 PAGINATION
                 int skip = (page - 1) * pageSize;
 
                 var pagedResult = new ValidationResultViewModel
                 {
                     CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList(),
                     DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList(),
-                    BlockedTitles = new List<TitleValidationViewModel>() // not used now
+                    BlockedTitles = new List<TitleValidationViewModel>()
                 };
 
                 int maxRows = Math.Max(result.CleanTitles.Count, result.DuplicateTitlesInExcel.Count);
@@ -706,7 +722,7 @@ namespace SalesDataProject.Controllers
 
                 ViewData["CanViewTitles"] = HttpContext.Session.GetString("CanViewTitles");
                 ViewData["CanDeleteTitles"] = HttpContext.Session.GetString("CanDeleteTitles");
-                ViewBag.IsModifiedUpload = true; // 🔥 IMPORTANT
+                ViewBag.IsModifiedUpload = true;
 
                 return View("Index", pagedResult);
             }
