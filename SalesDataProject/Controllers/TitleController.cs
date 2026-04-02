@@ -460,9 +460,15 @@ namespace SalesDataProject.Controllers
                             result.DuplicateTitlesInExcel.Add(titleValidation);
                             continue;
                         }
+                        if (string.IsNullOrWhiteSpace(paperId))
+                        { 
+                             titleValidation.Status = "Paper Id";
+                                result.DuplicateTitlesInExcel.Add(titleValidation);
+                                continue;
+                        }
                         if (string.IsNullOrWhiteSpace(invoiceNumber))
                         {
-                            titleValidation.Status = "Invoice No is Missing";
+                            titleValidation.Status = "Lot Number is Missing";
                             result.DuplicateTitlesInExcel.Add(titleValidation);
                             continue;
                         }
@@ -489,13 +495,20 @@ namespace SalesDataProject.Controllers
                         titlesInExcel.Add(concatenatedTitle);
 
                         // 3. Database Check
-                        var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
-                        if (isInvoiceExists)
-                        {
-                            titleValidation.Status = "Invoice with codeRef already exists";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
+                        //var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
+                        //if (isInvoiceExists)
+                        //{
+                        //    titleValidation.Status = "Invoice with codeRef already exists";
+                        //    result.DuplicateTitlesInExcel.Add(titleValidation);
+                        //    continue;
+                        //}
+                            var isPaperIdExists = allTitles.Any(t => t.PaperId == paperId);
+                            if (isPaperIdExists)
+                            {
+                                titleValidation.Status = "Paper Id Already Exist";
+                                result.DuplicateTitlesInExcel.Add(titleValidation);
+                                continue;
+                            }
 
                             //var existingTitle = allTitles.FirstOrDefault(t => t.ReferenceTitle == concatenatedTitle);
                             var existingTitle = allTitles.FirstOrDefault(t =>
@@ -744,7 +757,7 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("UploadTitles");
 
                     // Define the headers
-                    worksheet.Cell(1, 1).Value = "Invoice No (Required)";
+                    worksheet.Cell(1, 1).Value = "Lot Number(Required)";
                     worksheet.Cell(1, 2).Value = "Paper Id (Required)";
                     worksheet.Cell(1, 3).Value = "Code Ref (Required)";
                     worksheet.Cell(1, 4).Value = "Title (Required)";
@@ -1032,7 +1045,7 @@ namespace SalesDataProject.Controllers
                     // Add Header
                     worksheet.Cells[1, 1].Value = "Id";
                     worksheet.Cells[1, 2].Value = "Code Ref";
-                    worksheet.Cells[1, 3].Value = "Invoice No";
+                    worksheet.Cells[1, 3].Value = "Lot No";
                     worksheet.Cells[1, 4].Value = "Paper Id";
                     worksheet.Cells[1, 5].Value = "Title";
                     worksheet.Cells[1, 6].Value = "Created By";
