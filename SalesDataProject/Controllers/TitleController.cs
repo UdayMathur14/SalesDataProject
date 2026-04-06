@@ -640,6 +640,7 @@ namespace SalesDataProject.Controllers
                     );
 
                     var titlesInExcel = new HashSet<string>();
+                    var paperIdInExcel = new HashSet<string>();
 
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
@@ -709,6 +710,7 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
+
                             // 🔴 PAPER ID DUPLICATE (DB + Excel)
                             if (paperIdSet.Contains(paperId))
                             {
@@ -721,6 +723,12 @@ namespace SalesDataProject.Controllers
                             if (titlesInExcel.Contains(cleanTitle))
                             {
                                 tv.Status = "Duplicate title in Excel";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+                            if (paperIdInExcel.Contains(paperId))
+                            {
+                                tv.Status = "Duplicate PaperId in Excel";
                                 result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
@@ -1022,6 +1030,8 @@ namespace SalesDataProject.Controllers
                 return View("Index", result);
             }
         }
+
+
 
         [HttpGet]
         public IActionResult DownloadTitleTemplate()
