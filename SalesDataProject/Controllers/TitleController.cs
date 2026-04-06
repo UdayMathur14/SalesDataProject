@@ -400,211 +400,418 @@ namespace SalesDataProject.Controllers
         //}
 
         // Make sure to have this for Session serialization
+
+        //        public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false, int page = 1, int pageSize = 50)
+        //    {
+        //        try
+        //        {
+        //            var username = HttpContext.Session.GetString("Username");
+        //            if (string.IsNullOrEmpty(username))
+        //            {
+        //                TempData["Message"] = "Session Expired, Please Login again";
+        //                TempData["MessageType"] = "Error";
+        //                return RedirectToAction("Login", "Auth");
+        //            }
+
+        //            ViewBag.Username = username;
+        //            ValidationResultViewModel result;
+
+        //            // Agar user naya file upload kar raha hai (Page 1)
+        //            if (file != null && file.Length > 0)
+        //            {
+        //                result = new ValidationResultViewModel();
+        //                var titlesInExcel = new HashSet<string>();
+        //                var allTitles = await _context.Titles.ToListAsync();
+
+        //                using (var package = new ExcelPackage(file.OpenReadStream()))
+        //                {
+        //                    var worksheet = package.Workbook.Worksheets[0];
+        //                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+
+        //                    for (int row = 2; row <= rowCount; row++)
+        //                    {
+        //                        var invoiceNumber = worksheet.Cells[row, 1].Text?.Trim();
+        //                        var paperId = worksheet.Cells[row, 2].Text?.Trim();
+        //                        var codeReference = worksheet.Cells[row, 3].Text?.Trim();
+        //                        var cleantitle = worksheet.Cells[row, 4].Text?.Trim();
+        //                        var yearTtile = worksheet.Cells[row, 5].Text?.Trim();
+
+        //                        if (string.IsNullOrWhiteSpace(cleantitle)) break;
+
+        //                        string concatenatedTitle = CleanTitle(cleantitle);
+
+        //                        var titleValidation = new TitleValidationViewModel
+        //                        {
+        //                            RowNumber = row,
+        //                            Title = cleantitle,
+        //                            InvoiceNumber = invoiceNumber,
+        //                            PaperId = paperId,
+        //                            CodeReference = codeReference,
+        //                            TitleYear = yearTtile,
+        //                            CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
+        //                            CREATED_BY = username,
+        //                            ReferenceTitle = concatenatedTitle
+        //                        };
+
+        //                        // 1. Validation Logic
+        //                        if (string.IsNullOrWhiteSpace(yearTtile))
+        //                        {
+        //                            titleValidation.Status = "Year Missing";
+        //                            result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                            continue;
+        //                        }
+        //                        if (string.IsNullOrWhiteSpace(paperId))
+        //                        { 
+        //                             titleValidation.Status = "Paper Id";
+        //                                result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                                continue;
+        //                        }
+        //                        if (string.IsNullOrWhiteSpace(invoiceNumber))
+        //                        {
+        //                            titleValidation.Status = "Lot Number is Missing";
+        //                            result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                            continue;
+        //                        }
+        //                        if (string.IsNullOrWhiteSpace(codeReference))
+        //                        {
+        //                            titleValidation.Status = "Code Reference No is Missing";
+        //                            result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                            continue;
+        //                        }
+        //                        if (!IsValidFinancialYear(yearTtile))
+        //                        {
+        //                            titleValidation.Status = "Invalid Financial Year";
+        //                            result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                            continue;
+        //                        }
+
+        //                        // 2. Duplicate Check in Excel
+        //                        if (titlesInExcel.Contains(concatenatedTitle))
+        //                        {
+        //                            titleValidation.Status = "Duplicate in Excel";
+        //                            result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                            continue;
+        //                        }
+        //                        titlesInExcel.Add(concatenatedTitle);
+
+        //                        // 3. Database Check
+        //                        //var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
+        //                        //if (isInvoiceExists)
+        //                        //{
+        //                        //    titleValidation.Status = "Invoice with codeRef already exists";
+        //                        //    result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                        //    continue;
+        //                        //}
+        //                            var isPaperIdExists = allTitles.Any(t => t.PaperId == paperId);
+        //                            if (isPaperIdExists)
+        //                            {
+        //                                titleValidation.Status = "Paper Id Already Exist";
+        //                                result.DuplicateTitlesInExcel.Add(titleValidation);
+        //                                continue;
+        //                            }
+
+        //                            //var existingTitle = allTitles.FirstOrDefault(t => t.ReferenceTitle == concatenatedTitle);
+        //                            var existingTitle = allTitles.FirstOrDefault(t =>
+        //    (
+        //        !string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+        //            ? t.UpdatedReferenceTitle
+        //            : t.ReferenceTitle
+        //    ) == concatenatedTitle
+        //);
+        //                            var existPaperID = allTitles.FirstOrDefault(t => t.PaperId == paperId);
+
+        //                        if (existingTitle != null && existPaperID != null)
+        //                        {
+        //                            titleValidation.Status = "Blocked";
+        //                            titleValidation.BlockedId = existingTitle.Id;
+        //                            titleValidation.BlockedByInvoiceNo = existingTitle.InvoiceNumber;
+        //                            titleValidation.BlockedCodeRef = existingTitle.CodeReference;
+        //                            result.BlockedTitles.Add(titleValidation);
+        //                        }
+        //                        else
+        //                        {
+        //                            titleValidation.Status = "Clean";
+        //                            result.CleanTitles.Add(titleValidation);
+        //                        }
+        //                    }
+        //                }
+
+        //                // Save Clean Records if NOT in test mode
+        //                if (!testMode && result.CleanTitles.Any())
+        //                {
+        //                    var cleanRecordsToSave = result.CleanTitles.Select(tv => new TitleValidationViewModel // Replace 'Title' with your actual Entity name
+        //                    {
+        //                        Title = tv.Title, // Adjust property names to match your DB Entity
+        //                        InvoiceNumber = tv.InvoiceNumber,
+        //                        PaperId = tv.PaperId,
+        //                        CodeReference = tv.CodeReference,
+        //                        CREATED_ON = tv.CREATED_ON,
+        //                        CREATED_BY = username,
+        //                        ReferenceTitle = tv.ReferenceTitle,
+        //                        Status = "Clean",
+        //                        TitleYear = tv.TitleYear
+        //                    }).ToList();
+
+        //                    _context.Titles.AddRange(cleanRecordsToSave);
+        //                    await _context.SaveChangesAsync();
+        //                    TempData["Message"] = "Successfully Saved";
+        //                    TempData["MessageType"] = "Success";
+        //                }
+        //                else
+        //                {
+        //                    TempData["Message"] = testMode ? "Test mode: Validation successful." : "Upload Completed";
+        //                    TempData["MessageType"] = testMode ? "Info" : "Success";
+        //                }
+
+        //                // Store result in session for pagination
+        //                var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+        //                HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
+        //            }
+        //            else
+        //            {
+        //                // Pagination request: Retrieve from session
+        //                var sessionData = HttpContext.Session.GetString("UploadResult");
+        //                if (string.IsNullOrEmpty(sessionData)) return RedirectToAction("Index");
+        //                result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
+        //            }
+
+        //            // --- Pagination Logic ---
+        //            int skip = (page - 1) * pageSize;
+
+        //            // We create a "Paged" version of the result to send to the View
+        //            var pagedResult = new ValidationResultViewModel();
+
+        //            pagedResult.CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList();
+        //            pagedResult.BlockedTitles = result.BlockedTitles.Skip(skip).Take(pageSize).ToList();
+        //            pagedResult.DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList();
+
+        //            // Meta data for View
+        //            int maxRows = Math.Max(result.CleanTitles.Count, Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
+        //            ViewBag.TotalPages = (int)Math.Ceiling((double)maxRows / pageSize);
+        //            ViewBag.CurrentPage = page;
+        //            ViewBag.PageSize = pageSize;
+
+        //            var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
+        //            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
+        //            ViewData["CanViewTitles"] = canAccessTitle;
+        //            ViewData["CanDeleteTitles"] = canDeleteTitle;
+
+        //            return View("Index", pagedResult);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            TempData["Message"] = "An error occurred: " + ex.Message;
+        //            TempData["MessageType"] = "Error";
+        //            return View("Index", new ValidationResultViewModel());
+        //        }
+        // }
         [HttpPost]
         public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false, int page = 1, int pageSize = 50)
-    {
-        try
         {
-            var username = HttpContext.Session.GetString("Username");
-            if (string.IsNullOrEmpty(username))
+            try
             {
-                TempData["Message"] = "Session Expired, Please Login again";
-                TempData["MessageType"] = "Error";
-                return RedirectToAction("Login", "Auth");
-            }
-
-            ViewBag.Username = username;
-            ValidationResultViewModel result;
-
-            // Agar user naya file upload kar raha hai (Page 1)
-            if (file != null && file.Length > 0)
-            {
-                result = new ValidationResultViewModel();
-                var titlesInExcel = new HashSet<string>();
-                var allTitles = await _context.Titles.ToListAsync();
-
-                using (var package = new ExcelPackage(file.OpenReadStream()))
+                var username = HttpContext.Session.GetString("Username");
+                if (string.IsNullOrEmpty(username))
                 {
-                    var worksheet = package.Workbook.Worksheets[0];
-                    var rowCount = worksheet.Dimension?.Rows ?? 0;
+                    TempData["Message"] = "Session Expired, Please Login again";
+                    TempData["MessageType"] = "Error";
+                    return RedirectToAction("Login", "Auth");
+                }
 
-                    for (int row = 2; row <= rowCount; row++)
+                ViewBag.Username = username;
+                ValidationResultViewModel result;
+
+                if (file != null && file.Length > 0)
+                {
+                    result = new ValidationResultViewModel();
+
+                    var allTitles = await _context.Titles.ToListAsync();
+
+                    // 🔥 FAST LOOKUPS
+                    var titleSet = new HashSet<string>(
+                        allTitles.Select(t =>
+                            CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+                                ? t.UpdatedReferenceTitle
+                                : t.ReferenceTitle))
+                    );
+
+                    var paperIdSet = new HashSet<string>(
+                        allTitles.Select(t => t.PaperId)
+                    );
+
+                    var titlesInExcel = new HashSet<string>();
+
+                    using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
-                        var invoiceNumber = worksheet.Cells[row, 1].Text?.Trim();
-                        var paperId = worksheet.Cells[row, 2].Text?.Trim();
-                        var codeReference = worksheet.Cells[row, 3].Text?.Trim();
-                        var cleantitle = worksheet.Cells[row, 4].Text?.Trim();
-                        var yearTtile = worksheet.Cells[row, 5].Text?.Trim();
+                        var worksheet = package.Workbook.Worksheets[0];
+                        var rowCount = worksheet.Dimension?.Rows ?? 0;
 
-                        if (string.IsNullOrWhiteSpace(cleantitle)) break;
-
-                        string concatenatedTitle = CleanTitle(cleantitle);
-
-                        var titleValidation = new TitleValidationViewModel
+                        for (int row = 2; row <= rowCount; row++)
                         {
-                            RowNumber = row,
-                            Title = cleantitle,
-                            InvoiceNumber = invoiceNumber,
-                            PaperId = paperId,
-                            CodeReference = codeReference,
-                            TitleYear = yearTtile,
-                            CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
-                            CREATED_BY = username,
-                            ReferenceTitle = concatenatedTitle
-                        };
+                            var invoiceNumber = worksheet.Cells[row, 1].Text?.Trim();
+                            var paperId = worksheet.Cells[row, 2].Text?.Trim();
+                            var codeReference = worksheet.Cells[row, 3].Text?.Trim();
+                            var title = worksheet.Cells[row, 4].Text?.Trim();
+                            var yearTitle = worksheet.Cells[row, 5].Text?.Trim();
 
-                        // 1. Validation Logic
-                        if (string.IsNullOrWhiteSpace(yearTtile))
-                        {
-                            titleValidation.Status = "Year Missing";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
-                        if (string.IsNullOrWhiteSpace(paperId))
-                        { 
-                             titleValidation.Status = "Paper Id";
-                                result.DuplicateTitlesInExcel.Add(titleValidation);
+                            if (string.IsNullOrWhiteSpace(title))
                                 continue;
-                        }
-                        if (string.IsNullOrWhiteSpace(invoiceNumber))
-                        {
-                            titleValidation.Status = "Lot Number is Missing";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
-                        if (string.IsNullOrWhiteSpace(codeReference))
-                        {
-                            titleValidation.Status = "Code Reference No is Missing";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
-                        if (!IsValidFinancialYear(yearTtile))
-                        {
-                            titleValidation.Status = "Invalid Financial Year";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
 
-                        // 2. Duplicate Check in Excel
-                        if (titlesInExcel.Contains(concatenatedTitle))
-                        {
-                            titleValidation.Status = "Duplicate in Excel";
-                            result.DuplicateTitlesInExcel.Add(titleValidation);
-                            continue;
-                        }
-                        titlesInExcel.Add(concatenatedTitle);
+                            string cleanTitle = CleanTitle(title);
 
-                        // 3. Database Check
-                        //var isInvoiceExists = allTitles.Any(t => t.InvoiceNumber == invoiceNumber && t.CodeReference == codeReference && t.TitleYear == yearTtile);
-                        //if (isInvoiceExists)
-                        //{
-                        //    titleValidation.Status = "Invoice with codeRef already exists";
-                        //    result.DuplicateTitlesInExcel.Add(titleValidation);
-                        //    continue;
-                        //}
-                            var isPaperIdExists = allTitles.Any(t => t.PaperId == paperId);
-                            if (isPaperIdExists)
+                            var tv = new TitleValidationViewModel
                             {
-                                titleValidation.Status = "Paper Id Already Exist";
-                                result.DuplicateTitlesInExcel.Add(titleValidation);
+                                RowNumber = row,
+                                Title = title,
+                                InvoiceNumber = invoiceNumber,
+                                PaperId = paperId,
+                                CodeReference = codeReference,
+                                TitleYear = yearTitle,
+                                CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
+                                CREATED_BY = username,
+                                ReferenceTitle = cleanTitle
+                            };
+
+                            // 🔴 VALIDATIONS
+
+                            if (string.IsNullOrWhiteSpace(yearTitle))
+                            {
+                                tv.Status = "Year Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
 
-                            //var existingTitle = allTitles.FirstOrDefault(t => t.ReferenceTitle == concatenatedTitle);
-                            var existingTitle = allTitles.FirstOrDefault(t =>
-    (
-        !string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
-            ? t.UpdatedReferenceTitle
-            : t.ReferenceTitle
-    ) == concatenatedTitle
-);
-                            var existPaperID = allTitles.FirstOrDefault(t => t.PaperId == paperId);
+                            if (!IsValidFinancialYear(yearTitle))
+                            {
+                                tv.Status = "Invalid Financial Year";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
 
-                        if (existingTitle != null && existPaperID != null)
-                        {
-                            titleValidation.Status = "Blocked";
-                            titleValidation.BlockedId = existingTitle.Id;
-                            titleValidation.BlockedByInvoiceNo = existingTitle.InvoiceNumber;
-                            titleValidation.BlockedCodeRef = existingTitle.CodeReference;
-                            result.BlockedTitles.Add(titleValidation);
-                        }
-                        else
-                        {
-                            titleValidation.Status = "Clean";
-                            result.CleanTitles.Add(titleValidation);
+                            if (string.IsNullOrWhiteSpace(paperId))
+                            {
+                                tv.Status = "PaperId Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(invoiceNumber))
+                            {
+                                tv.Status = "Invoice Number Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(codeReference))
+                            {
+                                tv.Status = "Code Reference Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            // 🔴 PAPER ID DUPLICATE (DB + Excel)
+                            if (paperIdSet.Contains(paperId))
+                            {
+                                tv.Status = "PaperId already exists in DB";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            // 🔴 TITLE DUPLICATE IN EXCEL
+                            if (titlesInExcel.Contains(cleanTitle))
+                            {
+                                tv.Status = "Duplicate title in Excel";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            // 🔴 TITLE DUPLICATE IN DB
+                            if (titleSet.Contains(cleanTitle))
+                            {
+                                tv.Status = "Duplicate title in DB";
+                                result.BlockedTitles.Add(tv);
+                                continue;
+                            }
+
+                            // ✅ CLEAN
+                            tv.Status = "Clean";
+                            result.CleanTitles.Add(tv);
+
+                            // 🔥 UPDATE RUNTIME SETS
+                            titlesInExcel.Add(cleanTitle);
+                            titleSet.Add(cleanTitle);
+                            paperIdSet.Add(paperId);
                         }
                     }
-                }
 
-                // Save Clean Records if NOT in test mode
-                if (!testMode && result.CleanTitles.Any())
-                {
-                    var cleanRecordsToSave = result.CleanTitles.Select(tv => new TitleValidationViewModel // Replace 'Title' with your actual Entity name
+                    // ✅ SAVE
+                    if (!testMode && result.CleanTitles.Any())
                     {
-                        Title = tv.Title, // Adjust property names to match your DB Entity
-                        InvoiceNumber = tv.InvoiceNumber,
-                        PaperId = tv.PaperId,
-                        CodeReference = tv.CodeReference,
-                        CREATED_ON = tv.CREATED_ON,
-                        CREATED_BY = username,
-                        ReferenceTitle = tv.ReferenceTitle,
-                        Status = "Clean",
-                        TitleYear = tv.TitleYear
-                    }).ToList();
+                        var entities = result.CleanTitles.Select(tv => new TitleValidationViewModel
+                        {
+                            Title = tv.Title,
+                            InvoiceNumber = tv.InvoiceNumber,
+                            PaperId = tv.PaperId,
+                            CodeReference = tv.CodeReference,
+                            CREATED_ON = DateOnly.FromDateTime(DateTime.Now),
+                            CREATED_BY = username,
+                            ReferenceTitle = tv.ReferenceTitle,
+                            Status = "Clean",
+                            TitleYear = tv.TitleYear
+                        }).ToList();
 
-                    _context.Titles.AddRange(cleanRecordsToSave);
-                    await _context.SaveChangesAsync();
-                    TempData["Message"] = "Successfully Saved";
-                    TempData["MessageType"] = "Success";
+                        _context.Titles.AddRange(entities);
+                        await _context.SaveChangesAsync();
+
+                        TempData["Message"] = $"Total: {result.CleanTitles.Count + result.DuplicateTitlesInExcel.Count + result.BlockedTitles.Count}, Saved: {result.CleanTitles.Count}, Failed: {result.DuplicateTitlesInExcel.Count + result.BlockedTitles.Count}";
+                        TempData["MessageType"] = "Success";
+                    }
+                    else
+                    {
+                        TempData["Message"] = testMode ? "Test Mode: Validation Completed" : "Upload Completed";
+                        TempData["MessageType"] = "Info";
+                    }
+
+                    var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+                    HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
                 }
                 else
                 {
-                    TempData["Message"] = testMode ? "Test mode: Validation successful." : "Upload Completed";
-                    TempData["MessageType"] = testMode ? "Info" : "Success";
+                    var sessionData = HttpContext.Session.GetString("UploadResult");
+                    if (string.IsNullOrEmpty(sessionData)) return RedirectToAction("Index");
+
+                    result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
                 }
 
-                // Store result in session for pagination
-                var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
-                HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
+                // PAGINATION
+                int skip = (page - 1) * pageSize;
+
+                var pagedResult = new ValidationResultViewModel
+                {
+                    CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList(),
+                    BlockedTitles = result.BlockedTitles.Skip(skip).Take(pageSize).ToList(),
+                    DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList()
+                };
+
+                int maxRows = Math.Max(result.CleanTitles.Count,
+                    Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
+
+                ViewBag.TotalPages = (int)Math.Ceiling((double)maxRows / pageSize);
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+
+                ViewData["CanViewTitles"] = HttpContext.Session.GetString("CanViewTitles");
+                ViewData["CanDeleteTitles"] = HttpContext.Session.GetString("CanDeleteTitles");
+
+                return View("Index", pagedResult);
             }
-            else
+            catch (Exception ex)
             {
-                // Pagination request: Retrieve from session
-                var sessionData = HttpContext.Session.GetString("UploadResult");
-                if (string.IsNullOrEmpty(sessionData)) return RedirectToAction("Index");
-                result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
+                TempData["Message"] = "Error: " + ex.Message;
+                TempData["MessageType"] = "Error";
+                return View("Index", new ValidationResultViewModel());
             }
-
-            // --- Pagination Logic ---
-            int skip = (page - 1) * pageSize;
-
-            // We create a "Paged" version of the result to send to the View
-            var pagedResult = new ValidationResultViewModel();
-
-            pagedResult.CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList();
-            pagedResult.BlockedTitles = result.BlockedTitles.Skip(skip).Take(pageSize).ToList();
-            pagedResult.DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList();
-
-            // Meta data for View
-            int maxRows = Math.Max(result.CleanTitles.Count, Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
-            ViewBag.TotalPages = (int)Math.Ceiling((double)maxRows / pageSize);
-            ViewBag.CurrentPage = page;
-            ViewBag.PageSize = pageSize;
-
-            var canAccessTitle = HttpContext.Session.GetString("CanViewTitles");
-            var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
-            ViewData["CanViewTitles"] = canAccessTitle;
-            ViewData["CanDeleteTitles"] = canDeleteTitle;
-
-            return View("Index", pagedResult);
         }
-        catch (Exception ex)
-        {
-            TempData["Message"] = "An error occurred: " + ex.Message;
-            TempData["MessageType"] = "Error";
-            return View("Index", new ValidationResultViewModel());
-        }
-    }
 
         [HttpPost]
         public async Task<IActionResult> ModifiedTitleExcel(IFormFile file, int page = 1, int pageSize = 50)
