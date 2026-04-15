@@ -65,80 +65,152 @@
 
 
     <!-- Validation Results Section -->
-    @if (Model != null && (Model.BlockedTitles != null || Model.CleanTitles != null || Model.DuplicateTitlesInExcel != null))
-    {
+@if (Model != null && (Model.BlockedTitles?.Any() == true || Model.CleanTitles?.Any() == true || Model.DuplicateTitlesInExcel?.Any() == true))
+{
         <div class="card shadow rounded mb-4">
             <div class="card-body">
-                <h5 class="card-title text-dark fw-bold"><i class="bi bi-check-circle"></i> Validation Result</h5>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title text-dark fw-bold m-0">
+                        <i class="bi bi-check-circle"></i> Validation Result
+                    </h5>
+                </div>
+
                 <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                     <table class="table table-hover align-middle table-bordered">
+
+                        <!-- HEADER -->
                         <thead class="table-dark text-center" style="position: sticky; top: 0; z-index: 1;">
                             <tr>
-                                <th>Row No</th>
-                                <th>Invoice No</th>
-                                <th>CodeRef</th>
-                                <th>Title</th>  <!-- Title aligned to the left -->
-                                <th>FinancialYear</th>
-                                <th>Status</th>
-                                <th>BlockedByRow</th>
-                                <th>BlockInvoiceNo</th>
-                                <th>BlockCodeRef</th>
-                                
+                                <th style="width: 90px;">Row No</th>
+                                <th style="min-width: 150px;">Paper Id</th>
+
+                                @if (!isModified)
+                                {
+                                    <th style="width: 140px;">Lot Number</th>
+                                    <th style="width: 140px;">CodeRef</th>
+                                    <th style="min-width: 350px; width: 25%;">Title</th>
+                                    <th style="width: 130px;">FinancialYear</th>
+                                    <th style="width: 130px;">BlockedByRow</th>
+                                    <th style="width: 150px;">BlockInvoiceNo</th>
+                                    <th style="width: 140px;">BlockCodeRef</th>
+                                }
+
+                                <th style="min-width: 400px; width: 30%;">Modified Title</th>
+                                <th style="width: 120px;">Status</th>
                             </tr>
                         </thead>
+
                         <tbody>
+
+                            <!-- CLEAN -->
                             @foreach (var title in Model.CleanTitles)
                             {
                                 <tr class="table-success text-center">
                                     <td>@title.RowNumber</td>
-                                    <td>@title.InvoiceNumber</td>
-                                    <td>@title.CodeReference</td>
-                                    <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
-                                    <td style="white-space: nowrap; width: 120px;">@(title.TitleYear ?? "-")</td>
-                                    <td>@title.Status</td>
-                                    <td>-</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    
+
+                                    <td style="min-width: 150px; white-space: normal; word-break: break-word;">
+                                        @title.PaperId
+                                    </td>
+
+                                    @if (!isModified)
+                                    {
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td class="text-start" style="min-width: 350px; white-space: normal; word-break: break-word;">
+                                            @title.Title
+                                        </td>
+                                        <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
+                                        <td>-</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    }
+
+                                    <td class="text-start" style="min-width: 400px; white-space: normal; word-break: break-word;">
+                                        @title.UpdatedTitle
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            @(isModified ? "PASS" : title.Status)
+                                        </span>
+                                    </td>
                                 </tr>
                             }
+
+                            <!-- BLOCKED -->
                             @foreach (var title in Model.BlockedTitles)
                             {
                                 <tr class="table-warning text-center">
                                     <td>@title.RowNumber</td>
-                                    <td>@title.InvoiceNumber</td>
-                                    <td>@title.CodeReference</td>
-                                    <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
-                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
-                                    <td>@title.Status</td>
-                                    <td>@title.BlockedId</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    
+
+                                    <td style="min-width: 150px; white-space: normal; word-break: break-word;">
+                                        @title.PaperId
+                                    </td>
+
+                                    @if (!isModified)
+                                    {
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td class="text-start" style="min-width: 350px; white-space: normal; word-break: break-word;">
+                                            @title.Title
+                                        </td>
+                                        <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    }
+
+                                    <td class="text-start" style="min-width: 400px; white-space: normal; word-break: break-word;">
+                                        @title.UpdatedTitle
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            @(isModified ? "FAIL" : title.Status)
+                                        </span>
+                                    </td>
                                 </tr>
                             }
+
+                            <!-- DUPLICATE -->
                             @foreach (var title in Model.DuplicateTitlesInExcel)
                             {
                                 <tr class="table-danger text-center">
                                     <td>@title.RowNumber</td>
-                                    <td>@title.InvoiceNumber</td>
-                                    <td>@title.CodeReference</td>
-                                    <td class="text-start">@title.Title</td>  <!-- Align Title to the left -->
-                                    <td>@(title.TitleYear ?? "-")</td>  <!-- Financial Year displayed correctly -->
-                                    <td>@title.Status</td>
-                                    <td>@title.BlockedId</td>
-                                    <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                    <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    
+
+                                    <td style="min-width: 150px; white-space: normal; word-break: break-word;">
+                                        @title.PaperId
+                                    </td>
+
+                                    @if (!isModified)
+                                    {
+                                        <td>@title.InvoiceNumber</td>
+                                        <td>@title.CodeReference</td>
+                                        <td class="text-start" style="min-width: 350px; white-space: normal; word-break: break-word;">
+                                            @title.Title
+                                        </td>
+                                        <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
+                                        <td>@title.BlockedId</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                    }
+
+                                    <td class="text-start" style="min-width: 400px; white-space: normal; word-break: break-word;">
+                                        @title.UpdatedTitle
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">
+                                            @(isModified ? "FAIL" : title.Status)
+                                        </span>
+                                    </td>
                                 </tr>
                             }
+
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    }
-    </div>
+}
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
