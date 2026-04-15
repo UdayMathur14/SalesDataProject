@@ -353,16 +353,19 @@ namespace SalesDataProject.Controllers
                 {
                     var allTitles = await _context.Titles.ToListAsync();
 
-                    // 🔥 FAST LOOKUP (PaperId)
+                    // DB lookup by PaperId
                     var titleDict = allTitles.ToDictionary(t => t.PaperId);
 
-                    // 🔥 EXISTING CLEAN TITLES SET
+                    // Existing title set from DB
                     var titleSet = new HashSet<string>(
                         allTitles.Select(t =>
                             CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
                                 ? t.UpdatedReferenceTitle
                                 : t.ReferenceTitle))
                     );
+
+                    // Track duplicate PaperId inside uploaded Excel
+                    var uploadedPaperIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
@@ -379,36 +382,51 @@ namespace SalesDataProject.Controllers
 
                             string cleanTitle = CleanTitle(updatedTitle);
 
-                            // 🔥 1. PaperId must exist
+                            // 1. Duplicate PaperId in uploaded Excel
+                            if (!uploadedPaperIds.Add(paperId))
+                            {
+                                result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                                {
+                                    RowNumber = row,
+                                    PaperId = paperId,
+                                    UpdatedTitle = updatedTitle,
+                                    Status = "Duplicate PaperId in Excel"
+                                });
+                                continue;
+                            }
+
+                            // 2. PaperId must exist in DB
                             if (!titleDict.TryGetValue(paperId, out var existingRecord))
                             {
                                 result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
                                 {
                                     RowNumber = row,
                                     PaperId = paperId,
-                                    UpdatedTitle = updatedTitle
+                                    UpdatedTitle = updatedTitle,
+                                    Status = "PaperId not found"
                                 });
                                 continue;
                             }
 
-                            // 🔥 2. Duplicate check (DB + runtime)
+                            // 3. Duplicate title check (DB + runtime)
                             if (titleSet.Contains(cleanTitle))
                             {
                                 result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
                                 {
                                     RowNumber = row,
                                     PaperId = paperId,
-                                    UpdatedTitle = updatedTitle
+                                    UpdatedTitle = updatedTitle,
+                                    Status = "Duplicate Title"
                                 });
                                 continue;
                             }
 
-                            // ✅ UPDATE
+                            // Update
                             existingRecord.UpdatedTitle = updatedTitle;
                             existingRecord.UpdatedReferenceTitle = cleanTitle;
                             existingRecord.UpdatedTitleBy = username;
 
-                            // 🔥 VERY IMPORTANT (runtime duplicate avoid)
+                            // Prevent duplicate title in same upload
                             titleSet.Add(cleanTitle);
 
                             result.CleanTitles.Add(new TitleValidationViewModel
@@ -416,12 +434,12 @@ namespace SalesDataProject.Controllers
                                 RowNumber = row,
                                 PaperId = paperId,
                                 UpdatedTitle = updatedTitle,
-                                UpdatedTitleBy = username
+                                UpdatedTitleBy = username,
+                                Status = "PASS"
                             });
                         }
                     }
 
-                    // ✅ SAVE
                     if (result.CleanTitles.Any())
                     {
                         await _context.SaveChangesAsync();
@@ -434,18 +452,22 @@ namespace SalesDataProject.Controllers
                         TempData["MessageType"] = "Info";
                     }
 
-                    var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+                    var settings = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    };
+
                     HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
                 }
                 else
                 {
                     var sessionData = HttpContext.Session.GetString("UploadResult");
-                    if (string.IsNullOrEmpty(sessionData)) return RedirectToAction("Index");
+                    if (string.IsNullOrEmpty(sessionData))
+                        return RedirectToAction("Index");
 
                     result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
                 }
 
-                // 🔥 PAGINATION
                 int skip = (page - 1) * pageSize;
 
                 var pagedResult = new ValidationResultViewModel
