@@ -760,6 +760,7 @@ namespace SalesDataProject.Controllers
                     blockedSheet.Cell(1, 3).Value = "Email";
                     blockedSheet.Cell(1, 4).Value = "Contact Number";
                     blockedSheet.Cell(1, 5).Value = "Blocked By";
+                    blockedSheet.Cell(1, 6).Value = "Blocked Reason";
 
                     // Fill data for blocked customers
                     for (int i = 0; i < blockedCustomers.Count; i++)
@@ -769,6 +770,7 @@ namespace SalesDataProject.Controllers
                         blockedSheet.Cell(i + 2, 3).Value = blockedCustomers[i].CUSTOMER_EMAIL;
                         blockedSheet.Cell(i + 2, 4).Value = blockedCustomers[i].CUSTOMER_CONTACT_NUMBER1;
                         blockedSheet.Cell(i + 2, 5).Value = blockedCustomers[i].BLOCKED_BY;
+                        blockedSheet.Cell(i + 2, 6).Value = blockedCustomers[i].BLOCK_REASON;
                     }
 
                     // Add headers for clean customers
@@ -806,7 +808,7 @@ namespace SalesDataProject.Controllers
                     cleanSheet.Columns().AdjustToContents();
 
                     // Optionally, apply styles to the header row for better visibility
-                    var headerRow = blockedSheet.Range("A1:L1");
+                    var headerRow = blockedSheet.Range("A1:F1");
                     headerRow.Style.Font.Bold = true;
                     headerRow.Style.Font.FontColor = XLColor.White;
                     headerRow.Style.Fill.BackgroundColor = XLColor.BlueGray;
