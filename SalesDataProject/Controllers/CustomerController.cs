@@ -214,18 +214,18 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
 
-                                if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "MSME", "UNIVERSITY", "University", "PCT", "LAW FIRM", "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
-                                {
-                                    invalidRecords.Add(new InvalidCustomerRecord
-                                    {
-                                        RowNumber = row - 1,
-                                        CompanyName = companyName,
-                                        CustomerEmail = customerEmail,
-                                        CustomerNumber = customerNumber,
-                                        ErrorMessage = "Invalid category."
-                                    });
-                                    continue;
-                                }
+                                //if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "MSME", "UNIVERSITY", "University", "PCT", "LAW FIRM", "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
+                                //{
+                                //    invalidRecords.Add(new InvalidCustomerRecord
+                                //    {
+                                //        RowNumber = row - 1,
+                                //        CompanyName = companyName,
+                                //        CustomerEmail = customerEmail,
+                                //        CustomerNumber = customerNumber,
+                                //        ErrorMessage = "Invalid category."
+                                //    });
+                                //    continue;
+                                //}
 
                                 // Add to the list of customers
                                 customersFromExcel.Add(new Customer
