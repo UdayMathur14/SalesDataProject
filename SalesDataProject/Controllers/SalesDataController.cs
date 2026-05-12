@@ -143,6 +143,30 @@ namespace SalesDataProject.Controllers
                     var category = worksheet.Cell(row, 11).GetString().Trim().ToUpper();
                     var emailDomain = customerEmail.Contains('@') ? customerEmail.Split('@').Last().Trim().ToLower() : "";
 
+                    var masterMatch = await _context.Customers.FirstOrDefaultAsync(x =>
+    (!string.IsNullOrWhiteSpace(customerEmail) &&
+     x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
+    ||
+    (!string.IsNullOrWhiteSpace(emailDomain) &&
+     x.CUSTOMER_EMAIL.ToLower().EndsWith("@" + emailDomain.ToLower()))
+    ||
+    (!string.IsNullOrWhiteSpace(companyName) &&
+     x.COMPANY_NAME.ToUpper() == companyName.ToUpper())
+);
+                    if (masterMatch != null)
+                    {
+                        invalidRecords.Add(new InvalidCustomerRecord
+                        {
+                            RowNumber = row,
+                            CompanyName = companyName,
+                            CustomerEmail = customerEmail,
+                            CustomerNumber = customerNumber1,
+                            ErrorMessage = "Customer already exists in master table."
+                        });
+
+                        continue;
+                    }
+
                     if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(category)) continue;
 
                     bool isCommonDomain = commonDomains.Contains(emailDomain);
@@ -637,6 +661,31 @@ namespace SalesDataProject.Controllers
                     var state = worksheet.Cell(row, 9).GetString().Trim();
                     var city = worksheet.Cell(row, 10).GetString().Trim();
                     var category = worksheet.Cell(row, 11).GetString().Trim().ToUpper();
+
+
+                    var masterMatch = await _context.Customers.FirstOrDefaultAsync(x =>
+    (!string.IsNullOrWhiteSpace(customerEmail) &&
+     x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
+    ||
+    (!string.IsNullOrWhiteSpace(emailDomain) &&
+     x.CUSTOMER_EMAIL.ToLower().EndsWith("@" + emailDomain.ToLower()))
+    ||
+    (!string.IsNullOrWhiteSpace(companyName) &&
+     x.COMPANY_NAME.ToUpper() == companyName.ToUpper())
+);
+                    if (masterMatch != null)
+                    {
+                        invalidRecords.Add(new InvalidCustomerRecord
+                        {
+                            RowNumber = row,
+                            CompanyName = companyName,
+                            CustomerEmail = customerEmail,
+                            CustomerNumber = customerNumber1,
+                            ErrorMessage = "Customer already exists in master table."
+                        });
+
+                        continue;
+                    }
 
                     if (!validCategories.Contains(category))
                     {
