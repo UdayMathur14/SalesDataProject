@@ -119,7 +119,7 @@ namespace SalesDataProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false, int page = 1, int pageSize = 50)
+        public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false, int page =1, int pageSize =50)
         {
             try
             {
@@ -134,7 +134,9 @@ namespace SalesDataProject.Controllers
                 ViewBag.Username = username;
                 ValidationResultViewModel result;
 
-                if (file != null && file.Length > 0)
+                bool isUploadRequest = file != null && file.Length >0;
+
+                if (isUploadRequest)
                 {
                     result = new ValidationResultViewModel();
 
@@ -158,15 +160,15 @@ namespace SalesDataProject.Controllers
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
                         var worksheet = package.Workbook.Worksheets[0];
-                        var rowCount = worksheet.Dimension?.Rows ?? 0;
+                        var rowCount = worksheet.Dimension?.Rows ??0;
 
-                        for (int row = 2; row <= rowCount; row++)
+                        for (int row =2; row <= rowCount; row++)
                         {
-                            var invoiceNumber = worksheet.Cells[row, 1].Text?.Trim();
-                            var paperId = worksheet.Cells[row, 2].Text?.Trim();
-                            var codeReference = worksheet.Cells[row, 3].Text?.Trim();
-                            var title = worksheet.Cells[row, 4].Text?.Trim();
-                            var yearTitle = worksheet.Cells[row, 5].Text?.Trim();
+                            var invoiceNumber = worksheet.Cells[row,1].Text?.Trim();
+                            var paperId = worksheet.Cells[row,2].Text?.Trim();
+                            var codeReference = worksheet.Cells[row,3].Text?.Trim();
+                            var title = worksheet.Cells[row,4].Text?.Trim();
+                            var yearTitle = worksheet.Cells[row,5].Text?.Trim();
 
                             if (string.IsNullOrWhiteSpace(title))
                                 continue;
@@ -305,21 +307,43 @@ namespace SalesDataProject.Controllers
                 }
 
                 // PAGINATION
-                int skip = (page - 1) * pageSize;
+                int skip = (page -1) * pageSize;
 
-                var pagedResult = new ValidationResultViewModel
+                ValidationResultViewModel pagedResult;
+
+                if (isUploadRequest)
                 {
-                    CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList(),
-                    BlockedTitles = result.BlockedTitles.Skip(skip).Take(pageSize).ToList(),
-                    DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList()
-                };
+                    // For fresh upload (test or real), show all results on the Index page
+                    pagedResult = new ValidationResultViewModel
+                    {
+                        CleanTitles = result.CleanTitles.ToList(),
+                        BlockedTitles = result.BlockedTitles.ToList(),
+                        DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.ToList()
+                    };
 
-                int maxRows = Math.Max(result.CleanTitles.Count,
-                    Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
+                    int maxRows = Math.Max(result.CleanTitles.Count,
+                        Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
 
-                ViewBag.TotalPages = (int)Math.Ceiling((double)maxRows / pageSize);
-                ViewBag.CurrentPage = page;
-                ViewBag.PageSize = pageSize;
+                    ViewBag.TotalPages = maxRows >0 ?1 :0;
+                    ViewBag.CurrentPage =1;
+                    ViewBag.PageSize = Math.Max(1, maxRows);
+                }
+                else
+                {
+                    pagedResult = new ValidationResultViewModel
+                    {
+                        CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList(),
+                        BlockedTitles = result.BlockedTitles.Skip(skip).Take(pageSize).ToList(),
+                        DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList()
+                    };
+
+                    int maxRows = Math.Max(result.CleanTitles.Count,
+                        Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
+
+                    ViewBag.TotalPages = (int)Math.Ceiling((double)maxRows / pageSize);
+                    ViewBag.CurrentPage = page;
+                    ViewBag.PageSize = pageSize;
+                }
 
                 ViewData["CanViewTitles"] = HttpContext.Session.GetString("CanViewTitles");
                 ViewData["CanDeleteTitles"] = HttpContext.Session.GetString("CanDeleteTitles");

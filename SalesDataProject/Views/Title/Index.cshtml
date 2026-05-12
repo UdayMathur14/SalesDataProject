@@ -9,6 +9,17 @@
 
 @model ValidationResultViewModel
 
+@{
+    // Compute row counts to decide whether to limit table height
+    int cleanCount = Model?.CleanTitles?.Count ??0;
+    int blockedCount = Model?.BlockedTitles?.Count ??0;
+    int dupCount = Model?.DuplicateTitlesInExcel?.Count ??0;
+    int totalRows = Math.Max(cleanCount, Math.Max(blockedCount, dupCount));
+    int pageSize = ViewBag.PageSize != null ? (int)ViewBag.PageSize :0;
+    bool removeMaxHeight = (pageSize >= totalRows && totalRows >0) || pageSize ==0;
+    string tableStyle = removeMaxHeight ? "" : "max-height:600px; overflow-y: auto;";
+}
+
 <div class="container mt-5">
     <div class="header d-flex justify-content-between align-items-center p-4 bg-white shadow rounded mb-4" style="background: linear-gradient(156deg, #F8F9FA, #D6EAF8);">
         <h2 class="text m-0 text-left flex-grow-1 fw-bold"><i>Title Publication Validation</i></h2>
@@ -62,384 +73,384 @@
 
 @if (Model != null && (Model.BlockedTitles?.Any() == true || Model.CleanTitles?.Any() == true || Model.DuplicateTitlesInExcel?.Any() == true))
 {
-        <div class="card shadow rounded mb-4">
-            <div class="card-body">
+ <div class="card shadow rounded mb-4">
+ <div class="card-body">
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="card-title text-dark fw-bold m-0">
-                        <i class="bi bi-check-circle"></i> Validation Result
-                    </h5>
-                </div>
+ <div class="d-flex justify-content-between align-items-center mb-3">
+ <h5 class="card-title text-dark fw-bold m-0">
+ <i class="bi bi-check-circle"></i> Validation Result
+ </h5>
+ </div>
 
-                <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-                    <table class="table table-hover align-middle table-bordered">
+ <div class="table-responsive" style="@tableStyle">
+ <table class="table table-hover align-middle table-bordered">
 
-                        <!-- HEADER -->
-                        <thead class="table-dark text-center" style="position: sticky; top: 0; z-index: 1;">
-                            <tr>
-                                <th style="width: 90px;">Row No</th>
-                                <th style="min-width: 150px;">Paper Id</th>
+ <!-- HEADER -->
+ <thead class="table-dark text-center" style="position: sticky; top:0; z-index:1;">
+ <tr>
+ <th style="width:90px;">Row No</th>
+ <th style="min-width:150px;">Paper Id</th>
 
-                                @if (!isModified)
-                                {
-                                    <th style="width: 140px;">Lot Number</th>
-                                    <th style="width: 140px;">CodeRef</th>
-                                    <th style="min-width: 350px; width: 25%;">Title</th>
-                                    <th style="width: 130px;">FinancialYear</th>
-                                    <th style="width: 130px;">BlockedByRow</th>
-                                    <th style="width: 150px;">BlockInvoiceNo</th>
-                                    <th style="width: 140px;">BlockCodeRef</th>
-                                }
+ @if (!isModified)
+ {
+ <th style="width:140px;">Lot Number</th>
+ <th style="width:140px;">CodeRef</th>
+ <th style="min-width:350px; width:25%;">Title</th>
+ <th style="width:130px;">FinancialYear</th>
+ <th style="width:130px;">BlockedByRow</th>
+ <th style="width:150px;">BlockInvoiceNo</th>
+ <th style="width:140px;">BlockCodeRef</th>
+ }
 
-                                <th style="min-width: 400px; width: 30%;">Modified Title</th>
-                                <th style="width: 120px;">Status</th>
-                            </tr>
-                        </thead>
+ <th style="min-width:400px; width:30%;">Modified Title</th>
+ <th style="width:120px;">Status</th>
+ </tr>
+ </thead>
 
-                        <tbody>
+ <tbody>
 
-                            <!-- CLEAN -->
-                            @foreach (var title in Model.CleanTitles)
-                            {
-                                <tr class="table-success text-center">
-                                    <td>@title.RowNumber</td>
+ <!-- CLEAN -->
+ @foreach (var title in Model.CleanTitles)
+ {
+ <tr class="table-success text-center">
+ <td>@title.RowNumber</td>
 
-                                    <td style="min-width: 150px; white-space: normal; word-break: break-word;">
-                                        @title.PaperId
-                                    </td>
+ <td style="min-width:150px; white-space: normal; word-break: break-word;">
+ @title.PaperId
+ </td>
 
-                                    @if (!isModified)
-                                    {
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                        <td class="text-start" style="min-width: 350px; white-space: normal; word-break: break-word;">
-                                            @title.Title
-                                        </td>
-                                        <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
-                                        <td>-</td>
-                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                        <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    }
+ @if (!isModified)
+ {
+ <td>@title.InvoiceNumber</td>
+ <td>@title.CodeReference</td>
+ <td class="text-start" style="min-width:350px; white-space: normal; word-break: break-word;">
+ @title.Title
+ </td>
+ <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
+ <td>-</td>
+ <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+ <td>@(title.BlockedCodeRef ?? "-")</td>
+ }
 
-                                    <td class="text-start" style="min-width: 400px; white-space: normal; word-break: break-word;">
-                                        @title.UpdatedTitle
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-success">
-                                            @(isModified ? "PASS" : title.Status)
-                                        </span>
-                                    </td>
-                                </tr>
-                            }
+ <td class="text-start" style="min-width:400px; white-space: normal; word-break: break-word;">
+ @title.UpdatedTitle
+ </td>
+ <td>
+ <span class="badge bg-success">
+ @(isModified ? "PASS" : title.Status)
+ </span>
+ </td>
+ </tr>
+ }
 
-                            <!-- BLOCKED -->
-                            @foreach (var title in Model.BlockedTitles)
-                            {
-                                <tr class="table-warning text-center">
-                                    <td>@title.RowNumber</td>
+ <!-- BLOCKED -->
+ @foreach (var title in Model.BlockedTitles)
+ {
+ <tr class="table-warning text-center">
+ <td>@title.RowNumber</td>
 
-                                    <td style="min-width: 150px; white-space: normal; word-break: break-word;">
-                                        @title.PaperId
-                                    </td>
+ <td style="min-width:150px; white-space: normal; word-break: break-word;">
+ @title.PaperId
+ </td>
 
-                                    @if (!isModified)
-                                    {
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                        <td class="text-start" style="min-width: 350px; white-space: normal; word-break: break-word;">
-                                            @title.Title
-                                        </td>
-                                        <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
-                                        <td>@title.BlockedId</td>
-                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                        <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    }
+ @if (!isModified)
+ {
+ <td>@title.InvoiceNumber</td>
+ <td>@title.CodeReference</td>
+ <td class="text-start" style="min-width:350px; white-space: normal; word-break: break-word;">
+ @title.Title
+ </td>
+ <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
+ <td>@title.BlockedId</td>
+ <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+ <td>@(title.BlockedCodeRef ?? "-")</td>
+ }
 
-                                    <td class="text-start" style="min-width: 400px; white-space: normal; word-break: break-word;">
-                                        @title.UpdatedTitle
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-warning text-dark">
-                                            @(isModified ? "FAIL" : title.Status)
-                                        </span>
-                                    </td>
-                                </tr>
-                            }
+ <td class="text-start" style="min-width:400px; white-space: normal; word-break: break-word;">
+ @title.UpdatedTitle
+ </td>
+ <td>
+ <span class="badge bg-warning text-dark">
+ @(isModified ? "FAIL" : title.Status)
+ </span>
+ </td>
+ </tr>
+ }
 
-                            <!-- DUPLICATE -->
-                            @foreach (var title in Model.DuplicateTitlesInExcel)
-                            {
-                                <tr class="table-danger text-center">
-                                    <td>@title.RowNumber</td>
+ <!-- DUPLICATE -->
+ @foreach (var title in Model.DuplicateTitlesInExcel)
+ {
+ <tr class="table-danger text-center">
+ <td>@title.RowNumber</td>
 
-                                    <td style="min-width: 150px; white-space: normal; word-break: break-word;">
-                                        @title.PaperId
-                                    </td>
+ <td style="min-width:150px; white-space: normal; word-break: break-word;">
+ @title.PaperId
+ </td>
 
-                                    @if (!isModified)
-                                    {
-                                        <td>@title.InvoiceNumber</td>
-                                        <td>@title.CodeReference</td>
-                                        <td class="text-start" style="min-width: 350px; white-space: normal; word-break: break-word;">
-                                            @title.Title
-                                        </td>
-                                        <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
-                                        <td>@title.BlockedId</td>
-                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
-                                        <td>@(title.BlockedCodeRef ?? "-")</td>
-                                    }
+ @if (!isModified)
+ {
+ <td>@title.InvoiceNumber</td>
+ <td>@title.CodeReference</td>
+ <td class="text-start" style="min-width:350px; white-space: normal; word-break: break-word;">
+ @title.Title
+ </td>
+ <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
+ <td>@title.BlockedId</td>
+ <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+ <td>@(title.BlockedCodeRef ?? "-")</td>
+ }
 
-                                    <td class="text-start" style="min-width: 400px; white-space: normal; word-break: break-word;">
-                                        @title.UpdatedTitle
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-danger">
-                                            @(isModified ? "FAIL" : title.Status)
-                                        </span>
-                                    </td>
-                                </tr>
-                            }
+ <td class="text-start" style="min-width:400px; white-space: normal; word-break: break-word;">
+ @title.UpdatedTitle
+ </td>
+ <td>
+ <span class="badge bg-danger">
+ @(isModified ? "FAIL" : title.Status)
+ </span>
+ </td>
+ </tr>
+ }
 
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
 }
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const uploadAndSaveButton = document.getElementById('uploadAndSaveButton');
-        const testUploadButton = document.getElementById('testUploadButton');
-        const fileUpload = document.getElementById('fileUpload');
-        const uploadForm = document.getElementById('uploadForm');
-        const testModeInput = document.getElementById('testMode');
+ document.addEventListener('DOMContentLoaded', function () {
+ const uploadAndSaveButton = document.getElementById('uploadAndSaveButton');
+ const testUploadButton = document.getElementById('testUploadButton');
+ const fileUpload = document.getElementById('fileUpload');
+ const uploadForm = document.getElementById('uploadForm');
+ const testModeInput = document.getElementById('testMode');
 
-        if (uploadAndSaveButton && testUploadButton && fileUpload && uploadForm && testModeInput) {
+ if (uploadAndSaveButton && testUploadButton && fileUpload && uploadForm && testModeInput) {
 
-            uploadAndSaveButton.addEventListener('click', function () {
-                testModeInput.value = 'false'; // Set testMode = false for Upload and Save
-                fileUpload.click();
-            });
+ uploadAndSaveButton.addEventListener('click', function () {
+ testModeInput.value = 'false'; // Set testMode = false for Upload and Save
+ fileUpload.click();
+ });
 
-            testUploadButton.addEventListener('click', function () {
-                testModeInput.value = 'true'; // Set testMode = true for Test Upload
-                fileUpload.click();
-            });
+ testUploadButton.addEventListener('click', function () {
+ testModeInput.value = 'true'; // Set testMode = true for Test Upload
+ fileUpload.click();
+ });
 
-            fileUpload.addEventListener('change', function () {
-                if (fileUpload.files.length > 0) {
-                    showSpinner(); // Show loader
-                    uploadForm.submit();
-                }
-            });
-        }
-    });
+ fileUpload.addEventListener('change', function () {
+ if (fileUpload.files.length >0) {
+ showSpinner(); // Show loader
+ uploadForm.submit();
+ }
+ });
+ }
+ });
 
-    function showSpinner() {
-        document.getElementById("spinner-overlay").style.display = "flex";
-    }
+ function showSpinner() {
+ document.getElementById("spinner-overlay").style.display = "flex";
+ }
 
-    function hideSpinner() {
-        document.getElementById("spinner-overlay").style.display = "none";
-    }
+ function hideSpinner() {
+ document.getElementById("spinner-overlay").style.display = "none";
+ }
 
-    window.addEventListener('load', function () {
-        hideSpinner();
-    });
+ window.addEventListener('load', function () {
+ hideSpinner();
+ });
 </script>
 
 <style>
-    .hover-custom {
-        transition: all 0.3s ease; /* Smooth transition for all properties */
-        border-radius: 8px;
-    }
-    .hover-custom:hover {
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); /* Increased shadow for a dramatic effect */
-        transform: translateY(-5px) scale(1.05); /* Slightly lift and scale up the button */
-        color: white; /* Change text color on hover for contrast */
-            border-radius: 8px;
-    }
+ .hover-custom {
+ transition: all0.3s ease; /* Smooth transition for all properties */
+ border-radius:8px;
+ }
+ .hover-custom:hover {
+ box-shadow:08px15px rgba(0,0,0,0.2); /* Increased shadow for a dramatic effect */
+ transform: translateY(-5px) scale(1.05); /* Slightly lift and scale up the button */
+ color: white; /* Change text color on hover for contrast */
+ border-radius:8px;
+ }
 
-    .custom-hover-button {
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 8px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
-    }
+ .custom-hover-button {
+ font-weight:600;
+ padding:0.5rem1rem;
+ border: none;
+ border-radius:8px;
+ transition: transform0.2s ease, box-shadow0.2s ease, background-color0.3s ease;
+ }
 
-    .custom-hover-button-back:hover {
-        background-color: darkred;
-        transform: scale(1.05);
-        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-    }
-    /* General Styling */
-    body {
-        background-color: #f8f9fa; /* Light gray background for the body */
-        font-family: 'Roboto', sans-serif;
-    }
+ .custom-hover-button-back:hover {
+ background-color: darkred;
+ transform: scale(1.05);
+ box-shadow:0010px rgba(255,0,0,0.5);
+ }
+ /* General Styling */
+ body {
+ background-color: #f8f9fa; /* Light gray background for the body */
+ font-family: 'Roboto', sans-serif;
+ }
 
-    /* Heading Style */
-    h1, h2, h3 {
-        font-family: 'Roboto', sans-serif;
-        font-weight: 700;
-        color: #333; /* Slightly darker color for headings */
-    }
+ /* Heading Style */
+ h1, h2, h3 {
+ font-family: 'Roboto', sans-serif;
+ font-weight:700;
+ color: #333; /* Slightly darker color for headings */
+ }
 
-    /* Button Styling */
-    .btn-lg {
-        padding: 0.8rem 1.5rem;
-        font-size: 1.1rem;
-        border-radius: 8px;
-        font-weight: bold; /* Bold font for buttons */
-    }
+ /* Button Styling */
+ .btn-lg {
+ padding:0.8rem1.5rem;
+ font-size:1.1rem;
+ border-radius:8px;
+ font-weight: bold; /* Bold font for buttons */
+ }
 
-    /* Card Styling */
-    .card {
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Light shadow around cards */
-    }
+ /* Card Styling */
+ .card {
+ border-radius:10px;
+ box-shadow:02px8px rgba(0,0,0,0.1); /* Light shadow around cards */
+ }
 
-    /* Alert Styling */
-    .alert {
-        border-radius: 10px;
-        padding: 1rem;
-        font-weight: bold;
-    }
+ /* Alert Styling */
+ .alert {
+ border-radius:10px;
+ padding:1rem;
+ font-weight: bold;
+ }
 
-    /* Table Styling */
-    .table {
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 1.5rem; /* Adding some spacing below tables */
-    }
+ /* Table Styling */
+ .table {
+ border-radius:10px;
+ overflow: hidden;
+ margin-bottom:1.5rem; /* Adding some spacing below tables */
+ }
 
-    .table-hover tbody tr:hover {
-        background-color: #f1f1f1; /* Light gray background on hover */
-    }
+ .table-hover tbody tr:hover {
+ background-color: #f1f1f1; /* Light gray background on hover */
+ }
 
-    /* Table row color based on status */
-    .table-success {
-        background-color: #eafaf1;
-    }
+ /* Table row color based on status */
+ .table-success {
+ background-color: #eafaf1;
+ }
 
-    .table-danger {
-        background-color: #ffd1d1; /* Slightly more visible red color for danger rows */
-    }
+ .table-danger {
+ background-color: #ffd1d1; /* Slightly more visible red color for danger rows */
+ }
 
-    /* Custom button hover effects */
-    .btn-outline-primary:hover {
-        background-color: #0056b3;
-        color: white;
-        border-color: #0056b3;
-    }
+ /* Custom button hover effects */
+ .btn-outline-primary:hover {
+ background-color: #0056b3;
+ color: white;
+ border-color: #0056b3;
+ }
 
-    .btn-outline-success:hover {
-        background-color: #218838;
-        color: white;
-        border-color: #218838;
-    }
+ .btn-outline-success:hover {
+ background-color: #218838;
+ color: white;
+ border-color: #218838;
+ }
 
-    /* Additional focus styles for accessibility */
-    .btn:focus, .btn:hover {
-        outline: none; /* Removes the outline for button focus */
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5); /* Adds a glow effect around buttons when focused */
-    }
+ /* Additional focus styles for accessibility */
+ .btn:focus, .btn:hover {
+ outline: none; /* Removes the outline for button focus */
+ box-shadow:0002px rgba(0,123,255,0.5); /* Adds a glow effect around buttons when focused */
+ }
 
-    /* Enhanced table appearance */
-    .table-bordered th, .table-bordered td {
-        border: 1px solid #ddd; /* Lighter border color for better contrast */
-    }
+ /* Enhanced table appearance */
+ .table-bordered th, .table-bordered td {
+ border:1px solid #ddd; /* Lighter border color for better contrast */
+ }
 
-    /* Tables within cards */
-    .card .table {
-        background-color: #fff;
-    }
+ /* Tables within cards */
+ .card .table {
+ background-color: #fff;
+ }
 
-    /* Table header background */
-    .table-dark th {
-        background-color: #343a40;
-        color: white;
-    }
+ /* Table header background */
+ .table-dark th {
+ background-color: #343a40;
+ color: white;
+ }
 
-    /* Style for rounded corners */
-    .rounded {
-        border-radius: 8px; /* Rounded corners for general elements */
-    }
+ /* Style for rounded corners */
+ .rounded {
+ border-radius:8px; /* Rounded corners for general elements */
+ }
 
-    /* Custom table row styling for more contrast */
-    .table-hover tbody tr:nth-child(odd) {
-        background-color: #f9f9f9; /* Light alternating row color */
-    }
+ /* Custom table row styling for more contrast */
+ .table-hover tbody tr:nth-child(odd) {
+ background-color: #f9f9f9; /* Light alternating row color */
+ }
 
-    .table-hover tbody tr:nth-child(even) {
-        background-color: #ffffff; /* Alternate row color */
-    }
+ .table-hover tbody tr:nth-child(even) {
+ background-color: #ffffff; /* Alternate row color */
+ }
 
 
 </style>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Get the download button
-        const downloadBtn = document.getElementById("downloadBtn");
-        if (!downloadBtn) {
-            console.error("Download button not found in the DOM.");
-            return;
-        }
+ document.addEventListener("DOMContentLoaded", function () {
+ // Get the download button
+ const downloadBtn = document.getElementById("downloadBtn");
+ if (!downloadBtn) {
+ console.error("Download button not found in the DOM.");
+ return;
+ }
 
-        downloadBtn.addEventListener("click", function (event) {
-            // Prevent any default behavior (e.g., if inside a form)
-            event.preventDefault();
+ downloadBtn.addEventListener("click", function (event) {
+ // Prevent any default behavior (e.g., if inside a form)
+ event.preventDefault();
 
-            // Get the spinner element
-            const spinner = document.getElementById("spinner-overlay");
-            if (!spinner) {
-                console.error("Spinner overlay element not found!");
-                return;
-            }
+ // Get the spinner element
+ const spinner = document.getElementById("spinner-overlay");
+ if (!spinner) {
+ console.error("Spinner overlay element not found!");
+ return;
+ }
 
-            // Show the loader
-            spinner.style.display = "flex";
+ // Show the loader
+ spinner.style.display = "flex";
 
-            // Fetch the file from the server
-            fetch('/Title/DownloadTemplate', { method: 'GET', cache: 'no-store' })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Server responded with " + response.status);
-                    }
-                    return response.blob(); // Convert response to Blob
-                })
-                .then(blob => {
-                    // Hide the loader
-                    spinner.style.display = "none";
+ // Fetch the file from the server
+ fetch('/Title/DownloadTemplate', { method: 'GET', cache: 'no-store' })
+ .then(response => {
+ if (!response.ok) {
+ throw new Error("Server responded with " + response.status);
+ }
+ return response.blob(); // Convert response to Blob
+ })
+ .then(blob => {
+ // Hide the loader
+ spinner.style.display = "none";
 
-                    // Create a temporary link element to trigger the download
-                    const link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = "UploadTitles.xlsx"; // Set the file name
-                    document.body.appendChild(link);
-                    link.click(); // Trigger the download
-                    document.body.removeChild(link); // Clean up the temporary link
-                })
-                .catch(error => {
-                    // Hide the loader if an error occurs
-                    spinner.style.display = "none";
-                    console.error("Error downloading file:", error);
-                    alert("Error downloading file: " + error.message);
-                });
-        });
-    });
+ // Create a temporary link element to trigger the download
+ const link = document.createElement("a");
+ link.href = window.URL.createObjectURL(blob);
+ link.download = "UploadTitles.xlsx"; // Set the file name
+ document.body.appendChild(link);
+ link.click(); // Trigger the download
+ document.body.removeChild(link); // Clean up the temporary link
+ })
+ .catch(error => {
+ // Hide the loader if an error occurs
+ spinner.style.display = "none";
+ console.error("Error downloading file:", error);
+ alert("Error downloading file: " + error.message);
+ });
+ });
+ });
 </script>
 
 <script>
-        function closeAlertMessage() {
-        const alertMessage = document.getElementById('alertMessage');
-        if (alertMessage) {
-            alertMessage.classList.add('fade-out');
-            setTimeout(() => alertMessage.style.display = 'none', 500); // Wait for fade-out to complete
-        }
-    }
-    setTimeout(closeAlertMessage, 3500);
+ function closeAlertMessage() {
+ const alertMessage = document.getElementById('alertMessage');
+ if (alertMessage) {
+ alertMessage.classList.add('fade-out');
+ setTimeout(() => alertMessage.style.display = 'none',500); // Wait for fade-out to complete
+ }
+ }
+ setTimeout(closeAlertMessage,3500);
 </script>
