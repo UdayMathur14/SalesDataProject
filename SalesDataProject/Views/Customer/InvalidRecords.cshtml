@@ -28,7 +28,7 @@
     }
     else
     {
-        <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+        <div style="max-height:800px; overflow-y: auto; border:1px solid #ddd; border-radius:5px;">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -36,6 +36,7 @@
                         <th>Company Name</th>
                         <th>Customer Email</th>
                         <th>Customer Number</th>
+                        <th>Error</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,6 +47,7 @@
                             <td>@record.CompanyName</td>
                             <td>@record.CustomerEmail</td>
                             <td>@record.CustomerNumber</td>
+                            <td class="text-danger fw-semibold">@record.ErrorMessage</td>
                         </tr>
                     }
                 </tbody>

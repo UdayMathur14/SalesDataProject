@@ -548,5 +548,75 @@ namespace SalesDataProject.Controllers
             ViewData["CountryList"] = countries;  // Set the countries to ViewData
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> RecentUploadStatus(int minutes =60)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Json(new { success = false, message = "Session expired" });
+            }
+
+            var cutoff = DateTime.UtcNow.AddMinutes(-minutes);
+            var recent = await _context.Customers
+                .Where(c => c.CREATED_BY == username && c.CREATED_ON >= cutoff)
+                .OrderByDescending(c => c.CREATED_ON)
+                .ToListAsync();
+
+            return Json(new
+            {
+                success = true,
+                count = recent.Count,
+                sample = recent.Take(20).Select(c => new { c.ID, c.COMPANY_NAME, c.CUSTOMER_EMAIL, CreatedOn = c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd HH:mm:ss") : "" })
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRecentUploads(int minutes =60)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return Json(new { success = false, message = "Session expired" });
+            }
+
+            var cutoff = DateTime.UtcNow.AddMinutes(-minutes);
+            var recent = await _context.Customers
+                .Where(c => c.CREATED_BY == username && c.CREATED_ON >= cutoff)
+                .ToListAsync();
+
+            if (!recent.Any())
+            {
+                return Json(new { success = true, deleted =0, message = "No recent uploads found to delete." });
+            }
+
+            try
+            {
+                _context.Customers.RemoveRange(recent);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, deleted = recent.Count });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetInvalidUploadRecords()
+        {
+            try
+            {
+                var invalidJson = TempData["InvalidRecords"] as string;
+                if (string.IsNullOrEmpty(invalidJson)) return Json(new { success = false, message = "No invalid records available." });
+                var invalid = JsonConvert.DeserializeObject<List<InvalidCustomerRecord>>(invalidJson);
+                return Json(new { success = true, count = invalid.Count, records = invalid });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }
