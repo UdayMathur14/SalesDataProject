@@ -211,7 +211,7 @@ namespace SalesDataProject.Controllers
                                     continue;
                                 }
                                 if (string.IsNullOrWhiteSpace(companyName) ||
-                                    string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode) || string.IsNullOrWhiteSpace(category))
+                                    string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode))
                                 {
                                     invalidRecords.Add(new InvalidCustomerRecord
                                     {
@@ -223,19 +223,6 @@ namespace SalesDataProject.Controllers
                                     });
                                     continue;
                                 }
-
-                                //if (!new[] { "Corporate", "CORPORATE", "LAWFIRM", "Law Firm", "MSME", "UNIVERSITY", "University", "PCT", "LAW FIRM", "Individual" , "INDIVIDUAL" }.Contains(category?.ToUpperInvariant()))
-                                //{
-                                //    invalidRecords.Add(new InvalidCustomerRecord
-                                //    {
-                                //        RowNumber = row - 1,
-                                //        CompanyName = companyName,
-                                //        CustomerEmail = customerEmail,
-                                //        CustomerNumber = customerNumber,
-                                //        ErrorMessage = "Invalid category."
-                                //    });
-                                //    continue;
-                                //}
 
                                 // Add to the list of customers
                                 customersFromExcel.Add(new Customer
@@ -626,6 +613,47 @@ namespace SalesDataProject.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        public async Task<IActionResult> AllCustomers(int page =1, int pageSize =50, string search = null)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                TempData["Message"] = "Session Expired";
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("Login", "Auth");
+            }
+            try
+            {
+                var query = _context.Customers.AsNoTracking().AsQueryable();
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var s = search.Trim().ToLower();
+                    query = query.Where(c => c.COMPANY_NAME.ToLower().Contains(s) || c.CUSTOMER_EMAIL.ToLower().Contains(s) || c.CONTACT_PERSON.ToLower().Contains(s));
+                }
+                var total = await query.CountAsync();
+                var customers = await query.OrderByDescending(c => c.CREATED_ON)
+                    .Skip((page -1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var vm = new SalesDataProject.Models.CustomerListViewModel
+                {
+                    Customers = customers,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalCount = total
+                };
+
+                return View("AllCustomers", vm);
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "An error occurred while loading customers.";
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("Index");
             }
         }
     }

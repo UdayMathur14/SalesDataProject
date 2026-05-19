@@ -24,6 +24,11 @@
             <a href="@Url.Action("Index", "Customer")" class="">
                 <button type="submit" class="btn btn-success">Create</button>
             </a>
+
+            <!-- Show All button added to navigate to paginated AllCustomers view -->
+            <a href="@Url.Action("AllCustomers", "Customer")" class="">
+                <button type="button" class="btn btn-primary">Show All</button>
+            </a>
             <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" id="uploadForm">
                 <input type="file" id="fileUpload" name="file" class="form-control-file" required style="display: none;" />
                 <button type="button" id="uploadButton" class="btn btn-success ml-4 mb-4">Upload Excel</button>
@@ -37,10 +42,11 @@
             </a>
         </div>
     </div>
-    <div style="max-height: 800px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px;">
+    <div style="max-height:800px; overflow-y: auto; border:1px solid #ddd; border-radius:5px;">
         <table class="table table-striped">
             <thead class="table-header">
                 <tr>
+                    <th style="width:70px">#</th>
                     @* <th>Customer Code</th> *@
                     <th>Company Name</th>
                     <th>Email</th>
@@ -52,18 +58,21 @@
                 </tr>
             </thead>
             <tbody>
+                @{ var serial =1; }
                 @foreach (var customer in Model)
                 {
                     <tr>
+                        <td>@serial</td>
                         @* <td>@customer.CUSTOMER_CODE</td> *@
                         <td>@customer.COMPANY_NAME</td>
                         <td>@customer.CUSTOMER_EMAIL</td>
                         <td>@customer.CUSTOMER_CONTACT_NUMBER1</td>
                         <td>@customer.COUNTRY</td>
                         <td>@customer.CONTACT_PERSON</td>
-                        <td>@customer.CATEGORY</td>
+                        <td>@(string.IsNullOrWhiteSpace(customer.CATEGORY) ? "-" : customer.CATEGORY)</td>
                         <td>@customer.CREATED_BY</td>
                     </tr>
+                    serial++;
                 }
             </tbody>
         </table>
@@ -84,7 +93,7 @@
             });
 
             fileUpload.addEventListener('change', function () {
-                if (fileUpload.files.length > 0) {
+                if (fileUpload.files.length >0) {
                     showSpinner(); // Show loader
                     uploadForm.submit();
                 }
@@ -105,7 +114,6 @@
         hideSpinner();
     });
 </script>
-
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 

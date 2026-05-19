@@ -56,11 +56,13 @@ namespace SalesDataProject.Models
         public string? STATE { get; set; }
 
         public string? CREATED_BY { get; set; } // Created by information
-        public DateTime? CREATED_ON { get; set; } = DateTime.UtcNow;// Creation timestamp
+
+        // Store date only (UTC date) by default
+        public DateTime? CREATED_ON { get; set; } = DateTime.UtcNow.Date; // Creation timestamp
 
         public string? MODIFIED_BY { get; set; } // Modified by information
 
-        public DateTime? MODIFIED_ON { get; set; } = DateTime.UtcNow; // Nullable in case it hasn't been modified yet
+        public DateTime? MODIFIED_ON { get; set; } = DateTime.UtcNow.Date; // Nullable in case it hasn't been modified yet
 
         private string? _emailDomain;
         public string? EMAIL_DOMAIN
@@ -73,7 +75,8 @@ namespace SalesDataProject.Models
             }
         }
 
-        [Required]
-        public string CATEGORY { get; set; }
+        // Make category optional
+        [StringLength(50)]
+        public string? CATEGORY { get; set; }
     }
 }
