@@ -36,6 +36,16 @@ namespace SalesDataProject.Controllers
                 // Pass countries and phone codes separately to the view
                 ViewBag.Countries = new SelectList(countries, "CountryName", "CountryName");
                 ViewBag.CountryCodes = new SelectList(phoneCodes);
+
+                // Fetch recent customers to display on the page (most recent first)
+                var customers = await _context.Customers
+                    .AsNoTracking()
+                    .OrderByDescending(c => c.CREATED_ON)
+                    .Take(1000)
+                    .ToListAsync();
+
+                ViewBag.Customers = customers;
+
                 return View();
             }
             catch (Exception ex)

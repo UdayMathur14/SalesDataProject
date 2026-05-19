@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Create Customer";
+    var customers = ViewBag.Customers as List<SalesDataProject.Models.Customer> ?? new List<SalesDataProject.Models.Customer>();
 }
 
 <div class="container mt-4">
@@ -33,7 +34,7 @@
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
                         <label asp-for="COUNTRY_CODE" class="font-weight-bold">Country Code <span class="text-danger">*</span></label>
-                        <select asp-for="COUNTRY_CODE" class="form-control form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;" id="CountryCode">
+                        <select asp-for="COUNTRY_CODE" class="form-control form-control-sm" id="CountryCode">
                             <option disabled value="">-- Select Code --</option>
                             @foreach (var code in ViewBag.CountryCodes as SelectList)
                             {
@@ -43,12 +44,12 @@
                         <span asp-validation-for="COUNTRY_CODE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_CONTACT_NUMBER1" class="font-weight-bold">Contact Number 1  <span class="text-danger">*</span> </label>
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER1" class="font-weight-bold">Contact Number1 <span class="text-danger">*</span> </label>
                         <input asp-for="CUSTOMER_CONTACT_NUMBER1" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_CONTACT_NUMBER1" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_CONTACT_NUMBER2" class="font-weight-bold">Contact Number 2</label>
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER2" class="font-weight-bold">Contact Number2</label>
                         <input asp-for="CUSTOMER_CONTACT_NUMBER2" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_CONTACT_NUMBER2" class="text-danger"></span>
                     </div>
@@ -57,7 +58,7 @@
 
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_CONTACT_NUMBER3" class="font-weight-bold">Contact Number 3</label>
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER3" class="font-weight-bold">Contact Number3</label>
                         <input asp-for="CUSTOMER_CONTACT_NUMBER3" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_CONTACT_NUMBER3" class="text-danger"></span>
                     </div>
@@ -68,7 +69,7 @@
                     </div>
                     <div class="col-md-3">
                         <label asp-for="COUNTRY" class="font-weight-bold">Country <span class="text-danger">*</span></label>
-                        <select asp-for="COUNTRY" class="form-control form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;" id="Country" name="Country">
+                        <select asp-for="COUNTRY" class="form-control form-control-sm" id="Country" name="Country">
                             <option disabled value="">-- Select Country --</option>
                             @foreach (var country in ViewBag.Countries as SelectList)
                             {
@@ -93,7 +94,7 @@
                     </div>
                     <div class="col-md-3">
                         <label asp-for="CATEGORY">Category <span class="text-danger"></span></label>
-                        <select asp-for="CATEGORY" class="form-control form-control-sm" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' fill=\'%23black\' class=\'bi bi-chevron-down\' viewBox=\'0 0 16 16\'%3E%3Cpath fill-rule=\'evenodd\' d=\'M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem 1rem;">
+                        <select asp-for="CATEGORY" class="form-control form-control-sm">
                             <option value="" selected> --Select Category--</option>
                             <option value="UNIVERSITY">University</option>
                             <option value="MSME">MSME</option>
@@ -115,10 +116,53 @@
             </form>
         </div>
     </div>
+
+    <!-- Button to toggle full customer list -->
+    <div class="mb-4">
+        <button id="toggleCustomersBtn" class="btn btn-info">Show All Customers</button>
+    </div>
+
+    <!-- Full customer list (hidden by default) -->
+    <div id="customerListSection" style="display:none;">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title">All Customers (@customers.Count)</h4>
+                <div style="max-height:600px; overflow-y: auto; border:1px solid #ddd; border-radius:5px;">
+                    <table class="table table-striped table-sm">
+                        <thead class="table-dark text-white">
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Email</th>
+                                <th>Contact Number</th>
+                                <th>Country</th>
+                                <th>Contact Person</th>
+                                <th>Category</th>
+                                <th>Created By</th>
+                                <th>Created On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in customers)
+                            {
+                                <tr>
+                                    <td>@c.COMPANY_NAME</td>
+                                    <td>@c.CUSTOMER_EMAIL</td>
+                                    <td>@c.CUSTOMER_CONTACT_NUMBER1</td>
+                                    <td>@c.COUNTRY</td>
+                                    <td>@c.CONTACT_PERSON</td>
+                                    <td>@c.CATEGORY</td>
+                                    <td>@c.CREATED_BY</td>
+                                    <td>@(c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd HH:mm") : "")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
-
-
-
 
 @section Scripts {
     @{
@@ -126,5 +170,53 @@
     }
 }
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+<script>
+ document.addEventListener('DOMContentLoaded', function () {
+ const uploadButton = document.getElementById('uploadButton');
+ const fileUpload = document.getElementById('fileUpload');
+ const uploadForm = document.getElementById('uploadForm');
+ const toggleBtn = document.getElementById('toggleCustomersBtn');
+ const listSection = document.getElementById('customerListSection');
+
+ if (uploadButton && fileUpload && uploadForm) {
+ uploadButton.addEventListener('click', function () {
+ fileUpload.click();
+ });
+
+ fileUpload.addEventListener('change', function () {
+ if (fileUpload.files.length >0) {
+ showSpinner(); // Show loader
+ uploadForm.submit();
+ }
+ });
+ }
+
+ if (toggleBtn && listSection) {
+ toggleBtn.addEventListener('click', function () {
+ if (listSection.style.display === 'none' || listSection.style.display === '') {
+ listSection.style.display = 'block';
+ toggleBtn.textContent = 'Hide Customers';
+ } else {
+ listSection.style.display = 'none';
+ toggleBtn.textContent = 'Show All Customers';
+ }
+ });
+ }
+ });
+
+ function showSpinner() {
+ document.getElementById("spinner-overlay").style.display = "flex";
+ }
+
+ function hideSpinner() {
+ document.getElementById("spinner-overlay").style.display = "none";
+ }
+
+ // Automatically hide spinner when the page reloads (after request completes)
+ window.addEventListener('load', function () {
+ hideSpinner();
+ });
+</script>
 
 
