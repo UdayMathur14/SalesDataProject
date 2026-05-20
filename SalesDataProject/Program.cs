@@ -17,6 +17,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpContextAccessor();
 
+// Configure max upload sizes
+builder.Services.Configure<FormOptions>(options =>
+{
+ options.MultipartBodyLengthLimit =200 *1024 *1024; //200 MB
+ options.ValueLengthLimit = int.MaxValue;
+ options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+// Configure Kestrel max request body (optional)
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+ serverOptions.Limits.MaxRequestBodySize =200 *1024 *1024; //200 MB
+});
+
 // Configure CORS to allow loopback (localhost) origins and credentials
 builder.Services.AddCors(options =>
 {
