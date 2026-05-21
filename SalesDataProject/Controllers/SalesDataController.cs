@@ -143,16 +143,16 @@ namespace SalesDataProject.Controllers
                     var category = worksheet.Cell(row, 11).GetString().Trim().ToUpper();
                     var emailDomain = customerEmail.Contains('@') ? customerEmail.Split('@').Last().Trim().ToLower() : "";
 
+                    bool isCommonDomain = commonDomains.Contains(emailDomain);
+
                     var masterMatch = await _context.Customers.FirstOrDefaultAsync(x =>
-    (!string.IsNullOrWhiteSpace(customerEmail) &&
-     x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
-    ||
-    (!string.IsNullOrWhiteSpace(emailDomain) &&
-     x.CUSTOMER_EMAIL.ToLower().EndsWith("@" + emailDomain.ToLower()))
-    ||
-    (!string.IsNullOrWhiteSpace(companyName) &&
-     x.COMPANY_NAME.ToUpper() == companyName.ToUpper())
-);
+                (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
+                ||
+                (!isCommonDomain && !string.IsNullOrWhiteSpace(emailDomain) && x.CUSTOMER_EMAIL.ToLower().EndsWith("@" + emailDomain.ToLower()))
+                ||
+                (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToUpper() == companyName.ToUpper())
+            );
+
                     if (masterMatch != null)
                     {
                         invalidRecords.Add(new InvalidCustomerRecord
@@ -169,7 +169,7 @@ namespace SalesDataProject.Controllers
 
                     if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(category)) continue;
 
-                    bool isCommonDomain = commonDomains.Contains(emailDomain);
+                    
                     string blockedReason = "";
                     string blockedByName = "";
 
