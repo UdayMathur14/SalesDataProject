@@ -1,34 +1,32 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
-@model IEnumerable<SalesDataProject.Models.InvalidCustomerRecord>
+﻿@model IEnumerable<SalesDataProject.Models.InvalidCustomerRecord>
 @{
     ViewData["Title"] = "Invalid Records";
+    var hasRecords = Model != null && Model.Any();
 }
 
 <div class="container">
     <div class="header d-flex justify-content-between mb-4">
         <h2>Invalid or Duplicate Records</h2>
-
         <div class="buttons d-flex gap-2">
-
-            <div>
-                <a id="exportLink" asp-action="ExportInvalidRecords" class="btn btn-primary">Export to Excel</a>
-            </div>
-            <a href="@Url.Action("ViewCustomers", "Customer")" class="">
-                <button style="background-color:red" type="submit" class="btn btn-danger">Back</button>
-            </a>
+            @if (hasRecords)
+            {
+                <a asp-action="ExportInvalidRecords" class="btn btn-primary">Export to Excel</a>
+            }
+            else
+            {
+                <a class="btn btn-primary disabled" aria-disabled="true">Export to Excel</a>
+            }
+            <a href="@Url.Action("Index", "Customer")" class="btn btn-danger">Back</a>
         </div>
     </div>
-    @if (Model == null || !Model.Any())
+
+    @if (!hasRecords)
     {
         <p>No invalid or duplicate records found.</p>
     }
     else
     {
-        <div style="max-height:800px; overflow-y: auto; border:1px solid #ddd; border-radius:5px;">
+        <div style="max-height:800px; overflow-y:auto; border:1px solid #ddd; border-radius:5px;">
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -55,13 +53,3 @@
         </div>
     }
 </div>
-
-@section Scripts {
-    <script type="text/javascript">
-        document.getElementById('exportLink').addEventListener('click', function () {
-            setTimeout(function () {
-                window.location.href = '@Url.Action("ViewCustomers")';
-            }, 2000); // Wait for 2 seconds to allow the download to start
-        });
-    </script>
-}

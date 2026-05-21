@@ -1,116 +1,91 @@
 @model SalesDataProject.Models.CustomerListViewModel
 @{
- ViewData["Title"] = "All Customers";
- var searchQuery = ViewContext.HttpContext.Request.Query["search"].ToString();
- var pageSizeQuery = ViewContext.HttpContext.Request.Query["pageSize"].ToString();
- int pageSizeFromQuery =0;
- int.TryParse(pageSizeQuery, out pageSizeFromQuery);
- var currentPageSize = Model.PageSize >0 ? Model.PageSize : (pageSizeFromQuery >0 ? pageSizeFromQuery :50);
-
- var sbOptions = new System.Text.StringBuilder();
- sbOptions.Append(currentPageSize ==25 ? "<option value=\"25\" selected>25</option>" : "<option value=\"25\">25</option>");
- sbOptions.Append(currentPageSize ==50 ? "<option value=\"50\" selected>50</option>" : "<option value=\"50\">50</option>");
- sbOptions.Append(currentPageSize ==100 ? "<option value=\"100\" selected>100</option>" : "<option value=\"100\">100</option>");
+    ViewData["Title"] = "All Customers";
+    var searchQuery = ViewContext.HttpContext.Request.Query["search"].ToString();
+    var pageSizeQuery = ViewContext.HttpContext.Request.Query["pageSize"].ToString();
+    int pageSizeFromQuery = 0;
+    int.TryParse(pageSizeQuery, out pageSizeFromQuery);
+    var currentPageSize = Model.PageSize > 0 ? Model.PageSize : (pageSizeFromQuery > 0 ? pageSizeFromQuery : 50);
 }
 
 <div class="container mt-4">
- <div class="d-flex justify-content-between align-items-center mb-3">
- <h2>All Customers</h2>
- <div class="d-flex gap-2">
- <form method="get" asp-action="AllCustomers" class="d-flex">
- <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by company, email or contact" value="@searchQuery" />
- <select name="pageSize" class="form-control form-control-sm ms-2">@Html.Raw(sbOptions.ToString())</select>
- <button type="submit" class="btn btn-primary btn-sm ms-2">Search</button>
- </form>
- <a asp-action="Index" class="btn btn-secondary btn-sm">Back</a>
- </div>
- </div>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>All Customers</h2>
+        <div class="d-flex gap-2">
+            <form method="get" asp-action="AllCustomers" class="d-flex">
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by company, email or contact" value="@searchQuery" />
+                <select name="pageSize" class="form-control form-control-sm ms-2">
+                    <option value="25" selected="@(currentPageSize==25 ? "selected" : null)">25</option>
+                    <option value="50" selected="@(currentPageSize==50 ? "selected" : null)">50</option>
+                    <option value="100" selected="@(currentPageSize==100 ? "selected" : null)">100</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm ms-2">Search</button>
+            </form>
+            <a asp-controller="Customer" asp-action="ViewCustomers" class="btn btn-secondary btn-sm">
+                <i class="fa fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
- <div class="card shadow-sm">
- <div class="card-body">
- <div class="table-responsive">
- <table class="table table-striped table-sm">
- <thead class="table-dark text-white">
- <tr>
- <th style="width:70px">#</th>
- <th>Company Name</th>
- <th>Email</th>
- <th>Contact Number</th>
- <th>Country</th>
- <th>Contact Person</th>
- <th>Category</th>
- <th>Created By</th>
- <th>Created On</th>
- </tr>
- </thead>
- <tbody>
- @{ 
- var page = Model.CurrentPage >0 ? Model.CurrentPage :1;
- var pageSize = Model.PageSize >0 ? Model.PageSize : currentPageSize;
- var startIndex = (page -1) * pageSize;
- int row =0;
- }
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead class="table-dark text-white">
+                        <tr>
+                            <th>#</th>
+                            <th>Company Name</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
+                            <th>Country</th>
+                            <th>Contact Person</th>
+                            <th>Category</th>
+                            <th>Created By</th>
+                            <th>Created On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var startIndex = (Model.CurrentPage-1) * Model.PageSize;
+                            int row = 0;
+                        }
+                        @foreach(var c in Model.Customers)
+                        {
+                            <tr>
+                                <td>@(startIndex + ++row)</td>
+                                <td>@c.COMPANY_NAME</td>
+                                <td>@c.CUSTOMER_EMAIL</td>
+                                <td>@c.CUSTOMER_CONTACT_NUMBER1</td>
+                                <td>@c.COUNTRY</td>
+                                <td>@c.CONTACT_PERSON</td>
+                                <td>@(string.IsNullOrWhiteSpace(c.CATEGORY)?"-":c.CATEGORY)</td>
+                                <td>@c.CREATED_BY</td>
+                                <td>@(c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd") : "-")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
- @foreach (var c in Model.Customers)
- {
- <tr>
- <td>@(startIndex + ++row)</td>
- <td>@c.COMPANY_NAME</td>
- <td>@c.CUSTOMER_EMAIL</td>
- <td>@c.CUSTOMER_CONTACT_NUMBER1</td>
- <td>@c.COUNTRY</td>
- <td>@c.CONTACT_PERSON</td>
- <td>@(string.IsNullOrWhiteSpace(c.CATEGORY) ? "-" : c.CATEGORY)</td>
- <td>@c.CREATED_BY</td>
- <td>@(c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd") : "-")</td>
- </tr>
- }
- </tbody>
- </table>
- </div>
-
- <nav>
- <ul class="pagination">
- @{
- int current = Model.CurrentPage >0 ? Model.CurrentPage :1;
- int totalPages = Model.TotalPages;
- if (totalPages >1)
- {
- int start = Math.Max(1, current -5);
- int end = Math.Min(totalPages, current +5);
-
- if (start >1)
- {
- <li class="page-item">
- <a class="page-link" href='@Url.Action("AllCustomers", new { page =1, pageSize = pageSize, search = searchQuery })'>1</a>
- </li>
- if (start >2)
- {
- <li class="page-item disabled"><span class="page-link">...</span></li>
- }
- }
-
- for (int i = start; i <= end; i++)
- {
- <li class="page-item @(i == current ? "active" : "")">
- <a class="page-link" href='@Url.Action("AllCustomers", new { page = i, pageSize = pageSize, search = searchQuery })'>@i</a>
- </li>
- }
-
- if (end < totalPages)
- {
- if (end < totalPages -1)
- {
- <li class="page-item disabled"><span class="page-link">...</span></li>
- }
- <li class="page-item">
- <a class="page-link" href='@Url.Action("AllCustomers", new { page = totalPages, pageSize = pageSize, search = searchQuery })'>@totalPages</a>
- </li>
- }
- }
- }
- </ul>
- </nav>
- </div>
- </div>
+            <nav>
+                <ul class="pagination">
+                    @{
+                        int current = Model.CurrentPage;
+                        int totalPages = Model.TotalPages;
+                        int start = Math.Max(1, current-5);
+                        int end = Math.Min(totalPages, current+5);
+                        if(start>1){<li class="page-item"><a class="page-link" href='@Url.Action("AllCustomers", new { page=1, pageSize=currentPageSize, search=searchQuery})'>1</a></li>;}
+                        if(start>2){<li class="page-item disabled"><span class="page-link">...</span></li>;}
+                        for(int i=start;i<=end;i++){ 
+                            <li class="page-item @(i==current?"active":"")">
+                                <a class="page-link" href='@Url.Action("AllCustomers", new { page=i, pageSize=currentPageSize, search=searchQuery})'>@i</a>
+                            </li>
+                        }
+                        if(end<totalPages){<li class="page-item disabled"><span class="page-link">...</span></li>;}
+                        if(end<totalPages){<li class="page-item"><a class="page-link" href='@Url.Action("AllCustomers", new { page=totalPages, pageSize=currentPageSize, search=searchQuery})'>@totalPages</a></li>;}
+                    }
+                </ul>
+            </nav>
+        </div>
+    </div>
 </div>

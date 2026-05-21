@@ -1,22 +1,18 @@
-﻿@model SalesDataProject.Models.Customer // Adjust to your actual namespace
-
+﻿@model SalesDataProject.Models.Customer
 @{
     ViewData["Title"] = "Create Customer";
-    var customers = ViewBag.Customers as List<SalesDataProject.Models.Customer> ?? new List<SalesDataProject.Models.Customer>();
 }
 
 <div class="container mt-4">
-    <h2 class="mb-4 text-header" style="text-align:center">Create Customer</h2>
+    <h2 class="mb-4 text-center">Create Customer</h2>
 
-    <!-- Manual Entry Form -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <h4 class="card-title text-secondary"></h4>
             <form asp-action="Create" method="post" enctype="multipart/form-data">
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label for="CUSTOMER_CODE" class="font-weight-bold">Customer Code</label>
-                        <input asp-for="CUSTOMER_CODE" class="form-control form-control-sm" id="CUSTOMER_CODE" />
+                        <label asp-for="CUSTOMER_CODE" class="font-weight-bold">Customer Code</label>
+                        <input asp-for="CUSTOMER_CODE" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_CODE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
@@ -44,7 +40,7 @@
                         <span asp-validation-for="COUNTRY_CODE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CUSTOMER_CONTACT_NUMBER1" class="font-weight-bold">Contact Number1 <span class="text-danger">*</span> </label>
+                        <label asp-for="CUSTOMER_CONTACT_NUMBER1" class="font-weight-bold">Contact Number1 <span class="text-danger">*</span></label>
                         <input asp-for="CUSTOMER_CONTACT_NUMBER1" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_CONTACT_NUMBER1" class="text-danger"></span>
                     </div>
@@ -53,7 +49,6 @@
                         <input asp-for="CUSTOMER_CONTACT_NUMBER2" class="form-control form-control-sm" />
                         <span asp-validation-for="CUSTOMER_CONTACT_NUMBER2" class="text-danger"></span>
                     </div>
-
                 </div>
 
                 <div class="form-row mb-2 d-flex gap-4">
@@ -69,7 +64,7 @@
                     </div>
                     <div class="col-md-3">
                         <label asp-for="COUNTRY" class="font-weight-bold">Country <span class="text-danger">*</span></label>
-                        <select asp-for="COUNTRY" class="form-control form-control-sm" id="Country" name="Country">
+                        <select asp-for="COUNTRY" class="form-control form-control-sm">
                             <option disabled value="">-- Select Country --</option>
                             @foreach (var country in ViewBag.Countries as SelectList)
                             {
@@ -78,24 +73,23 @@
                         </select>
                         <span asp-validation-for="COUNTRY" class="text-danger"></span>
                     </div>
-
-
                 </div>
+
                 <div class="form-row mb-2 d-flex gap-4">
                     <div class="col-md-3">
-                        <label asp-for="STATE" class="font-weight-bold">State </label>
+                        <label asp-for="STATE" class="font-weight-bold">State</label>
                         <input asp-for="STATE" class="form-control form-control-sm" />
                         <span asp-validation-for="STATE" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CITY" class="font-weight-bold">City </label>
+                        <label asp-for="CITY" class="font-weight-bold">City</label>
                         <input asp-for="CITY" class="form-control form-control-sm" />
                         <span asp-validation-for="CITY" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="CATEGORY">Category <span class="text-danger"></span></label>
+                        <label asp-for="CATEGORY" class="font-weight-bold">Category</label>
                         <select asp-for="CATEGORY" class="form-control form-control-sm">
-                            <option value="" selected> --Select Category--</option>
+                            <option value="" selected>--Select Category--</option>
                             <option value="UNIVERSITY">University</option>
                             <option value="MSME">MSME</option>
                             <option value="CORPORATE">Corporate</option>
@@ -104,64 +98,15 @@
                             <option value="INDIVIDUAL">Individual</option>
                         </select>
                     </div>
+                </div>
 
-                    <div class="form-row col-md-3 d-flex align-items-end gap-4">
-                        <button type="submit" class="btn btn-primary ">Submit</button>
-                        <button type="button" class="btn btn-success" style="background-color:red" onclick="window.location.href='@Url.Action("ViewCustomers", "Customer")'">
-                            Back
-                        </button>
-                    </div>
-                    
+                <div class="form-row col-md-3 d-flex align-items-end gap-4 mt-3">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-danger" onclick="window.location.href='@Url.Action("ViewCustomers", "Customer")'">Back</button>
                 </div>
             </form>
         </div>
     </div>
-
-    <!-- Button to toggle full customer list -->
-    <div class="mb-4">
-        <button id="toggleCustomersBtn" class="btn btn-info">Show All Customers</button>
-    </div>
-
-    <!-- Full customer list (hidden by default) -->
-    <div id="customerListSection" style="display:none;">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h4 class="card-title">All Customers (@customers.Count)</h4>
-                <div style="max-height:600px; overflow-y: auto; border:1px solid #ddd; border-radius:5px;">
-                    <table class="table table-striped table-sm">
-                        <thead class="table-dark text-white">
-                            <tr>
-                                <th>Company Name</th>
-                                <th>Email</th>
-                                <th>Contact Number</th>
-                                <th>Country</th>
-                                <th>Contact Person</th>
-                                <th>Category</th>
-                                <th>Created By</th>
-                                <th>Created On</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var c in customers)
-                            {
-                                <tr>
-                                    <td>@c.COMPANY_NAME</td>
-                                    <td>@c.CUSTOMER_EMAIL</td>
-                                    <td>@c.CUSTOMER_CONTACT_NUMBER1</td>
-                                    <td>@c.COUNTRY</td>
-                                    <td>@c.CONTACT_PERSON</td>
-                                    <td>@c.CATEGORY</td>
-                                    <td>@c.CREATED_BY</td>
-                                    <td>@(c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd HH:mm") : "")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 @section Scripts {
@@ -169,54 +114,3 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-
-<script>
- document.addEventListener('DOMContentLoaded', function () {
- const uploadButton = document.getElementById('uploadButton');
- const fileUpload = document.getElementById('fileUpload');
- const uploadForm = document.getElementById('uploadForm');
- const toggleBtn = document.getElementById('toggleCustomersBtn');
- const listSection = document.getElementById('customerListSection');
-
- if (uploadButton && fileUpload && uploadForm) {
- uploadButton.addEventListener('click', function () {
- fileUpload.click();
- });
-
- fileUpload.addEventListener('change', function () {
- if (fileUpload.files.length >0) {
- showSpinner(); // Show loader
- uploadForm.submit();
- }
- });
- }
-
- if (toggleBtn && listSection) {
- toggleBtn.addEventListener('click', function () {
- if (listSection.style.display === 'none' || listSection.style.display === '') {
- listSection.style.display = 'block';
- toggleBtn.textContent = 'Hide Customers';
- } else {
- listSection.style.display = 'none';
- toggleBtn.textContent = 'Show All Customers';
- }
- });
- }
- });
-
- function showSpinner() {
- document.getElementById("spinner-overlay").style.display = "flex";
- }
-
- function hideSpinner() {
- document.getElementById("spinner-overlay").style.display = "none";
- }
-
- // Automatically hide spinner when the page reloads (after request completes)
- window.addEventListener('load', function () {
- hideSpinner();
- });
-</script>
-
-
