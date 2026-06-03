@@ -133,6 +133,191 @@ namespace SalesDataProject.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        //public async Task<IActionResult> UploadExcel(IFormFile file)
+        //{
+        //    var username = HttpContext.Session.GetString("Username");
+        //    if (string.IsNullOrWhiteSpace(username))
+        //    {
+        //        TempData["Message"] = "Session expired. Please login again.";
+        //        TempData["MessageType"] = "Error";
+        //        return RedirectToAction("Login", "Auth");
+        //    }
+
+        //    if (file == null || file.Length == 0)
+        //    {
+        //        TempData["Message"] = "File is empty. Please upload a valid Excel file.";
+        //        TempData["MessageType"] = "Error";
+        //        return RedirectToAction(nameof(ViewCustomers));
+        //    }
+
+        //    var invalidRecords = new List<InvalidCustomerRecord>();
+        //    var duplicateRecords = new List<InvalidCustomerRecord>();
+        //    var newCustomers = new List<Customer>();
+
+        //    try
+        //    {
+        //        using (var stream = new MemoryStream())
+        //        {
+        //            await file.CopyToAsync(stream);
+        //            stream.Position = 0;
+
+        //            using (var workbook = new XLWorkbook(stream))
+        //            {
+        //                var worksheet = workbook.Worksheet(1);
+        //                var lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 0;
+
+        //                if (lastRow < 3)
+        //                {
+        //                    TempData["Message"] = "Excel file has no data to process.";
+        //                    TempData["MessageType"] = "Error";
+        //                    return RedirectToAction(nameof(ViewCustomers));
+        //                }
+
+        //                // STEP 1: Pre-fetch common domains to avoid DB calls in loop
+        //                var commonDomains = await _context.CommonDomains
+        //                    .AsNoTracking()
+        //                    .Select(d => d.DomainName.ToLower())
+        //                    .ToListAsync();
+        //                var commonDomainSet = new HashSet<string>(commonDomains);
+
+        //                // STEP 2: Extract all emails & company names from Excel to check duplicates in one go
+        //                var emailsInExcel = new HashSet<string>();
+        //                var companiesInExcel = new HashSet<string>();
+
+        //                for (int row = 3; row <= lastRow; row++)
+        //                {
+        //                    emailsInExcel.Add(worksheet.Cell(row, 5).GetString().Trim().ToLowerInvariant());
+        //                    companiesInExcel.Add(worksheet.Cell(row, 2).GetString().Trim().ToUpper());
+        //                }
+
+        //                // STEP 3: Fetch matching records from DB (Only ONE DB Call per table)
+        //                var existingCustomers = await _context.Customers.AsNoTracking()
+        //                    .Where(c => emailsInExcel.Contains(c.CUSTOMER_EMAIL.ToLower()) || companiesInExcel.Contains(c.COMPANY_NAME.ToUpper()))
+        //                    .Select(c => new { Email = c.CUSTOMER_EMAIL.ToLower(), Company = c.COMPANY_NAME.ToUpper() })
+        //                    .ToListAsync();
+
+        //                var existingProspects = await _context.CleanProspects.AsNoTracking()
+        //                    .Where(p => emailsInExcel.Contains(p.CUSTOMER_EMAIL.ToLower()) || companiesInExcel.Contains(p.COMPANY_NAME.ToUpper()))
+        //                    .Select(p => new { Email = p.CUSTOMER_EMAIL.ToLower(), Company = p.COMPANY_NAME.ToUpper() })
+        //                    .ToListAsync();
+
+        //                var existingCustomerEmails = new HashSet<string>(existingCustomers.Select(c => c.Email));
+        //                var existingCustomerCompanies = new HashSet<string>(existingCustomers.Select(c => c.Company));
+
+        //                var existingProspectEmails = new HashSet<string>(existingProspects.Select(p => p.Email));
+        //                var existingProspectCompanies = new HashSet<string>(existingProspects.Select(p => p.Company));
+
+        //                // STEP 4: Process Excel Rows
+        //                for (int row = 3; row <= lastRow; row++)
+        //                {
+        //                    string companyName = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
+        //                    string contactPerson = worksheet.Cell(row, 3).GetString().Trim();
+        //                    string customerNumber1 = worksheet.Cell(row, 4).GetString().Trim();
+        //                    string customerEmail = worksheet.Cell(row, 5).GetString().Trim().ToLowerInvariant();
+        //                    string countryCode = worksheet.Cell(row, 6).GetString().Trim();
+        //                    string country = worksheet.Cell(row, 7).GetString().Trim();
+        //                    string customerNumber2 = worksheet.Cell(row, 8).GetString().Trim();
+        //                    string customerNumber3 = worksheet.Cell(row, 9).GetString().Trim();
+        //                    string state = worksheet.Cell(row, 10).GetString().Trim().ToUpperInvariant();
+        //                    string city = worksheet.Cell(row, 11).GetString().Trim().ToUpperInvariant();
+        //                    string category = worksheet.Cell(row, 12).GetString().Trim().ToUpper();
+        //                    string emailDomain = customerEmail?.Split('@').Last().ToLower();
+
+        //                    // Skip common domains
+        //                    if (commonDomainSet.Contains(emailDomain))
+        //                    {
+        //                        emailDomain = "-";
+        //                    }
+
+        //                    // Validate email
+        //                    if (!IsValidEmail(customerEmail))
+        //                    {
+        //                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row - 1, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Invalid email format" });
+        //                        continue;
+        //                    }
+
+        //                    // Validate phone numbers
+        //                    if ((!IsValidPhoneNumber(customerNumber1) || !IsValidPhoneNumber(customerNumber2) || !IsValidPhoneNumber(customerNumber3)) && !string.IsNullOrEmpty(customerNumber1))
+        //                    {
+        //                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row - 1, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Invalid phone number" });
+        //                        continue;
+        //                    }
+
+        //                    // Mandatory fields check
+        //                    if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(customerEmail) || string.IsNullOrWhiteSpace(countryCode))
+        //                    {
+        //                        invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row - 1, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Missing mandatory fields" });
+        //                        continue;
+        //                    }
+
+        //                    // Fast In-Memory Duplicate Check
+        //                    bool existsInCustomer = existingCustomerEmails.Contains(customerEmail) || existingCustomerCompanies.Contains(companyName);
+        //                    bool existsInProspect = existingProspectEmails.Contains(customerEmail) || existingProspectCompanies.Contains(companyName);
+
+        //                    if (existsInCustomer || existsInProspect)
+        //                    {
+        //                        duplicateRecords.Add(new InvalidCustomerRecord { RowNumber = row - 1, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Duplicate record found" });
+        //                        continue;
+        //                    }
+
+        //                    // Add valid new customer
+        //                    newCustomers.Add(new Customer
+        //                    {
+        //                        CUSTOMER_CODE = "1",
+        //                        COMPANY_NAME = companyName,
+        //                        CUSTOMER_EMAIL = customerEmail,
+        //                        CONTACT_PERSON = contactPerson,
+        //                        CUSTOMER_CONTACT_NUMBER1 = customerNumber1,
+        //                        CUSTOMER_CONTACT_NUMBER2 = customerNumber2,
+        //                        CUSTOMER_CONTACT_NUMBER3 = customerNumber3,
+        //                        COUNTRY_CODE = countryCode,
+        //                        COUNTRY = country,
+        //                        STATE = state,
+        //                        CITY = city,
+        //                        CATEGORY = category,
+        //                        EMAIL_DOMAIN = emailDomain,
+        //                        CREATED_BY = username,
+        //                        CREATED_ON = DateTime.UtcNow,
+        //                        MODIFIED_BY = username,
+        //                        MODIFIED_ON = DateTime.UtcNow
+        //                    });
+        //                }
+
+        //                // Save valid customers in bulk
+        //                if (newCustomers.Any())
+        //                {
+        //                    _context.Customers.AddRange(newCustomers);
+        //                    await _context.SaveChangesAsync();
+        //                }
+        //            }
+        //        }
+
+        //        var allInvalid = invalidRecords.Concat(duplicateRecords).ToList();
+        //        if (allInvalid.Any())
+        //        {
+        //            // USE SESSION INSTEAD OF TEMPDATA FOR LARGE JSON STRINGS
+        //            HttpContext.Session.SetString("InvalidRecords", JsonConvert.SerializeObject(
+        //                allInvalid.Select(r => new { r.RowNumber, r.CompanyName, r.CustomerEmail, r.CustomerNumber, r.ErrorMessage })
+        //            ));
+
+        //            TempData["Message"] = "Some records were invalid or duplicates; valid records saved.";
+        //            TempData["MessageType"] = "Error";
+        //            return RedirectToAction(nameof(ShowInvalidRecords));
+        //        }
+
+        //        TempData["Message"] = "Excel uploaded successfully.";
+        //        TempData["MessageType"] = "Success";
+        //        return RedirectToAction(nameof(ViewCustomers));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        TempData["Message"] = $"Unexpected error: {ex.Message}";
+        //        TempData["MessageType"] = "Error";
+        //        return RedirectToAction(nameof(ViewCustomers));
+        //    }
+        //}
+        // Helper method to validate email format
+
         public async Task<IActionResult> UploadExcel(IFormFile file)
         {
             var username = HttpContext.Session.GetString("Username");
@@ -186,8 +371,16 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 3; row <= lastRow; row++)
                         {
-                            emailsInExcel.Add(worksheet.Cell(row, 5).GetString().Trim().ToLowerInvariant());
-                            companiesInExcel.Add(worksheet.Cell(row, 2).GetString().Trim().ToUpper());
+                            var rawEmail = worksheet.Cell(row, 5).GetString().Trim().ToLowerInvariant();
+                            if (!string.IsNullOrWhiteSpace(rawEmail))
+                            {
+                                emailsInExcel.Add(rawEmail);
+                            }
+                            var rawCompany = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
+                            if (!string.IsNullOrWhiteSpace(rawCompany))
+                            {
+                                companiesInExcel.Add(rawCompany);
+                            }
                         }
 
                         // STEP 3: Fetch matching records from DB (Only ONE DB Call per table)
@@ -221,19 +414,21 @@ namespace SalesDataProject.Controllers
                             string state = worksheet.Cell(row, 10).GetString().Trim().ToUpperInvariant();
                             string city = worksheet.Cell(row, 11).GetString().Trim().ToUpperInvariant();
                             string category = worksheet.Cell(row, 12).GetString().Trim().ToUpper();
-                            string emailDomain = customerEmail?.Split('@').Last().ToLower();
 
-                            // Skip common domains
-                            if (commonDomainSet.Contains(emailDomain))
-                            {
-                                emailDomain = "-";
-                            }
-
-                            // Validate email
+                            // FIXED 1: Sabse pehle email validate karo jab tak string apni original form me hai
                             if (!IsValidEmail(customerEmail))
                             {
                                 invalidRecords.Add(new InvalidCustomerRecord { RowNumber = row - 1, CompanyName = companyName, CustomerEmail = customerEmail, CustomerNumber = customerNumber1, ErrorMessage = "Invalid email format" });
                                 continue;
+                            }
+
+                            // FIXED 2: Validation pass hone ke baad safely domain nikalo
+                            string emailDomain = customerEmail.Contains('@') ? customerEmail.Split('@').Last().ToLower() : "";
+
+                            // Skip common domains field assignment ke liye
+                            if (commonDomainSet.Contains(emailDomain))
+                            {
+                                emailDomain = "-";
                             }
 
                             // Validate phone numbers
@@ -250,9 +445,20 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            // Fast In-Memory Duplicate Check
-                            bool existsInCustomer = existingCustomerEmails.Contains(customerEmail) || existingCustomerCompanies.Contains(companyName);
-                            bool existsInProspect = existingProspectEmails.Contains(customerEmail) || existingProspectCompanies.Contains(companyName);
+                            // Fast In-Memory Duplicate Check (Individual wali purani logic yahan bhi safe rakhi h)
+                            bool existsInCustomer = false;
+                            bool existsInProspect = false;
+
+                            if (category == "INDIVIDUAL")
+                            {
+                                existsInCustomer = existingCustomerEmails.Contains(customerEmail);
+                                existsInProspect = existingProspectEmails.Contains(customerEmail);
+                            }
+                            else
+                            {
+                                existsInCustomer = existingCustomerEmails.Contains(customerEmail) || existingCustomerCompanies.Contains(companyName);
+                                existsInProspect = existingProspectEmails.Contains(customerEmail) || existingProspectCompanies.Contains(companyName);
+                            }
 
                             if (existsInCustomer || existsInProspect)
                             {
@@ -295,7 +501,6 @@ namespace SalesDataProject.Controllers
                 var allInvalid = invalidRecords.Concat(duplicateRecords).ToList();
                 if (allInvalid.Any())
                 {
-                    // USE SESSION INSTEAD OF TEMPDATA FOR LARGE JSON STRINGS
                     HttpContext.Session.SetString("InvalidRecords", JsonConvert.SerializeObject(
                         allInvalid.Select(r => new { r.RowNumber, r.CompanyName, r.CustomerEmail, r.CustomerNumber, r.ErrorMessage })
                     ));
@@ -316,7 +521,6 @@ namespace SalesDataProject.Controllers
                 return RedirectToAction(nameof(ViewCustomers));
             }
         }
-        // Helper method to validate email format
         private bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -324,12 +528,18 @@ namespace SalesDataProject.Controllers
 
             try
             {
-                // Use Regex to validate the email pattern
-                var emailRegex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-                return emailRegex.IsMatch(email);
+                // 1. Pehle string ko poori tarah saaf karo (saare hidden tabs, newlines aur spaces khatam)
+                string cleanEmail = email.Trim().Replace(" ", "").Replace("\r", "").Replace("\n", "");
+
+                // 2. Microsoft ke standard MailAddress class se validate karo
+                var mail = new System.Net.Mail.MailAddress(cleanEmail);
+
+                // 3. Check karo ki domain part me dot (.) hai ya nahi
+                return mail.Address == cleanEmail && mail.Host.Contains(".");
             }
             catch
             {
+                // Agar format me thoda sa bhi jhanjhat hoga toh MailAddress khud catch me bhej dega
                 return false;
             }
         }

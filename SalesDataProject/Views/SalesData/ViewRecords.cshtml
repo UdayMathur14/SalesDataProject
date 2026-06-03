@@ -1,13 +1,15 @@
 ﻿@model SalesDataProject.Models.UploadResultViewModel
 @{
     ViewData["Title"] = "View Records";
+    var canAccessUserManagement = ViewContext.HttpContext.Session.GetString("CanAccessUserManagement");
 }
 
 <div class="container mt-4">
-    <div class="header d-flex justify-content-between align-items-center mb-3 text-white rounded-4 p-4" style="background-color:cadetblue;border-radius: 0.7rem">
+    <div class="header d-flex justify-content-between align-items-center mb-3 text-white rounded-4 p-4" style="background-color:cadetblue;border-radius:0.7rem">
         <h4 class="mb-0"><i class="bi bi-clipboard-check me-2"></i> Lead Data Management</h4>
         <div class="buttons d-flex gap-2">
             <form asp-action="UploadSalesData" method="post" enctype="multipart/form-data" id="uploadForm">
+                @Html.AntiForgeryToken()
                 <input type="hidden" id="categorySelectHidden" name="selectedCategory" value="" />
                 <input type="file" id="fileUpload" name="file" class="form-control-file d-none" required />
                 <button type="button" id="uploadButton" class="btn btn-outline-light btn-sm"><i class="bi bi-upload me-1"></i> Upload</button>
@@ -22,6 +24,7 @@
     <div class="card shadow-lg p-4 mb-5 border-left-info border-3" style="background-color:lightcyan">
         <h5 class="mb-3 fw-semibold"><i class="bi bi-search me-2"></i> Filter Lead Data</h5>
         <form asp-action="ViewRecord" method="post">
+            @Html.AntiForgeryToken()
             <div class="row g-3 align-items-center">
                 <div class="col-md-3">
                     <label for="SelectedDate" class="form-label text-secondary small"><i class="bi bi-calendar-date me-1"></i> Date :</label>
@@ -53,7 +56,19 @@
                         <option value="">-- Select --</option>
                     </select>
                 </div>
-                <div class="col-md-2" style="border-radius: 0.7rem">
+
+                @* User filter: show only to users with management access *@
+                @if (canAccessUserManagement == "True")
+                {
+                <div class="col-md-3">
+                    <label for="UserName" class="form-label text-secondary small"><i class="bi bi-person me-1"></i> User :</label>
+                    <select asp-for="UserName" asp-items="ViewBag.Users" class="form-select form-control-sm shadow-sm">
+                        <option value="">-- My Data --</option>
+                    </select>
+                </div>
+                }
+
+                <div class="col-md-2" style="border-radius:0.7rem">
                     <button type="submit" class="btn btn-secondary w-100 shadow-sm"><i class="bi bi-filter me-1"></i> Search</button>
                 </div>
             </div>
@@ -151,6 +166,7 @@
     <div class="card shadow-lg p-4 mb-4 border-left-warning border-3" style="background-color:lightgoldenrodyellow">
         <h5 class="mb-3 fw-semibold"><i class="bi bi-upload me-2"></i> Upload Event Contacts</h5>
         <form asp-action="UploadSalesDataEvent" method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+            @Html.AntiForgeryToken()
             <div class="col-md-3">
                 <label for="eventName" class="form-label text-secondary small"><i class="bi bi-tag me-1"></i> Event Name:</label>
                 <input type="text" class="form-control shadow-sm form-control-sm" id="eventName" name="EventName" required>
@@ -180,220 +196,220 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-        // Optionally, hide buttons if no checkboxes are selected
-        $("input[type='checkbox']").change(function () {
-            var anyChecked = $("input[type='checkbox']:checked").length > 0;
-            $(".btn-danger, .btn-success").prop("disabled", !anyChecked);
-        });
-    });
+ // Optionally, hide buttons if no checkboxes are selected
+ $("input[type='checkbox']").change(function () {
+ var anyChecked = $("input[type='checkbox']:checked").length >0;
+ $(".btn-danger, .btn-success").prop("disabled", !anyChecked);
+ });
+ });
 </script>
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const uploadButton = document.getElementById('uploadButton');
-        const fileUpload = document.getElementById('fileUpload');
-        const uploadForm = document.getElementById('uploadForm');
+ document.addEventListener('DOMContentLoaded', function () {
+ const uploadButton = document.getElementById('uploadButton');
+ const fileUpload = document.getElementById('fileUpload');
+ const uploadForm = document.getElementById('uploadForm');
 
-        if (uploadButton && fileUpload && uploadForm) {
+ if (uploadButton && fileUpload && uploadForm) {
 
-            uploadButton.addEventListener('click', function () {
-                fileUpload.click();
-            });
+ uploadButton.addEventListener('click', function () {
+ fileUpload.click();
+ });
 
-            fileUpload.addEventListener('change', function () {
-                if (fileUpload.files.length > 0) {
-                    showSpinner(); // Show loader
-                    uploadForm.submit();
-                }
-            });
-        }
-    });
+ fileUpload.addEventListener('change', function () {
+ if (fileUpload.files.length >0) {
+ showSpinner(); // Show loader
+ uploadForm.submit();
+ }
+ });
+ }
+ });
 
-    function showSpinner() {
-        document.getElementById("spinner-overlay").style.display = "flex";
-    }
+ function showSpinner() {
+ document.getElementById("spinner-overlay").style.display = "flex";
+ }
 
-    function hideSpinner() {
-        document.getElementById("spinner-overlay").style.display = "none";
-    }
+ function hideSpinner() {
+ document.getElementById("spinner-overlay").style.display = "none";
+ }
 
-    // Hide the loader when the page is fully loaded (after form submission)
-    window.addEventListener('load', function () {
-        hideSpinner();
-    });
-    
-    const fileUpload = document.getElementById('fileUpload');
-        if (fileUpload) {
-            fileUpload.value = '';
-        }
+ // Hide the loader when the page is fully loaded (after form submission)
+ window.addEventListener('load', function () {
+ hideSpinner();
+ });
+ 
+ const fileUpload = document.getElementById('fileUpload');
+ if (fileUpload) {
+ fileUpload.value = '';
+ }
 </script>
 
 
 <style>
-    body {
-        background-color: lightblue; /* Light gray background for a professional feel */
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Professional font */
-    }
+ body {
+ background-color: lightblue; /* Light gray background for a professional feel */
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Professional font */
+ }
 
-    .header {
-        box-shadow: 0 0.15rem 0.25rem rgba(0, 0, 0, 0.075) !important; /* Subtle shadow */
-    }
+ .header {
+ box-shadow:00.15rem0.25rem rgba(0,0,0,0.075) !important; /* Subtle shadow */
+ }
 
-    .card {
-        border: none;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05) !important; /* More pronounced card shadow */
-        border-radius: 0.7rem;
-    }
+ .card {
+ border: none;
+ box-shadow:00.5rem1rem rgba(0,0,0,0.05) !important; /* More pronounced card shadow */
+ border-radius:0.7rem;
+ }
 
-    .card-title {
-        font-size: 1rem; /* Slightly smaller, more professional title */
-    }
+ .card-title {
+ font-size:1rem; /* Slightly smaller, more professional title */
+ }
 
-    .form-label {
-        font-size: 0.875rem; /* Slightly smaller, less intrusive labels */
-        font-weight: 500;
-    }
+ .form-label {
+ font-size:0.875rem; /* Slightly smaller, less intrusive labels */
+ font-weight:500;
+ }
 
-    .form-control-sm {
-        font-size: 0.875rem;
-        border-radius: 0.7rem;
-    }
+ .form-control-sm {
+ font-size:0.875rem;
+ border-radius:0.7rem;
+ }
 
-    .btn-sm {
-        font-size: 1rem;
-        border-radius: 1.0rem;
-    }
+ .btn-sm {
+ font-size:1rem;
+ border-radius:1.0rem;
+ }
 
-    .table-responsive {
-        border: 1px solid #e3e6f0; /* Light border for tables */
-        border-radius: 0.8rem;
-    }
+ .table-responsive {
+ border:1px solid #e3e6f0; /* Light border for tables */
+ border-radius:0.8rem;
+ }
 
-    .table thead th {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #4e4e4e; /* Darker text for table headers */
-        border-bottom: 2px solid #d1d3e2; /* More prominent header bottom border */
-        padding: 0.75rem;
-    }
+ .table thead th {
+ font-size:0.875rem;
+ font-weight:600;
+ color: #4e4e4e; /* Darker text for table headers */
+ border-bottom:2px solid #d1d3e2; /* More prominent header bottom border */
+ padding:0.75rem;
+ }
 
-    .table tbody td {
-        font-size: 0.875rem;
-        color: #666;
-        padding: 0.75rem;
-    }
+ .table tbody td {
+ font-size:0.875rem;
+ color: #666;
+ padding:0.75rem;
+ }
 
-    .alert {
-        border-radius: 0.4rem;
-        margin-bottom: 0; /* Remove default bottom margin in the grid layout */
-    }
+ .alert {
+ border-radius:0.4rem;
+ margin-bottom:0; /* Remove default bottom margin in the grid layout */
+ }
 
-    .small {
-        font-size: 1rem !important; /* Use Bootstrap's small class for extra emphasis */
-    }
+ .small {
+ font-size:1rem !important; /* Use Bootstrap's small class for extra emphasis */
+ }
 </style>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Attach click event after DOM is loaded
-        const downloadBtn = document.getElementById("downloadBtn");
-        if (!downloadBtn) {
-            console.error("Please try again!");
-            return;
-        }
+ document.addEventListener("DOMContentLoaded", function () {
+ // Attach click event after DOM is loaded
+ const downloadBtn = document.getElementById("downloadBtn");
+ if (!downloadBtn) {
+ console.error("Please try again!");
+ return;
+ }
 
-        downloadBtn.addEventListener("click", function (event) {
-            event.preventDefault(); // Prevent form submission
+ downloadBtn.addEventListener("click", function (event) {
+ event.preventDefault(); // Prevent form submission
 
-            const spinner = document.getElementById("spinner-overlay");
-            if (!spinner) {
-                console.error("Spinner overlay element not found!");
-                return;
-            }
+ const spinner = document.getElementById("spinner-overlay");
+ if (!spinner) {
+ console.error("Spinner overlay element not found!");
+ return;
+ }
 
-            // Show loader
-            spinner.style.display = "flex";
+ // Show loader
+ spinner.style.display = "flex";
 
-            fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Server responded with " + response.status);
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    // Hide loader
-                    spinner.style.display = "none";
+ fetch('/SalesData/DownloadTemplate', { method: 'GET', cache: 'no-store' })
+ .then(response => {
+ if (!response.ok) {
+ throw new Error("Server responded with " + response.status);
+ }
+ return response.blob();
+ })
+ .then(blob => {
+ // Hide loader
+ spinner.style.display = "none";
 
-                    // Create a temporary link element to trigger download
-                    const link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = "MailingTemplate.xlsx";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                })
-                .catch(error => {
-                    // Hide loader
-                    spinner.style.display = "none";
-                    console.error("Download failed:", error);
-                    alert("Server is not responding. Please try again.");
-                });
-        });
-    });
+ // Create a temporary link element to trigger download
+ const link = document.createElement("a");
+ link.href = window.URL.createObjectURL(blob);
+ link.download = "MailingTemplate.xlsx";
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ })
+ .catch(error => {
+ // Hide loader
+ spinner.style.display = "none";
+ console.error("Download failed:", error);
+ alert("Server is not responding. Please try again.");
+ });
+ });
+ });
 </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Get the button element
-        const downloadBtn1 = document.getElementById("downloadBtn1");
-        if (!downloadBtn1) {
-            console.error("Download button not found in the DOM.");
-            return;
-        }
+ document.addEventListener("DOMContentLoaded", function () {
+ // Get the button element
+ const downloadBtn1 = document.getElementById("downloadBtn1");
+ if (!downloadBtn1) {
+ console.error("Download button not found in the DOM.");
+ return;
+ }
 
-        downloadBtn1.addEventListener("click", function (event) {
-            event.preventDefault(); // Prevent form submission if button is inside a form
+ downloadBtn1.addEventListener("click", function (event) {
+ event.preventDefault(); // Prevent form submission if button is inside a form
 
-            // Get the spinner element
-            const spinner = document.getElementById("spinner-overlay");
-            if (!spinner) {
-                console.error("Spinner overlay element not found!");
-                return;
-            }
+ // Get the spinner element
+ const spinner = document.getElementById("spinner-overlay");
+ if (!spinner) {
+ console.error("Spinner overlay element not found!");
+ return;
+ }
 
-            // Show loader
-            spinner.style.display = "flex";
+ // Show loader
+ spinner.style.display = "flex";
 
-            // Fetch the file from the server
-            fetch('/SalesData/DownloadTemplate1', { method: 'GET', cache: 'no-store' })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Server responded with " + response.status);
-                    }
-                    return response.blob(); // Convert response to Blob
-                })
-                .then(blob => {
-                    // Hide loader
-                    spinner.style.display = "none";
+ // Fetch the file from the server
+ fetch('/SalesData/DownloadTemplate1', { method: 'GET', cache: 'no-store' })
+ .then(response => {
+ if (!response.ok) {
+ throw new Error("Server responded with " + response.status);
+ }
+ return response.blob(); // Convert response to Blob
+ })
+ .then(blob => {
+ // Hide loader
+ spinner.style.display = "none";
 
-                    // Create a temporary link element to trigger download
-                    const link = document.createElement("a");
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = "EventTemplate.xlsx"; // Set the file name
-                    document.body.appendChild(link);
-                    link.click(); // Trigger the download
-                    document.body.removeChild(link); // Clean up the temporary link
-                })
-                .catch(error => {
-                    // Hide loader
-                    spinner.style.display = "none";
-                    console.error("Download failed:", error);
-                    alert("Server is not responding. Please try again.");
-                });
-        });
-    });
+ // Create a temporary link element to trigger download
+ const link = document.createElement("a");
+ link.href = window.URL.createObjectURL(blob);
+ link.download = "EventTemplate.xlsx"; // Set the file name
+ document.body.appendChild(link);
+ link.click(); // Trigger the download
+ document.body.removeChild(link); // Clean up the temporary link
+ })
+ .catch(error => {
+ // Hide loader
+ spinner.style.display = "none";
+ console.error("Download failed:", error);
+ alert("Server is not responding. Please try again.");
+ });
+ });
+ });
 </script>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
