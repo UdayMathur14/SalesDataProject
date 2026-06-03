@@ -3,7 +3,6 @@
     ViewData["Title"] = "View Records";
     var canAccessUserManagement = ViewContext.HttpContext.Session.GetString("CanAccessUserManagement");
 }
-
 <div class="container mt-4">
     <div class="header d-flex justify-content-between align-items-center mb-3 text-white rounded-4 p-4" style="background-color:cadetblue;border-radius:0.7rem">
         <h4 class="mb-0"><i class="bi bi-clipboard-check me-2"></i> Lead Data Management</h4>
@@ -19,16 +18,21 @@
             </button>
             <a href="@Url.Action("Index", "Home")" class="btn btn-outline-light btn-sm shadow-sm"><i class="bi bi-arrow-left me-1"></i> Back</a>
         </div>
+                        
     </div>
 
     <div class="card shadow-lg p-4 mb-5 border-left-info border-3" style="background-color:lightcyan">
         <h5 class="mb-3 fw-semibold"><i class="bi bi-search me-2"></i> Filter Lead Data</h5>
-        <form asp-action="ViewRecord" method="post">
+        <form asp-action="ViewRecord" method="post" id="viewRecordForm">
             @Html.AntiForgeryToken()
-            <div class="row g-3 align-items-center">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label for="SelectedDate" class="form-label text-secondary small"><i class="bi bi-calendar-date me-1"></i> Date :</label>
-                    <input asp-for="SelectedDate" class="form-select form-control-sm shadow-sm" type="date" placeholder="Choose date" onfocus="this.showPicker()" />
+                    <label for="FromDate" class="form-label text-secondary small"><i class="bi bi-calendar2-minus me-1"></i> From :</label>
+                    <input asp-for="FromDate" class="form-control form-control-sm shadow-sm" type="date" />
+                </div>
+                <div class="col-md-3">
+                    <label for="ToDate" class="form-label text-secondary small"><i class="bi bi-calendar2-plus me-1"></i> To :</label>
+                    <input asp-for="ToDate" class="form-control form-control-sm shadow-sm" type="date" />
                 </div>
                 <div class="col-md-3">
                     <label for="RecordType" class="form-label text-secondary small"><i class="bi bi-list-ul me-1"></i> Type :</label>
@@ -68,7 +72,18 @@
                 </div>
                 }
 
+                <div class="col-md-2">
+                    <label for="PageSize" class="form-label text-secondary small"><i class="bi bi-list-columns-reverse me-1"></i> Rows :</label>
+                    <select asp-for="PageSize" class="form-select form-control-sm shadow-sm" id="pageSizeSelect">
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="0">All</option>
+                    </select>
+                </div>
                 <div class="col-md-2" style="border-radius:0.7rem">
+                    <input type="hidden" asp-for="CleanPage" />
+                    <input type="hidden" asp-for="BlockedPage" />
                     <button type="submit" class="btn btn-secondary w-100 shadow-sm"><i class="bi bi-filter me-1"></i> Search</button>
                 </div>
             </div>
@@ -82,7 +97,7 @@
                 <div class="card shadow-sm border-left-danger border-3">
                     <div class="card-body">
                         <h6 class="card-title text-danger fw-semibold"><i class="bi bi-x-octagon me-2"></i> Blocked Leads</h6>
-                        <div class="table-responsive rounded">
+                        <div class="table-responsive rounded" style="max-height:420px; overflow:auto">
                             <table class="table table-striped table-hover bg-white mb-0">
                                 <thead class="table-danger text-white small">
                                     <tr>
@@ -109,6 +124,40 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <div class="small text-muted">Total: @Model.BlockedTotalCount</div>
+                            <div>
+                                @{ 
+                                    var blockedTotalPages = (Model.PageSize > 0) ? (int)System.Math.Ceiling((double)Model.BlockedTotalCount / Model.PageSize) : 1; 
+                                    var showBlockedPager = Model.PageSize > 0 && blockedTotalPages > 1;
+                                }
+                                @if (showBlockedPager)
+                                {
+                                    var start = System.Math.Max(1, Model.BlockedPage - 4);
+                                    var end = System.Math.Min(blockedTotalPages, start + 9);
+                                    if (end - start < 9) { start = System.Math.Max(1, end - 9); }
+                                    <nav aria-label="blocked-pagination">
+                                        <ul class="pagination mb-0">
+                                            <li class="page-item @(Model.BlockedPage <= 1 ? "disabled" : "")">
+                                                <button type="button" class="page-link" onclick="goToPage('blocked', @(Model.BlockedPage - 1))">Prev</button>
+                                            </li>
+                                            @for (int p = start; p <= end; p++)
+                                            {
+                                                var active = p == Model.BlockedPage ? "active" : "";
+                                                <li class="page-item @active"><button type="button" class="page-link" onclick="goToPage('blocked', @p)">@p</button></li>
+                                            }
+                                            <li class="page-item @(Model.BlockedPage >= blockedTotalPages ? "disabled" : "")">
+                                                <button type="button" class="page-link" onclick="goToPage('blocked', @(Model.BlockedPage + 1))">Next</button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                }
+                                else
+                                {
+                                    <div class="small text-muted">Showing all</div>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </div>
             }
@@ -126,7 +175,7 @@
                 <div class="card shadow-sm border-left-success border-3">
                     <div class="card-body">
                         <h6 class="card-title text-success fw-semibold"><i class="bi bi-check-circle me-2"></i> Clean Leads</h6>
-                        <div class="table-responsive rounded">
+                        <div class="table-responsive rounded" style="max-height:420px; overflow:auto">
                             <table class="table table-striped table-hover bg-white mb-0">
                                 <thead class="table-success text-white small">
                                     <tr>
@@ -151,6 +200,40 @@
                                 </tbody>
                             </table>
                         </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="small text-muted">Total: @Model.CleanTotalCount</div>
+                        <div>
+                            @{ 
+                                var cleanTotalPages = (Model.PageSize > 0) ? (int)System.Math.Ceiling((double)Model.CleanTotalCount / Model.PageSize) : 1; 
+                                var showCleanPager = Model.PageSize > 0 && cleanTotalPages > 1;
+                            }
+                            @if (showCleanPager)
+                            {
+                                var start = System.Math.Max(1, Model.CleanPage - 4);
+                                var end = System.Math.Min(cleanTotalPages, start + 9);
+                                if (end - start < 9) { start = System.Math.Max(1, end - 9); }
+                                <nav aria-label="clean-pagination">
+                                    <ul class="pagination mb-0">
+                                        <li class="page-item @(Model.CleanPage <= 1 ? "disabled" : "")">
+                                            <button type="button" class="page-link" onclick="goToPage('clean', @(Model.CleanPage - 1))">Prev</button>
+                                        </li>
+                                        @for (int p = start; p <= end; p++)
+                                        {
+                                            var active = p == Model.CleanPage ? "active" : "";
+                                            <li class="page-item @active"><button type="button" class="page-link" onclick="goToPage('clean', @p)">@p</button></li>
+                                        }
+                                        <li class="page-item @(Model.CleanPage >= cleanTotalPages ? "disabled" : "")">
+                                            <button type="button" class="page-link" onclick="goToPage('clean', @(Model.CleanPage + 1))">Next</button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            }
+                            else
+                            {
+                                <div class="small text-muted">Showing all</div>
+                            }
+                        </div>
+                    </div>
                     </div>
                 </div>
             }
@@ -202,6 +285,61 @@
  $(".btn-danger, .btn-success").prop("disabled", !anyChecked);
  });
  });
+</script>
+
+<script>
+    function goToPage(type, page) {
+        if (!page || page < 1) return;
+        var form = document.getElementById('viewRecordForm');
+        if (!form) return;
+        var cleanInput = form.querySelector('input[name="CleanPage"]');
+        var blockedInput = form.querySelector('input[name="BlockedPage"]');
+        if (type === 'clean') {
+            if (cleanInput) cleanInput.value = page;
+            if (blockedInput) blockedInput.value = 1; // reset other pager
+        } else if (type === 'blocked') {
+            if (blockedInput) blockedInput.value = page;
+            if (cleanInput) cleanInput.value = 1; // reset other pager
+        }
+        form.submit();
+    }
+</script>
+
+<script>
+    // Ensure normal search resets paging to first page
+    (function () {
+        var form = document.getElementById('viewRecordForm');
+        if (!form) return;
+        form.addEventListener('submit', function (e) {
+            try {
+                var cleanInput = form.querySelector('input[name="CleanPage"]');
+                var blockedInput = form.querySelector('input[name="BlockedPage"]');
+                if (cleanInput) cleanInput.value = 1;
+                if (blockedInput) blockedInput.value = 1;
+            } catch (ex) {
+                console.error('Error resetting paging inputs', ex);
+            }
+        });
+    })();
+</script>
+
+<script>
+    // When page size changes, reset pages to 1
+    (function () {
+        var form = document.getElementById('viewRecordForm');
+        var pageSizeSelect = document.getElementById('pageSizeSelect');
+        if (!form || !pageSizeSelect) return;
+        pageSizeSelect.addEventListener('change', function () {
+            try {
+                var cleanInput = form.querySelector('input[name="CleanPage"]');
+                var blockedInput = form.querySelector('input[name="BlockedPage"]');
+                if (cleanInput) cleanInput.value = 1;
+                if (blockedInput) blockedInput.value = 1;
+            } catch (ex) {
+                console.error('Error resetting pages on pageSize change', ex);
+            }
+        });
+    })();
 </script>
 
 

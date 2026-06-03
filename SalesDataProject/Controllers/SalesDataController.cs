@@ -1231,49 +1231,8 @@ namespace SalesDataProject.Controllers
                 var category = model.Category?.ToUpper()?.Trim();
                 var eventName = model.Event?.Trim();
                 var selectedDate = model.SelectedDate?.Date;
-
-                // Clear any previous data
-                model.CleanCustomers = new List<ProspectCustomerClean>();
-                model.BlockedCustomers = new List<ProspectCustomerBlocked>();
-
-                // Fetch based on Record Type
-                if (model.RecordType == "Blocked")
-                {
-                    model.BlockedCustomers = await _context.BlockedProspects
-                        .Where(c => c.CREATED_BY == username &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
-                }
-                else if (model.RecordType == "Clean")
-                {
-                    model.CleanCustomers = await _context.CleanProspects
-                        .Where(c =>
-                            c.CREATED_BY == username &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
-                }
-                else // "All" or blank
-                {
-                    model.CleanCustomers = await _context.CleanProspects
-                        .Where(c =>
-                            c.CREATED_BY == username &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
-
-                    model.BlockedCustomers = await _context.BlockedProspects
-                        .Where(c =>
-                            c.BLOCKED_BY == username &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
-                }
+                var fromDate = model.FromDate?.Date;
+                var toDate = model.ToDate?.Date;
 
                 // Determine which user's data to fetch (admin can choose another user)
                 var targetUser = username;
@@ -1282,47 +1241,91 @@ namespace SalesDataProject.Controllers
                     targetUser = model.UserName;
                 }
 
-                // Clear any previous data
-                model.CleanCustomers = new List<ProspectCustomerClean>();
-                model.BlockedCustomers = new List<ProspectCustomerBlocked>();
+                // Ensure paging defaults and detect if paging enabled (PageSize == 0 => show all)
+                var pagingEnabled = model.PageSize > 0;
+                if (model.CleanPage <= 0) model.CleanPage = 1;
+                if (model.BlockedPage <= 0) model.BlockedPage = 1;
 
-                // Fetch based on Record Type, use CREATED_BY == targetUser
-                if (model.RecordType == "Blocked")
-                {
-                    model.BlockedCustomers = await _context.BlockedProspects
-                        .Where(c => c.CREATED_BY == targetUser &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
-                }
-                else if (model.RecordType == "Clean")
-                {
-                    model.CleanCustomers = await _context.CleanProspects
-                        .Where(c =>
-                            c.CREATED_BY == targetUser &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
-                }
-                else // "All" or blank
-                {
-                    model.CleanCustomers = await _context.CleanProspects
-                        .Where(c =>
-                            c.CREATED_BY == targetUser &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
+                // Build base queries
+                var cleanQuery = _context.CleanProspects.AsQueryable();
+                var blockedQuery = _context.BlockedProspects.AsQueryable();
 
-                    model.BlockedCustomers = await _context.BlockedProspects
-                        .Where(c =>
-                            c.CREATED_BY == targetUser &&
-                            (string.IsNullOrEmpty(category) || c.CATEGORY.ToUpper() == category) &&
-                            (string.IsNullOrEmpty(eventName) || c.EVENT_NAME == eventName) &&
-                            (!selectedDate.HasValue || c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate))
-                        .ToListAsync();
+                // Apply user filter
+                if (!string.IsNullOrEmpty(targetUser))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_BY == targetUser);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_BY == targetUser);
+                }
+
+                // Apply category & event filters
+                if (!string.IsNullOrEmpty(category))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                    blockedQuery = blockedQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                }
+                if (!string.IsNullOrEmpty(eventName))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.EVENT_NAME == eventName);
+                    blockedQuery = blockedQuery.Where(c => c.EVENT_NAME == eventName);
+                }
+
+                // Apply date filters (SelectedDate kept for backward compat)
+                if (selectedDate.HasValue)
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate.Value);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate.Value);
+                }
+                else
+                {
+                    if (fromDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                    }
+                    if (toDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                    }
+                }
+
+                // Count totals
+                model.CleanTotalCount = await cleanQuery.CountAsync();
+                model.BlockedTotalCount = await blockedQuery.CountAsync();
+
+                // Apply record type and paging (if pagingEnabled). If PageSize == 0 => return all matching rows.
+                if (string.Equals(model.RecordType, "Blocked", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var ordered = blockedQuery.OrderByDescending(c => c.CREATED_ON);
+                    model.BlockedCustomers = pagingEnabled
+                        ? await ordered.Skip((model.BlockedPage - 1) * model.PageSize).Take(model.PageSize).ToListAsync()
+                        : await ordered.ToListAsync();
+                    model.CleanCustomers = new List<ProspectCustomerClean>();
+                    if (!pagingEnabled) model.BlockedPage = 1;
+                }
+                else if (string.Equals(model.RecordType, "Clean", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var ordered = cleanQuery.OrderByDescending(c => c.CREATED_ON);
+                    model.CleanCustomers = pagingEnabled
+                        ? await ordered.Skip((model.CleanPage - 1) * model.PageSize).Take(model.PageSize).ToListAsync()
+                        : await ordered.ToListAsync();
+                    model.BlockedCustomers = new List<ProspectCustomerBlocked>();
+                    if (!pagingEnabled) model.CleanPage = 1;
+                }
+                else // All
+                {
+                    var orderedClean = cleanQuery.OrderByDescending(c => c.CREATED_ON);
+                    var orderedBlocked = blockedQuery.OrderByDescending(c => c.CREATED_ON);
+
+                    model.CleanCustomers = pagingEnabled
+                        ? await orderedClean.Skip((model.CleanPage - 1) * model.PageSize).Take(model.PageSize).ToListAsync()
+                        : await orderedClean.ToListAsync();
+
+                    model.BlockedCustomers = pagingEnabled
+                        ? await orderedBlocked.Skip((model.BlockedPage - 1) * model.PageSize).Take(model.PageSize).ToListAsync()
+                        : await orderedBlocked.ToListAsync();
+
+                    if (!pagingEnabled) { model.CleanPage = 1; model.BlockedPage = 1; }
                 }
 
                 // Set message
