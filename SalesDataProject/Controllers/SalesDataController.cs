@@ -19,6 +19,155 @@ namespace SalesDataProject.Controllers
             _context = context;
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ExportRecords(UploadResultViewModel model)
+        {
+            try
+            {
+                var username = HttpContext.Session.GetString("Username");
+                var canAccessUserManagement = HttpContext.Session.GetString("CanAccessUserManagement");
+                var category = model.Category?.ToUpper()?.Trim();
+                var eventName = model.Event?.Trim();
+                var selectedDate = model.SelectedDate?.Date;
+                var fromDate = model.FromDate?.Date;
+                var toDate = model.ToDate?.Date;
+
+                // Determine user filtering: allow special value __ALL__ to fetch all users
+                var filterByUser = true;
+                string? targetUser = username;
+                if (canAccessUserManagement == "True")
+                {
+                    if (!string.IsNullOrEmpty(model.UserName))
+                    {
+                        if (model.UserName == "__ALL__")
+                        {
+                            filterByUser = false;
+                        }
+                        else
+                        {
+                            targetUser = model.UserName;
+                        }
+                    }
+                    else
+                    {
+                        targetUser = username;
+                    }
+                }
+
+                // Build base queries
+                var cleanQuery = _context.CleanProspects.AsQueryable();
+                var blockedQuery = _context.BlockedProspects.AsQueryable();
+
+                if (filterByUser && !string.IsNullOrEmpty(targetUser))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_BY == targetUser);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_BY == targetUser);
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                    blockedQuery = blockedQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                }
+                if (!string.IsNullOrEmpty(eventName))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.EVENT_NAME == eventName);
+                    blockedQuery = blockedQuery.Where(c => c.EVENT_NAME == eventName);
+                }
+
+                if (selectedDate.HasValue)
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate.Value);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate.Value);
+                }
+                else
+                {
+                    if (fromDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                    }
+                    if (toDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                    }
+                }
+
+                // Fetch lists according to RecordType (export all matching rows)
+                List<ProspectCustomerClean> cleanList = new List<ProspectCustomerClean>();
+                List<ProspectCustomerBlocked> blockedList = new List<ProspectCustomerBlocked>();
+
+                if (string.Equals(model.RecordType, "Blocked", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    blockedList = await blockedQuery.OrderByDescending(c => c.CREATED_ON).ToListAsync();
+                }
+                else if (string.Equals(model.RecordType, "Clean", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    cleanList = await cleanQuery.OrderByDescending(c => c.CREATED_ON).ToListAsync();
+                }
+                else
+                {
+                    cleanList = await cleanQuery.OrderByDescending(c => c.CREATED_ON).ToListAsync();
+                    blockedList = await blockedQuery.OrderByDescending(c => c.CREATED_ON).ToListAsync();
+                }
+
+                using (var workbook = new ClosedXML.Excel.XLWorkbook())
+                {
+                    // Clean sheet
+                    var cleanSheet = workbook.Worksheets.Add("Clean");
+                    var cleanHeaders = new[] { "Category", "Company Name", "Email", "Contact Number", "Created On", "Created By", "Event" };
+                    for (int i = 0; i < cleanHeaders.Length; i++) cleanSheet.Cell(1, i + 1).Value = cleanHeaders[i];
+                    for (int r = 0; r < cleanList.Count; r++)
+                    {
+                        var row = r + 2;
+                        var c = cleanList[r];
+                        cleanSheet.Cell(row, 1).Value = c.CATEGORY;
+                        cleanSheet.Cell(row, 2).Value = c.COMPANY_NAME;
+                        cleanSheet.Cell(row, 3).Value = c.CUSTOMER_EMAIL;
+                        cleanSheet.Cell(row, 4).Value = c.CUSTOMER_CONTACT_NUMBER1;
+                        cleanSheet.Cell(row, 5).Value = c.CREATED_ON?.ToString("yyyy-MM-dd");
+                        cleanSheet.Cell(row, 6).Value = c.CREATED_BY;
+                        cleanSheet.Cell(row, 7).Value = c.EVENT_NAME;
+                    }
+
+                    // Blocked sheet
+                    var blockedSheet = workbook.Worksheets.Add("Blocked");
+                    var blockedHeaders = new[] { "Category", "Created By", "Company Name", "Email", "Contact Number", "Blocked On", "Blocked Reason", "Blocked By", "Event" };
+                    for (int i = 0; i < blockedHeaders.Length; i++) blockedSheet.Cell(1, i + 1).Value = blockedHeaders[i];
+                    for (int r = 0; r < blockedList.Count; r++)
+                    {
+                        var row = r + 2;
+                        var b = blockedList[r];
+                        blockedSheet.Cell(row, 1).Value = b.CATEGORY;
+                        blockedSheet.Cell(row, 2).Value = b.CREATED_BY;
+                        blockedSheet.Cell(row, 3).Value = b.COMPANY_NAME;
+                        blockedSheet.Cell(row, 4).Value = b.CUSTOMER_EMAIL;
+                        blockedSheet.Cell(row, 5).Value = b.CUSTOMER_CONTACT_NUMBER1;
+                        blockedSheet.Cell(row, 6).Value = b.CREATED_ON?.ToString("yyyy-MM-dd");
+                        blockedSheet.Cell(row, 7).Value = b.BLOCK_REASON;
+                        blockedSheet.Cell(row, 8).Value = b.BLOCKED_BY;
+                        blockedSheet.Cell(row, 9).Value = b.EVENT_NAME;
+                    }
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+                        var fileName = $"FilteredRecords_{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx";
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "Export failed. Please try again.";
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("ViewRecord");
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -1236,9 +1385,20 @@ namespace SalesDataProject.Controllers
 
                 // Determine which user's data to fetch (admin can choose another user)
                 var targetUser = username;
-                if (canAccessUserManagement == "True" && !string.IsNullOrEmpty(model.UserName))
+                var filterByUser = true; // when false, do not apply CREATED_BY filter (i.e., All users)
+                if (canAccessUserManagement == "True")
                 {
-                    targetUser = model.UserName;
+                    if (!string.IsNullOrEmpty(model.UserName))
+                    {
+                        if (model.UserName == "__ALL__")
+                        {
+                            filterByUser = false;
+                        }
+                        else
+                        {
+                            targetUser = model.UserName;
+                        }
+                    }
                 }
 
                 // Ensure paging defaults and detect if paging enabled (PageSize == 0 => show all)
@@ -1250,8 +1410,8 @@ namespace SalesDataProject.Controllers
                 var cleanQuery = _context.CleanProspects.AsQueryable();
                 var blockedQuery = _context.BlockedProspects.AsQueryable();
 
-                // Apply user filter
-                if (!string.IsNullOrEmpty(targetUser))
+                // Apply user filter (skip when admin selected All users)
+                if (filterByUser && !string.IsNullOrEmpty(targetUser))
                 {
                     cleanQuery = cleanQuery.Where(c => c.CREATED_BY == targetUser);
                     blockedQuery = blockedQuery.Where(c => c.CREATED_BY == targetUser);

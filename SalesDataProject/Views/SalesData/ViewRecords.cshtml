@@ -68,6 +68,7 @@
                     <label for="UserName" class="form-label text-secondary small"><i class="bi bi-person me-1"></i> User :</label>
                     <select asp-for="UserName" asp-items="ViewBag.Users" class="form-select form-control-sm shadow-sm">
                         <option value="">-- My Data --</option>
+                        <option value="__ALL__">-- All Users --</option>
                     </select>
                 </div>
                 }
@@ -81,11 +82,14 @@
                         <option value="0">All</option>
                     </select>
                 </div>
-                <div class="col-md-2" style="border-radius:0.7rem">
+                <div class="col-md-2" style="border-radius:0.7rem; display:flex; align-items:end;">
                     <input type="hidden" asp-for="CleanPage" />
                     <input type="hidden" asp-for="BlockedPage" />
                     <button type="submit" class="btn btn-secondary w-100 shadow-sm"><i class="bi bi-filter me-1"></i> Search</button>
                 </div>
+                @* <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" id="exportBtn" class="btn btn-outline-primary w-100 shadow-sm"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Export</button>
+                </div> *@
             </div>
         </form>
     </div>
@@ -102,6 +106,7 @@
                                 <thead class="table-danger text-white small">
                                     <tr>
                                         <th>Category</th>
+                                        @if (canAccessUserManagement == "True") { <th>Created By</th> }
                                         <th>Company Name</th>
                                         <th>Email</th>
                                         <th>Contact Number</th>
@@ -114,6 +119,7 @@
                                     {
                                         <tr>
                                             <td>@customer?.CATEGORY</td>
+                                            @if (canAccessUserManagement == "True") { <td>@customer?.CREATED_BY</td> }
                                             <td>@customer?.COMPANY_NAME</td>
                                             <td>@customer?.CUSTOMER_EMAIL</td>
                                             <td>@customer?.CUSTOMER_CONTACT_NUMBER1</td>
@@ -180,6 +186,7 @@
                                 <thead class="table-success text-white small">
                                     <tr>
                                         <th>Category</th>
+                                        @if (canAccessUserManagement == "True") { <th>Created By</th> }
                                         <th>Company Name</th>
                                         <th>Email</th>
                                         <th>Contact Number</th>
@@ -191,6 +198,7 @@
                                     {
                                         <tr>
                                             <td>@customer?.CATEGORY</td>
+                                            @if (canAccessUserManagement == "True") { <td>@customer?.CREATED_BY</td> }
                                             <td>@customer?.COMPANY_NAME</td>
                                             <td>@customer?.CUSTOMER_EMAIL</td>
                                             <td>@customer?.CUSTOMER_CONTACT_NUMBER1</td>
@@ -321,6 +329,58 @@
             }
         });
     })();
+</script>
+
+<script>
+    // Export filtered data: clone current search form inputs and submit to ExportRecords
+    document.addEventListener('DOMContentLoaded', function () {
+        var exportBtn = document.getElementById('exportBtn');
+        var form = document.getElementById('viewRecordForm');
+        if (!exportBtn || !form) return;
+
+        exportBtn.addEventListener('click', function () {
+            try {
+                var exportForm = document.createElement('form');
+                exportForm.method = 'post';
+                exportForm.action = '/SalesData/ExportRecords';
+
+                // Clone all inputs/selects/textareas from the main form
+                var elements = form.querySelectorAll('input, select, textarea');
+                elements.forEach(function (el) {
+                    if (!el.name) return;
+                    // Skip file inputs
+                    if (el.type === 'file') return;
+                    // For selects and inputs
+                    var clone = document.createElement('input');
+                    clone.type = 'hidden';
+                    clone.name = el.name;
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        if (el.checked) clone.value = el.value;
+                        else return;
+                    } else {
+                        clone.value = el.value;
+                    }
+                    exportForm.appendChild(clone);
+                });
+
+                // Append the anti-forgery token if present in the form
+                var token = form.querySelector('input[name="__RequestVerificationToken"]');
+                if (token) {
+                    var t = document.createElement('input');
+                    t.type = 'hidden';
+                    t.name = token.name;
+                    t.value = token.value;
+                    exportForm.appendChild(t);
+                }
+
+                document.body.appendChild(exportForm);
+                exportForm.submit();
+            } catch (err) {
+                console.error('Export failed', err);
+                alert('Export failed. Check console for details.');
+            }
+        });
+    });
 </script>
 
 <script>
