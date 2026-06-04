@@ -702,8 +702,7 @@ namespace SalesDataProject.Controllers
 
                 var validCategories = new[]
                 {
-            "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT",
-            "MSME", "LAW FIRM", "INDIVIDUAL"
+            "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "LAW FIRM", "INDIVIDUAL"
         };
 
                 // Common domains loaded once
@@ -1249,7 +1248,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 8).Value = "9876543210";
                     worksheet.Cell(2, 9).Value = "DELHI";
                     worksheet.Cell(2, 10).Value = "NEW DELHI";
-                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/MSME/University/PCT/Individual";
+                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/University/PCT/Individual";
                     worksheet.Cell(2, 12).Value = "Please delete This row and follow this format.";
 
                     // Style the example row (Gray, italic and background color)
@@ -1324,7 +1323,7 @@ namespace SalesDataProject.Controllers
                     worksheet.Cell(2, 8).Value = "9876543210";
                     worksheet.Cell(2, 9).Value = "DELHI";
                     worksheet.Cell(2, 10).Value = "NEW DELHI";
-                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/MSME/University/PCT/Individual";
+                    worksheet.Cell(2, 11).Value = "Corporate/Law Firm/University/PCT/Individual";
 
                     // Adjust column widths to fit content
                     worksheet.Columns().AdjustToContents();
