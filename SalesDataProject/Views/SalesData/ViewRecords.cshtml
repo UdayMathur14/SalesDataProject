@@ -79,6 +79,8 @@
                         <option value="20">20</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
                         <option value="0">All</option>
                     </select>
                 </div>
@@ -101,8 +103,11 @@
                 <div class="card shadow-sm border-left-danger border-3">
                     <div class="card-body">
                         <h6 class="card-title text-danger fw-semibold"><i class="bi bi-x-octagon me-2"></i> Blocked Leads</h6>
-                        <div class="table-responsive rounded" style="max-height:420px; overflow:auto">
-                            <table class="table table-striped table-hover bg-white mb-0">
+                        <div class="mb-2">
+                            <input type="text" id="filterBlocked" class="form-control form-control-sm" placeholder="Filter blocked leads..." />
+                        </div>
+                        <div class="table-responsive rounded" style="max-height:720px; overflow:auto; overflow-x: scroll; text-wrap:nowrap;">
+                            <table id="blockedTable" class="table table-striped table-hover bg-white mb-0">
                                 <thead class="table-danger text-white small">
                                     <tr>
                                         <th>Category</th>
@@ -111,7 +116,11 @@
                                         <th>Email</th>
                                         <th>Contact Number</th>
                                         <th>Blocked On</th>
-                                        <th>Blocked Reason</th>
+                                        @if (canAccessUserManagement == "True")
+                                        {
+                                            <th>Blocked Reason</th>
+                                            <th>Blocked By</th>
+                                        }
                                     </tr>
                                 </thead>
                                 <tbody class="small">
@@ -124,7 +133,11 @@
                                             <td>@customer?.CUSTOMER_EMAIL</td>
                                             <td>@customer?.CUSTOMER_CONTACT_NUMBER1</td>
                                             <td>@(customer?.CREATED_ON != null ? customer?.CREATED_ON.Value.ToString("yyyy-MM-dd") : "")</td>
-                                            <td>@customer?.BLOCK_REASON</td>
+                                            @if (canAccessUserManagement == "True")
+                                            {
+                                                <td>@customer?.BLOCK_REASON</td>
+                                                <td>@customer?.BLOCKED_BY</td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>
@@ -181,8 +194,11 @@
                 <div class="card shadow-sm border-left-success border-3">
                     <div class="card-body">
                         <h6 class="card-title text-success fw-semibold"><i class="bi bi-check-circle me-2"></i> Clean Leads</h6>
-                        <div class="table-responsive rounded" style="max-height:420px; overflow:auto">
-                            <table class="table table-striped table-hover bg-white mb-0">
+                        <div class="mb-2">
+                            <input type="text" id="filterClean" class="form-control form-control-sm" placeholder="Filter clean leads..." />
+                        </div>
+                        <div class="table-responsive rounded" style="max-height:720px; overflow:auto; overflow-x: scroll; text-wrap:nowrap;">
+                            <table id="cleanTable" class="table table-striped table-hover bg-white mb-0">
                                 <thead class="table-success text-white small">
                                     <tr>
                                         <th>Category</th>
@@ -296,6 +312,31 @@
 </script>
 
 <script>
+    // Simple client-side table filter for blocked and clean tables
+    (function () {
+        function filterTable(inputId, tableSelector) {
+            var input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('input', function () {
+                var filter = input.value.toLowerCase();
+                var table = document.querySelector(tableSelector);
+                if (!table) return;
+                var rows = table.querySelectorAll('tbody tr');
+                rows.forEach(function (row) {
+                    var text = row.textContent.toLowerCase();
+                    row.style.display = text.indexOf(filter) > -1 ? '' : 'none';
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            filterTable('filterBlocked', '#blockedTable');
+            filterTable('filterClean', '#cleanTable');
+        });
+    })();
+</script>
+
+<script>
     function goToPage(type, page) {
         if (!page || page < 1) return;
         var form = document.getElementById('viewRecordForm');
@@ -340,41 +381,11 @@
 
         exportBtn.addEventListener('click', function () {
             try {
-                var exportForm = document.createElement('form');
-                exportForm.method = 'post';
-                exportForm.action = '/SalesData/ExportRecords';
-
-                // Clone all inputs/selects/textareas from the main form
-                var elements = form.querySelectorAll('input, select, textarea');
-                elements.forEach(function (el) {
-                    if (!el.name) return;
-                    // Skip file inputs
-                    if (el.type === 'file') return;
-                    // For selects and inputs
-                    var clone = document.createElement('input');
-                    clone.type = 'hidden';
-                    clone.name = el.name;
-                    if (el.type === 'checkbox' || el.type === 'radio') {
-                        if (el.checked) clone.value = el.value;
-                        else return;
-                    } else {
-                        clone.value = el.value;
-                    }
-                    exportForm.appendChild(clone);
-                });
-
-                // Append the anti-forgery token if present in the form
-                var token = form.querySelector('input[name="__RequestVerificationToken"]');
-                if (token) {
-                    var t = document.createElement('input');
-                    t.type = 'hidden';
-                    t.name = token.name;
-                    t.value = token.value;
-                    exportForm.appendChild(t);
-                }
-
-                document.body.appendChild(exportForm);
-                exportForm.submit();
+                // Submit the existing form to the ExportRecords endpoint so antiforgery token and all fields are posted naturally
+                var originalAction = form.action;
+                form.action = '/SalesData/ExportRecords';
+                form.submit();
+                // No restoration needed because navigation/download will happen; if user stays, page reloads on response.
             } catch (err) {
                 console.error('Export failed', err);
                 alert('Export failed. Check console for details.');

@@ -17,7 +17,7 @@
         // Pagination
         public int CleanPage { get; set; } = 1;
         public int BlockedPage { get; set; } = 1;
-        public int PageSize { get; set; } = 50;
+        public int PageSize { get; set; } = 20;
         public int CleanTotalCount { get; set; }
         public int BlockedTotalCount { get; set; }
 
