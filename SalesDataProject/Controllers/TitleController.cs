@@ -531,6 +531,54 @@ namespace SalesDataProject.Controllers
             return View("ViewTitles", model);
         }
 
+        // AJAX endpoint: returns only the table rows partial so client can update results live
+        [HttpGet]
+        public async Task<IActionResult> QueryDataAjax(string filterId, string filterCodeReference, string filterInvoiceNumber, string titleYear, string filterTitle)
+        {
+            var query = _context.Titles.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filterCodeReference))
+            {
+                query = query.Where(x => x.CodeReference.Contains(filterCodeReference));
+            }
+
+            if (!string.IsNullOrEmpty(filterInvoiceNumber))
+            {
+                query = query.Where(x => x.InvoiceNumber.Contains(filterInvoiceNumber));
+            }
+
+            if (!string.IsNullOrEmpty(titleYear))
+            {
+                query = query.Where(x => x.TitleYear.Contains(titleYear));
+            }
+
+            if (!string.IsNullOrEmpty(filterTitle))
+            {
+                var ft = filterTitle.ToLower();
+                query = query.Where(x => !string.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(ft));
+            }
+
+            // execute and order descending so latest appear first
+            var list = await query.OrderByDescending(x => x.Id).ToListAsync();
+
+            // If filterId provided, support DB Id or UI 1-based index mapping
+            List<TitleValidationViewModel> finalList = new List<TitleValidationViewModel>();
+            if (!string.IsNullOrEmpty(filterId) && int.TryParse(filterId, out int fid))
+            {
+                var byDbId = list.FirstOrDefault(x => x.Id == fid);
+                if (byDbId != null) finalList.Add(byDbId);
+                else if (fid >= 1 && fid <= list.Count) finalList.Add(list[fid - 1]);
+            }
+            else
+            {
+                finalList.AddRange(list);
+            }
+
+            ViewData["CanDeleteTitles"] = HttpContext.Session.GetString("CanDeleteTitles");
+
+            return PartialView("_TitleRows", finalList);
+        }
+
 
         [HttpGet]
         public IActionResult GetDropdownData()
@@ -547,9 +595,13 @@ namespace SalesDataProject.Controllers
                                           .Distinct()
                                           .ToList();
 
-            
+            var titles = _context.Titles
+                                  .Where(x => !string.IsNullOrEmpty(x.Title))
+                                  .Select(x => x.Title)
+                                  .Distinct()
+                                  .ToList();
 
-            return Json(new { codeReferences, invoiceNumbers });
+            return Json(new { codeReferences, invoiceNumbers, titles });
         }
 
         public async Task<IActionResult> DownloadExcel()

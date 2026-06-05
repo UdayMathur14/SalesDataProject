@@ -49,6 +49,15 @@
                 <ul id="invoiceNumberList" class="dropdown-list"></ul>
             </div>
 
+            <!-- Title filter -->
+            <div class="col-md-3 position-relative">
+                <label class="form-label fw-semibold text-muted ">Title</label>
+                <input type="text" name="filterTitle" id="filterTitle"
+                       class="form-control form-control-sm shadow-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Search Title" autocomplete="off" value="@ViewData["FilterTitle"]" />
+                <ul id="titleList" class="dropdown-list"></ul>
+            </div>
+
             <!-- Filter by ID -->
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted ">Filter by ID</label>
@@ -178,6 +187,38 @@
             $('input[name="selectedIds"]').prop('checked', this.checked);
         });
     });
+</script>
+
+<script>
+    // Live AJAX Title search (debounced)
+    (function () {
+        var timeout = null;
+        var input = document.getElementById('filterTitle');
+        if (!input) return;
+
+        input.addEventListener('input', function (e) {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                try {
+                    var form = document.getElementById('filterForm');
+                    var params = new URLSearchParams(new FormData(form));
+                    // call AJAX endpoint
+                    fetch('/Title/QueryDataAjax?' + params.toString())
+                        .then(function (res) { return res.text(); })
+                        .then(function (html) {
+                            var parser = new DOMParser();
+                            var doc = parser.parseFromString(html, 'text/html');
+                            var newTbody = doc.querySelector('#titleRows');
+                            if (newTbody) {
+                                var oldTbody = document.querySelector('#titleRows');
+                                if (oldTbody) oldTbody.parentNode.replaceChild(newTbody, oldTbody);
+                            }
+                        })
+                        .catch(function (err) { console.error('Live title search failed', err); });
+                } catch (ex) { console.error(ex); }
+            }, 400);
+        });
+    })();
 </script>
 
 <script>
@@ -353,37 +394,54 @@
             .then(data => {
                 populateDropdown('filterCodeReference', 'codeReferenceList', data.codeReferences);
                 populateDropdown('filterInvoiceNumber', 'invoiceNumberList', data.invoiceNumbers);
+                // Populate titles for title autocomplete if available
+                if (data.titles) {
+                    populateDropdown('filterTitle', 'titleList', data.titles);
+                }
             })
             .catch(error => console.error('Error fetching dropdown data:', error));
 
         function populateDropdown(inputId, listId, items) {
             const input = document.getElementById(inputId);
             const list = document.getElementById(listId);
+            if (!input || !list) return;
+
+            // Ensure items is an array
+            if (!Array.isArray(items)) items = [];
 
             input.addEventListener('input', function () {
-                const filter = this.value.toLowerCase();
-                list.innerHTML = '';
+                try {
+                    const filter = (this.value || '').toLowerCase();
+                    list.innerHTML = '';
 
-                const filtered = items.filter(item => item.toLowerCase().includes(filter));
-                filtered.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    li.className = 'dropdown-item';
-                    li.addEventListener('click', function () {
-                        input.value = item;
-                        list.innerHTML = '';
+                    const filtered = items.filter(function(item) {
+                        return (item || '').toLowerCase().includes(filter);
                     });
-                    list.appendChild(li);
-                });
 
-                list.style.display = filtered.length ? 'block' : 'none';
+                    filtered.forEach(function(item) {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        li.className = 'dropdown-item';
+                        li.addEventListener('click', function () {
+                            input.value = item;
+                            list.innerHTML = '';
+                        });
+                        list.appendChild(li);
+                    });
+
+                    list.style.display = filtered.length ? 'block' : 'none';
+                } catch (err) {
+                    console.error('Autocomplete error for', inputId, err);
+                }
             });
 
             // Hide dropdown when clicking outside
             document.addEventListener('click', function (e) {
-                if (!input.contains(e.target) && !list.contains(e.target)) {
-                    list.innerHTML = '';
-                }
+                try {
+                    if (!input.contains(e.target) && !list.contains(e.target)) {
+                        list.innerHTML = '';
+                    }
+                } catch (ex) {}
             });
         }
 
