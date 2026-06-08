@@ -23,7 +23,7 @@
         </a>
     </div>
 
-    <form method="get" asp-action="querydata"
+    <form id="filterForm" method="get" asp-action="querydata"
           class="p-4 rounded-4 shadow-sm mb-4"
           style="background: white; border: 1px solid #e3e6ea; border-radius:16px">
 
@@ -59,17 +59,29 @@
                 </ul>
             </div>
 
+            <!-- Title (new) -->
+            <div class="col-md-3 position-relative">
+                <label class="form-label fw-semibold text-muted">Title</label>
+                <input type="text" id="filterTitle" name="filterTitle"
+                       value="@ViewData["FilterTitle"]"
+                       class="form-control form-control-sm rounded-3 border-primary-subtle"
+                       placeholder="🔎 Search Title" autocomplete="off">
+                <ul id="titleList" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto; display:none; position:absolute;"></ul>
+            </div>
+
             <!-- ID -->
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted">Filter by ID</label>
                 <input type="text" name="filterId"
                        value="@ViewData["FilterId"]"
                        class="form-control form-control-sm rounded-3 border-primary-subtle"
                        placeholder="🔎 ID">
             </div>
+        </div>
 
+        <div class="row g-3 align-items-end mt-3">
             <!-- Year -->
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted">Financial Year</label>
                 <input type="text" name="titleYear"
                        value="@ViewData["TitleYear"]"
@@ -78,7 +90,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-md-3 ms-auto d-flex gap-2">
                 <button type="submit"
                         class="btn btn-primary btn-sm fw-semibold w-100 rounded-pill shadow-sm">
                     🔍 Filter
@@ -205,10 +217,27 @@
 </script>
 
 <script>
-    document.getElementById('clearButton').addEventListener('click', function () {
-        document.getElementById('filterForm').reset();
-        window.location.href = '/Title/ViewTitles';
-    });
+    (function () {
+        var clearBtn = document.getElementById('clearButton');
+        if (!clearBtn) return;
+        clearBtn.addEventListener('click', function (e) {
+            try {
+                var form = document.getElementById('filterForm');
+                if (form && typeof form.reset === 'function') {
+                    form.reset();
+                }
+            }
+            catch (err) {
+                console.warn('Clear handler: form not found or reset failed', err);
+            }
+
+            // If the clear button is an anchor with href, allow default navigation.
+            // Otherwise redirect to the ViewTitles route.
+            if (!clearBtn.getAttribute('href')) {
+                window.location.href = '/Title/ViewTitles';
+            }
+        });
+    })();
 </script>
 
 <style>
@@ -377,6 +406,7 @@
             .then(data => {
                 populateDropdown('filterCodeReference', 'codeReferenceList', data.codeReferences);
                 populateDropdown('filterInvoiceNumber', 'invoiceNumberList', data.invoiceNumbers);
+                if (data.titles) populateDropdown('filterTitle', 'titleList', data.titles);
             })
             .catch(error => console.error('Error:', error));
 

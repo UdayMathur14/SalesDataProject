@@ -718,7 +718,7 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber, string titleYear)
+        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber, string titleYear, string filterTitle)
         {
             // Filtering logic as before
             var query = _context.Titles.AsQueryable();
@@ -743,9 +743,26 @@ namespace SalesDataProject.Controllers
                 query = query.Where(x => x.TitleYear.Contains(titleYear));
             }
 
+            if (!string.IsNullOrEmpty(filterTitle))
+            {
+                var ft = filterTitle.ToLower();
+                query = query.Where(x => !string.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(ft));
+            }
+
             var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanDeleteTitles"] = canDeleteTitle;
+
+            // Order by newest first
+            query = query.OrderByDescending(x => x.Id);
+
             var model = await query.ToListAsync();
+
+            // persist filters back to view
+            ViewData["FilterId"] = filterId;
+            ViewData["FilterCodeReference"] = filterCodeReference;
+            ViewData["FilterInvoiceNumber"] = filterInvoiceNumber;
+            ViewData["TitleYear"] = titleYear;
+            ViewData["FilterTitle"] = filterTitle;
 
             ViewData["FilteredCount"] = model.Count;
             return View("ViewTitles", model);
@@ -791,9 +808,13 @@ namespace SalesDataProject.Controllers
                                           .Distinct()
                                           .ToList();
 
-            
+            var titles = _context.Titles
+                                  .Where(x => !string.IsNullOrEmpty(x.Title))
+                                  .Select(x => x.Title)
+                                  .Distinct()
+                                  .ToList();
 
-            return Json(new { codeReferences, invoiceNumbers });
+            return Json(new { codeReferences, invoiceNumbers, titles });
         }
 
         [HttpGet]
