@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <div class="row g-3 align-items-end mt-3">
+        <div class="flex g-3 mt-3">
             <!-- Year -->
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted">Financial Year</label>
@@ -116,7 +116,7 @@
 
     <form id="deleteForm" method="post" action="/Title/DeleteSelected">
         <div class="table-responsive shadow-sm rounded-4" style="max-height: 600px; overflow-y: auto; border: 1px solid #ddd; background: white;">
-            <table class="table table-hover text-start align-middle m-0">
+            <table style="overflow-x:scroll" class="table table-hover text-start align-middle m-0">
                 <thead style="background: linear-gradient(45deg, #4facfe, #00f2fe); color: white; position: sticky; top: 0; z-index: 10;">
                     <tr>
                         @if (hasDeleteAccess == "True")
@@ -131,7 +131,7 @@
                         <th>Modified Title</th>
                         <th>Created By</th>
                         <th>FinancialYear</th>
-                        <th>Date</th>
+                        <th style="text-wrap:nowrap">Date</th>
                         <th class="rounded-end">Status</th>
                     </tr>
                 </thead>
@@ -155,7 +155,7 @@
                                 <td style="max-width: 350px; white-space: normal;">@record.UpdatedTitle</td>
                                 <td>@record.CREATED_BY</td>
                                 <td>@record.TitleYear</td>
-                                <td>@record.CREATED_ON.ToString("dd-MM-yyyy")</td>
+                                <td style="min-width: 100px; white-space: normal; word-break: break-word;">@record.CREATED_ON.ToString("dd-MM-yyyy")</td>
                                 <td><span class="badge bg-success rounded-pill px-3 py-1">@record.Status</span></td>
                             </tr>
                         }
