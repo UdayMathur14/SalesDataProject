@@ -51,7 +51,7 @@
                 <input type="text" id="filterInvoiceNumber" name="filterInvoiceNumber"
                        value="@ViewData["FilterInvoiceNumber"]"
                        class="form-control form-control-sm rounded-3 border-primary-subtle"
-                       placeholder="🔎 Search Invoice No">
+                       placeholder="🔎 Search Lot No">
 
                 <ul id="invoiceNumberList"
                     class="dropdown-menu w-100"
@@ -66,7 +66,7 @@
                        value="@ViewData["FilterTitle"]"
                        class="form-control form-control-sm rounded-3 border-primary-subtle"
                        placeholder="🔎 Search Title" autocomplete="off">
-                <ul id="titleList" class="dropdown-menu w-100" style="max-height:200px; overflow-y:auto; display:none; position:absolute;"></ul>
+                <ul id="titleList" class="dropdown-menu" style="max-height:200px; overflow-y:auto; display:none; position:absolute;width:max-content;max-width:150%"></ul>
             </div>
 
             <!-- ID -->
@@ -79,7 +79,7 @@
             </div>
         </div>
 
-        <div class="flex g-3 mt-3">
+        <div class="d-flex gap-5 mt-3 align-items-end justify-content-start">
             <!-- Year -->
             <div class="col-md-3">
                 <label class="form-label fw-semibold text-muted">Financial Year</label>
@@ -90,7 +90,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="col-md-3 ms-auto d-flex gap-2">
+            <div class="col-md-3 d-flex gap-2 ">
                 <button type="submit"
                         class="btn btn-primary btn-sm fw-semibold w-100 rounded-pill shadow-sm">
                     🔍 Filter
