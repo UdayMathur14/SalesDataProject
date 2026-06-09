@@ -718,7 +718,7 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber, string titleYear, string filterTitle)
+        public async Task<IActionResult> querydata(string filterId, string filterCodeReference, string filterInvoiceNumber, string titleYear, string filterTitle, string filterPaperId)
         {
             // Filtering logic as before
             var query = _context.Titles.AsQueryable();
@@ -749,6 +749,11 @@ namespace SalesDataProject.Controllers
                 query = query.Where(x => !string.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(ft));
             }
 
+            if (!string.IsNullOrEmpty(filterPaperId))
+            {
+                query = query.Where(x => !string.IsNullOrEmpty(x.PaperId) && x.PaperId.Contains(filterPaperId));
+            }
+
             var canDeleteTitle = HttpContext.Session.GetString("CanDeleteTitles");
             ViewData["CanDeleteTitles"] = canDeleteTitle;
 
@@ -763,6 +768,7 @@ namespace SalesDataProject.Controllers
             ViewData["FilterInvoiceNumber"] = filterInvoiceNumber;
             ViewData["TitleYear"] = titleYear;
             ViewData["FilterTitle"] = filterTitle;
+            ViewData["FilterPaperId"] = filterPaperId;
 
             ViewData["FilteredCount"] = model.Count;
             return View("ViewTitles", model);
