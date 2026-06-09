@@ -577,7 +577,7 @@ namespace SalesDataProject.Controllers
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UploadTitles.xlsx");
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UploadPublisherTitle.xlsx");
                     }
                 }
             }
