@@ -1529,6 +1529,294 @@ namespace SalesDataProject.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ExportFilteredExcel(UploadResultViewModel model)
+        {
+            try
+            {
+                var canAccessUserManagement = HttpContext.Session.GetString("CanAccessUserManagement");
+                if (canAccessUserManagement != "True")
+                {
+                    TempData["Message"] = "You do not have permission to export data.";
+                    TempData["MessageType"] = "Error";
+                    return RedirectToAction("ViewRecords");
+                }
+
+                var username = HttpContext.Session.GetString("Username");
+                var category = model.Category?.ToUpper()?.Trim();
+                var eventName = model.Event?.Trim();
+                var selectedDate = model.SelectedDate?.Date;
+                var fromDate = model.FromDate?.Date;
+                var toDate = model.ToDate?.Date;
+
+                // Build base queries
+                var cleanQuery = _context.CleanProspects.AsNoTracking().AsQueryable();
+                var blockedQuery = _context.BlockedProspects.AsNoTracking().AsQueryable();
+
+                // Apply user filter (if manager selected specific user)
+                if (!string.IsNullOrEmpty(model.UserName) && model.UserName != "__ALL__")
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_BY == model.UserName);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_BY == model.UserName);
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                    blockedQuery = blockedQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                }
+                if (!string.IsNullOrEmpty(eventName))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.EVENT_NAME == eventName);
+                    blockedQuery = blockedQuery.Where(c => c.EVENT_NAME == eventName);
+                }
+
+                if (selectedDate.HasValue)
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate.Value);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == selectedDate.Value);
+                }
+                else
+                {
+                    if (fromDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                    }
+                    if (toDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                    }
+                }
+
+                // Create workbook with two sheets
+                using (var workbook = new XLWorkbook())
+                {
+                    var cleanSheet = workbook.Worksheets.Add("Clean Leads");
+                    var blockedSheet = workbook.Worksheets.Add("Blocked Leads");
+
+                    // Clean headers
+                    cleanSheet.Cell(1, 1).Value = "Category";
+                    cleanSheet.Cell(1, 2).Value = "Created By";
+                    cleanSheet.Cell(1, 3).Value = "Company Name";
+                    cleanSheet.Cell(1, 4).Value = "Email";
+                    cleanSheet.Cell(1, 5).Value = "Contact Number";
+                    cleanSheet.Cell(1, 6).Value = "Created On";
+                    cleanSheet.Cell(1, 7).Value = "Event";
+
+                    // Blocked headers
+                    blockedSheet.Cell(1, 1).Value = "Category";
+                    blockedSheet.Cell(1, 2).Value = "Created By";
+                    blockedSheet.Cell(1, 3).Value = "Company Name";
+                    blockedSheet.Cell(1, 4).Value = "Email";
+                    blockedSheet.Cell(1, 5).Value = "Contact Number";
+                    blockedSheet.Cell(1, 6).Value = "Blocked On";
+                    blockedSheet.Cell(1, 7).Value = "Blocked Reason";
+                    blockedSheet.Cell(1, 8).Value = "Blocked By";
+                    blockedSheet.Cell(1, 9).Value = "Event";
+
+                    int cleanRow = 2;
+                    int blockedRow = 2;
+
+                    // Fetch and write Clean rows
+                    var orderedClean = cleanQuery.OrderByDescending(c => c.CREATED_ON).AsAsyncEnumerable();
+                    await foreach (var c in orderedClean)
+                    {
+                        cleanSheet.Cell(cleanRow, 1).Value = c.CATEGORY;
+                        cleanSheet.Cell(cleanRow, 2).Value = c.CREATED_BY;
+                        cleanSheet.Cell(cleanRow, 3).Value = c.COMPANY_NAME;
+                        cleanSheet.Cell(cleanRow, 4).Value = c.CUSTOMER_EMAIL;
+                        cleanSheet.Cell(cleanRow, 5).Value = c.CUSTOMER_CONTACT_NUMBER1;
+                        cleanSheet.Cell(cleanRow, 6).Value = c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd") : string.Empty;
+                        cleanSheet.Cell(cleanRow, 7).Value = c.EVENT_NAME;
+                        cleanRow++;
+                    }
+
+                    // Fetch and write Blocked rows
+                    var orderedBlocked = blockedQuery.OrderByDescending(b => b.CREATED_ON).AsAsyncEnumerable();
+                    await foreach (var b in orderedBlocked)
+                    {
+                        blockedSheet.Cell(blockedRow, 1).Value = b.CATEGORY;
+                        blockedSheet.Cell(blockedRow, 2).Value = b.CREATED_BY;
+                        blockedSheet.Cell(blockedRow, 3).Value = b.COMPANY_NAME;
+                        blockedSheet.Cell(blockedRow, 4).Value = b.CUSTOMER_EMAIL;
+                        blockedSheet.Cell(blockedRow, 5).Value = b.CUSTOMER_CONTACT_NUMBER1;
+                        blockedSheet.Cell(blockedRow, 6).Value = b.CREATED_ON.HasValue ? b.CREATED_ON.Value.ToString("yyyy-MM-dd") : string.Empty;
+                        blockedSheet.Cell(blockedRow, 7).Value = b.BLOCK_REASON;
+                        blockedSheet.Cell(blockedRow, 8).Value = b.BLOCKED_BY;
+                        blockedSheet.Cell(blockedRow, 9).Value = b.EVENT_NAME;
+                        blockedRow++;
+                    }
+
+                    cleanSheet.Columns().AdjustToContents();
+                    blockedSheet.Columns().AdjustToContents();
+
+                    var fileName = $"LeadDataExport-{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".xlsx");
+                    using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
+                    {
+                        workbook.SaveAs(fs);
+                    }
+
+                    HttpContext.Response.OnCompleted(() =>
+                    {
+                        try { System.IO.File.Delete(tempPath); } catch { }
+                        return Task.CompletedTask;
+                    });
+
+                    return PhysicalFile(tempPath, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "Export failed: " + ex.Message;
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("ViewRecords");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExportFiltered(UploadResultViewModel model)
+        {
+            try
+            {
+                var canAccessUserManagement = HttpContext.Session.GetString("CanAccessUserManagement");
+                if (canAccessUserManagement != "True")
+                {
+                    TempData["Message"] = "You do not have permission to export data.";
+                    TempData["MessageType"] = "Error";
+                    return RedirectToAction("ViewRecords");
+                }
+
+                var username = HttpContext.Session.GetString("Username");
+                var category = model.Category?.ToUpper()?.Trim();
+                var eventName = model.Event?.Trim();
+                var fromDate = model.FromDate?.Date;
+                var toDate = model.ToDate?.Date;
+
+                // Build base queries
+                var cleanQuery = _context.CleanProspects.AsNoTracking().AsQueryable();
+                var blockedQuery = _context.BlockedProspects.AsNoTracking().AsQueryable();
+
+                // Apply filters similar to ViewRecord
+                if (!string.IsNullOrEmpty(model.UserName) && model.UserName != "__ALL__")
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_BY == model.UserName);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_BY == model.UserName);
+                }
+
+                if (!string.IsNullOrEmpty(category))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                    blockedQuery = blockedQuery.Where(c => c.CATEGORY.ToUpper() == category);
+                }
+                if (!string.IsNullOrEmpty(eventName))
+                {
+                    cleanQuery = cleanQuery.Where(c => c.EVENT_NAME == eventName);
+                    blockedQuery = blockedQuery.Where(c => c.EVENT_NAME == eventName);
+                }
+
+                if (model.SelectedDate.HasValue)
+                {
+                    var sel = model.SelectedDate.Value.Date;
+                    cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == sel);
+                    blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date == sel);
+                }
+                else
+                {
+                    if (fromDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date >= fromDate.Value);
+                    }
+                    if (toDate.HasValue)
+                    {
+                        cleanQuery = cleanQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                        blockedQuery = blockedQuery.Where(c => c.CREATED_ON.HasValue && c.CREATED_ON.Value.Date <= toDate.Value);
+                    }
+                }
+
+                // Determine which records to export
+                bool exportClean = string.IsNullOrEmpty(model.RecordType) || model.RecordType.Equals("Clean", StringComparison.OrdinalIgnoreCase);
+                bool exportBlocked = string.IsNullOrEmpty(model.RecordType) || model.RecordType.Equals("Blocked", StringComparison.OrdinalIgnoreCase);
+
+                var fileName = $"LeadDataExport-{DateTime.Now:yyyyMMddHHmmss}.csv";
+                var tempPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".csv");
+
+                // Write CSV to temp file to avoid holding everything in memory and to let server provide a proper file response
+                using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true))
+                using (var writer = new StreamWriter(fs, System.Text.Encoding.UTF8))
+                {
+                    // Write header
+                    await writer.WriteLineAsync("RecordType,Category,CompanyName,Email,ContactNumber,CreatedOn,CreatedBy,EventName");
+
+                    if (exportClean)
+                    {
+                        var orderedClean = cleanQuery.OrderByDescending(c => c.CREATED_ON).AsAsyncEnumerable();
+                        await foreach (var c in orderedClean)
+                        {
+                            var line = string.Format("Clean,{0},\"{1}\",{2},{3},{4},{5}",
+                                CsvEscape(c.CATEGORY),
+                                CsvEscape(c.COMPANY_NAME),
+                                CsvEscape(c.CUSTOMER_EMAIL),
+                                CsvEscape(c.CUSTOMER_CONTACT_NUMBER1),
+                                (c.CREATED_ON.HasValue ? c.CREATED_ON.Value.ToString("yyyy-MM-dd") : ""),
+                                CsvEscape(c.CREATED_BY));
+                            line = line + "," + CsvEscape(c.EVENT_NAME);
+                            await writer.WriteLineAsync(line);
+                        }
+                    }
+
+                    if (exportBlocked)
+                    {
+                        var orderedBlocked = blockedQuery.OrderByDescending(c => c.CREATED_ON).AsAsyncEnumerable();
+                        await foreach (var b in orderedBlocked)
+                        {
+                            var line = string.Format("Blocked,{0},\"{1}\",{2},{3},{4},{5}",
+                                CsvEscape(b.CATEGORY),
+                                CsvEscape(b.COMPANY_NAME),
+                                CsvEscape(b.CUSTOMER_EMAIL),
+                                CsvEscape(b.CUSTOMER_CONTACT_NUMBER1),
+                                (b.CREATED_ON.HasValue ? b.CREATED_ON.Value.ToString("yyyy-MM-dd") : ""),
+                                CsvEscape(b.CREATED_BY));
+                            line = line + "," + CsvEscape(b.EVENT_NAME);
+                            await writer.WriteLineAsync(line);
+                        }
+                    }
+
+                    await writer.FlushAsync();
+                }
+
+                // Schedule temp file deletion after response completed
+                HttpContext.Response.RegisterForDispose(new System.IO.MemoryStream());
+                HttpContext.Response.OnCompleted(() =>
+                {
+                    try { System.IO.File.Delete(tempPath); } catch { }
+                    return Task.CompletedTask;
+                });
+
+                return PhysicalFile(tempPath, "text/csv", fileName);
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "Export failed: " + ex.Message;
+                TempData["MessageType"] = "Error";
+                return RedirectToAction("ViewRecords");
+            }
+        }
+
+        private string CsvEscape(string? input)
+        {
+            if (string.IsNullOrEmpty(input)) return "";
+            // Escape double quotes by doubling them
+            var s = input.Replace("\"", "\"\"");
+            // Wrap in quotes if contains comma or newline
+            if (s.Contains(",") || s.Contains("\n") || s.Contains("\r") || s.Contains("\""))
+                return "\"" + s + "\"";
+            return s;
+        }
+
 
     }
 }
