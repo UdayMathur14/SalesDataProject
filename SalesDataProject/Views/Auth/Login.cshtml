@@ -4,8 +4,8 @@
 @{
     ViewData["Title"] = "Login";
 }
-<!-- Views/Auth/Login.cshtml -->
 @model SalesDataProject.Models.AuthenticationModels.User
+
 @if (TempData["Message"] != null)
 {
     <div class="alert-message @(TempData["MessageType"] == "Error" ? "error" : "success")" id="alertMessage" role="alert">
@@ -14,75 +14,203 @@
     </div>
 }
 
-<div style="display: flex; overflow: hidden !important; height: 100%">
-    <!-- First Div for Image or Background -->
-    <div style="width:50vw; height: 98vh; display: flex;">
-        <!-- You can add an image or content here if needed -->
-        <img src="~/images/Photo2.png" style="width:50vw;border-radius:5px">
-    </div>
+<div class="full-page-bg">
 
-    <!-- Second Div for the Form -->
-    <div style="width: 50vw; display: flex; align-items: center; justify-content: center;">
-        <form asp-action="Login" method="post" class="form-group" style="display:flex; flex-direction:column;align-items:center">
-            <h1>Publisher Title Validation Application</h1>
-            <p>Welcome back, Please login to your account!</p>
-            <img src="Images/EnnobleNewLogo.jpg" style="height:200px; width:200px;margin-bottom: 1rem;margin-left:40px" class="mb-4" />
-            <div style="margin-bottom: 15px;width:270px;display:flex;justify-content:space-between;align-items:center;" class="form-group">
-                <label style="">Username</label>
-                <input type="text" asp-for="Username" placeholder="Enter User Id" class="input-field p-3" style="padding-block:8px; padding-inline:12px; border-radius:15px;border:1px solid black" />
+    <div class="center-login-card">
+
+        <div class="avatar-logo-circle">
+            <img src="~/images/EnnobleNewLogo.jpg" alt="Ennoble IP Logo" class="avatar-img" />
+        </div>
+
+        <form asp-action="Login" method="post" class="login-form">
+
+            <div class="input-container">
+                <span class="icon">✉</span>
+                <input type="text" asp-for="Username" placeholder="Email ID" class="form-input" required />
             </div>
-            <div style="margin-bottom: 15px; width:270px;display:flex;justify-content:space-between;align-items:center" class="form-group">
-                <label style="">Password</label>
-                <input type="password" asp-for="Password" placeholder="Enter Password" class="input-field p-3" style="padding-block:8px; padding-inline:12px; border-radius:15px;border:1px solid black" />
+
+            <div class="input-container">
+                <span class="icon">🔒</span>
+                <input type="password" asp-for="Password" placeholder="Password" class="form-input" required />
             </div>
-            <button class="custom-button" type="submit">Sign In</button>
+@* 
+            <div class="options-container">
+                <label class="remember-me">
+                    <input type="checkbox" /> Remember me
+                </label>
+                <a href="#" class="forgot-pwd">Forgot Password?</a>
+            </div> *@
+
+            <button class="signin-btn" type="submit">LOGIN</button>
         </form>
     </div>
 </div>
 
 <style>
-    .custom-button {
-        padding-block: 10px;
-        padding-inline: 18px;
-        border-radius: 30px;
-        background-color: orange;
-        border: none;
-        color: black;
-        font-size: 1rem;
-        transition: background-color 0.3s ease;
+    /* Pure screen par background image set karne ke liye */
+    .full-page-bg {
+        position: fixed;
+        top: 0;
+        left: 0; 
+        min-width:100vw ;
+        height: 100vh;
+        background: url('/images/Login Page Design.jpeg') no-repeat center center;
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-        .custom-button:hover {
-            background-color: darkgray; /* Change this to any color you like */
+    /* Bilkul center mein transparent glass card */
+    .center-login-card {
+        background: rgba(255, 255, 255, 0.22);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 55px 35px 40px 20px;
+        width: 100%;
+        max-width: 306px;
+        border-radius: 25px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-right: 50px;
+    }
+
+    /* Bande wale placeholder ki jagah circular logo holder */
+    .avatar-logo-circle {
+        width: 110px;
+        height: 110px;
+        background-color: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .avatar-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .login-form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .input-container {
+        width: 100%;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .icon {
+        position: absolute;
+        left: 15px;
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border-radius: 25px;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+        outline: none;
+        color: #000;
+        transition: all 0.3s ease;
+    }
+
+        .form-input:focus {
+            background: #ffffff;
+            border-color: #ff8c00;
+            box-shadow: 0 0 8px rgba(255, 140, 0, 0.4);
         }
 
-</style>
+    .options-container {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #000;
+        font-weight: 600;
+        padding: 0 5px;
+    }
 
-<style>
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+    .forgot-pwd {
+        color: #002699;
+        text-decoration: none;
+    }
+
+        .forgot-pwd:hover {
+            text-decoration: underline;
+        }
+
+    /* Orange Sign In Button */
+    .signin-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 25px;
+        background: linear-gradient(135deg, #ffa500, #ff7f00);
+        border: none;
+        color: white;
+        font-size: 1rem;
+        font-weight: bold;
+        letter-spacing: 1px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(255, 127, 0, 0.3);
+        transition: all 0.2s ease-in-out;
+        margin-top: 5px;
+    }
+
+        .signin-btn:hover {
+            background: linear-gradient(135deg, #e69500, #e67300);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(255, 127, 0, 0.4);
+        }
+
+    /* Error / Success Alerts */
     .alert-message {
         position: fixed;
         top: 20px;
         right: 20px;
         color: #ffffff;
-        padding: 12px 16px; /* Ensure equal padding */
+        padding: 12px 16px;
         border-radius: 8px;
         font-size: 16px;
         font-weight: 500;
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-        z-index: 1000;
-        opacity: 1;
-        display: flex; /* Ensures items (text + button) align properly */
-        align-items: center; /* Vertically centers text and button */
-        justify-content: space-between; /* Pushes text left, button right */
-        transition: opacity 0.5s ease-out, transform 0.3s ease-in-out;
-        transform: translateY(0);
-        min-width: 250px; /* Ensures width consistency */
-        max-width: 400px;
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-width: 250px;
     }
 
         .alert-message p {
-            margin: 0; /* Removes extra spacing */
-            flex-grow: 1; /* Allows text to take available space */
+            margin: 0;
         }
 
         .alert-message.fade-out {
@@ -91,11 +219,11 @@
         }
 
     .error {
-        background-color: #d32f2f; /* Red for error */
+        background-color: #d32f2f;
     }
 
     .success {
-        background-color: #4CAF50; /* Green for success */
+        background-color: #4CAF50;
     }
 
     .close-btn {
@@ -105,27 +233,15 @@
         font-size: 20px;
         cursor: pointer;
         margin-left: 10px;
-        padding: 0 5px; /* Ensures button size consistency */
     }
-
 </style>
 
 <script>
-    function showSpinner() {
-        let overlay = document.getElementById("spinner-overlay");
-        overlay.style.display = "flex"; // Show overlay
-
-        setTimeout(() => {
-            overlay.style.display = "none"; // Hide after 3 seconds
-        }, 3000);
-    }
-</script>
-<script>
-        function closeAlertMessage() {
+    function closeAlertMessage() {
         const alertMessage = document.getElementById('alertMessage');
         if (alertMessage) {
             alertMessage.classList.add('fade-out');
-            setTimeout(() => alertMessage.style.display = 'none', 500); // Wait for fade-out to complete
+            setTimeout(() => alertMessage.style.display = 'none', 500);
         }
     }
     setTimeout(closeAlertMessage, 2500);
