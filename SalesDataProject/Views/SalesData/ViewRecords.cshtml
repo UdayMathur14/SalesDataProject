@@ -130,10 +130,10 @@
                                         <th>Email</th>
                                         <th>Contact Number</th>
                                         <th>Blocked On</th>
+                                        <th>Locked By</th>
                                         @if (canAccessUserManagement == "True")
                                         {
                                             <th>Blocked Reason</th>
-                                            <th>Blocked By</th>
                                         }
                                     </tr>
                                 </thead>
@@ -147,10 +147,10 @@
                                             <td>@customer?.CUSTOMER_EMAIL</td>
                                             <td>@customer?.CUSTOMER_CONTACT_NUMBER1</td>
                                             <td>@(customer?.CREATED_ON != null ? customer?.CREATED_ON.Value.ToString("yyyy-MM-dd") : "")</td>
+                                            <td>@customer?.BLOCKED_BY</td>
                                             @if (canAccessUserManagement == "True")
                                             {
                                                 <td>@customer?.BLOCK_REASON</td>
-                                                <td>@customer?.BLOCKED_BY</td>
                                             }
                                         </tr>
                                     }
