@@ -119,7 +119,7 @@ namespace SalesDataProject.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false, int page =1, int pageSize =50)
+        public async Task<IActionResult> UploadExcel(IFormFile file, bool testMode = false, int page = 1, int pageSize = 50)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace SalesDataProject.Controllers
                 ViewBag.Username = username;
                 ValidationResultViewModel result;
 
-                bool isUploadRequest = file != null && file.Length >0;
+                bool isUploadRequest = file != null && file.Length > 0;
 
                 if (isUploadRequest)
                 {
@@ -150,25 +150,28 @@ namespace SalesDataProject.Controllers
                                 : t.ReferenceTitle))
                     );
 
-                    var paperIdSet = new HashSet<string>(
-                        allTitles.Select(t => t.PaperId)
+                    // 🌟 CHANGED: Ab hum PaperId aur InvoiceNumber dono ka combination store kar rahe hain separate validation ke liye
+                    var paperIdInvoiceSet = new HashSet<string>(
+                        allTitles.Select(t => $"{t.PaperId?.Trim()}_{t.InvoiceNumber?.Trim()}")
                     );
 
                     var titlesInExcel = new HashSet<string>();
                     var paperIdInExcel = new HashSet<string>();
+                    // 🌟 CHANGED: Excel ke andar duplicate combination check karne ke liye track rakhna
+                    var paperIdInvoiceInExcel = new HashSet<string>();
 
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
                         var worksheet = package.Workbook.Worksheets[0];
-                        var rowCount = worksheet.Dimension?.Rows ??0;
+                        var rowCount = worksheet.Dimension?.Rows ?? 0;
 
-                        for (int row =2; row <= rowCount; row++)
+                        for (int row = 2; row <= rowCount; row++)
                         {
-                            var invoiceNumber = worksheet.Cells[row,1].Text?.Trim();
-                            var paperId = worksheet.Cells[row,2].Text?.Trim();
-                            var codeReference = worksheet.Cells[row,3].Text?.Trim();
-                            var title = worksheet.Cells[row,4].Text?.Trim();
-                            var yearTitle = worksheet.Cells[row,5].Text?.Trim();
+                            var invoiceNumber = worksheet.Cells[row, 1].Text?.Trim();
+                            var paperId = worksheet.Cells[row, 2].Text?.Trim();
+                            var codeReference = worksheet.Cells[row, 3].Text?.Trim();
+                            var title = worksheet.Cells[row, 4].Text?.Trim();
+                            var yearTitle = worksheet.Cells[row, 5].Text?.Trim();
 
                             if (string.IsNullOrWhiteSpace(title))
                                 continue;
@@ -226,11 +229,12 @@ namespace SalesDataProject.Controllers
                             }
 
 
-                            // 🔴 PAPER ID DUPLICATE (DB + Excel)
-                            if (paperIdSet.Contains(paperId))
+                            // 🔴 CHANGED: PAPER ID + INVOICE NUMBER DUPLICATE (DB Check)
+                            string currentCombo = $"{paperId}_{invoiceNumber}";
+                            if (paperIdInvoiceSet.Contains(currentCombo))
                             {
-                                tv.Status = "PaperId already exists in DB";
-                                result.DuplicateTitlesInExcel.Add(tv);
+                                tv.Status = "PaperId and Invoice Number combination already exists in DB";
+                                result.BlockedTitles.Add(tv); // DB duplicate h to Blocked list me daal dia jaisa aapne bola
                                 continue;
                             }
 
@@ -241,9 +245,11 @@ namespace SalesDataProject.Controllers
                                 result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
-                            if (paperIdInExcel.Contains(paperId))
+
+                            // 🔴 CHANGED: COMBINATION DUPLICATE IN EXCEL
+                            if (paperIdInvoiceInExcel.Contains(currentCombo))
                             {
-                                tv.Status = "Duplicate PaperId in Excel";
+                                tv.Status = "Duplicate PaperId & Invoice Number in Excel";
                                 result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
@@ -263,14 +269,15 @@ namespace SalesDataProject.Controllers
                             // 🔥 UPDATE RUNTIME SETS
                             titlesInExcel.Add(cleanTitle);
                             titleSet.Add(cleanTitle);
-                            paperIdSet.Add(paperId);
+                            paperIdInvoiceInExcel.Add(currentCombo);
+                            paperIdInvoiceSet.Add(currentCombo);
                         }
                     }
 
                     // ✅ SAVE
                     if (!testMode && result.CleanTitles.Any())
                     {
-                        var entities = result.CleanTitles.Select(tv => new TitleValidationViewModel
+                        var entities = result.CleanTitles.Select(tv => new TitleValidationViewModel // Note: Agar aapka DB context Title domain model leta hai to yahan Title entity mapping check kar lena.
                         {
                             Title = tv.Title,
                             InvoiceNumber = tv.InvoiceNumber,
@@ -307,13 +314,12 @@ namespace SalesDataProject.Controllers
                 }
 
                 // PAGINATION
-                int skip = (page -1) * pageSize;
+                int skip = (page - 1) * pageSize;
 
                 ValidationResultViewModel pagedResult;
 
                 if (isUploadRequest)
                 {
-                    // For fresh upload (test or real), show all results on the Index page
                     pagedResult = new ValidationResultViewModel
                     {
                         CleanTitles = result.CleanTitles.ToList(),
@@ -324,8 +330,8 @@ namespace SalesDataProject.Controllers
                     int maxRows = Math.Max(result.CleanTitles.Count,
                         Math.Max(result.BlockedTitles.Count, result.DuplicateTitlesInExcel.Count));
 
-                    ViewBag.TotalPages = maxRows >0 ?1 :0;
-                    ViewBag.CurrentPage =1;
+                    ViewBag.TotalPages = maxRows > 0 ? 1 : 0;
+                    ViewBag.CurrentPage = 1;
                     ViewBag.PageSize = Math.Max(1, maxRows);
                 }
                 else
