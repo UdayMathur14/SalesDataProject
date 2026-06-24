@@ -265,208 +265,54 @@ namespace SalesDataProject.Controllers
             }
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> UploadSalesData(IFormFile file, string selectedCategory)
-        //{
-        //    try
-        //    {
-        //        var username = HttpContext.Session.GetString("Username");
-        //        if (string.IsNullOrWhiteSpace(username)) return RedirectToAction("Login", "Auth");
-        //        if (file == null || file.Length == 0) return View("ViewRecords", new UploadResultViewModel());
+        [HttpGet]
+        public async Task<IActionResult> VerifyCompanyLocation(string companyName)
+        {
+            if (string.IsNullOrWhiteSpace(companyName))
+            {
+                return Json(new { success = false, message = "Company name cannot be empty." });
+            }
 
-        //        var cleanCustomers = new List<ProspectCustomerClean>();
-        //        var blockedCustomers = new List<ProspectCustomerBlocked>();
-        //        var invalidRecords = new List<InvalidCustomerRecord>();
+            var searchResults = new List<object>();
 
-        //        // 1. Common Domains
-        //        var commonDomains = await _context.CommonDomains
-        //                                    .Select(x => x.DomainName.ToLower().Trim())
-        //                                    .ToListAsync();
+            // 1. Check in Sales/Leads Data (Assuming DbContext context is registered)
+            // Aap dynamic context or repository jo bhi patterns use karte ho usi according verify krna
+            var salesRecords = await _context.CleanProspects
+                .Where(x => x.COMPANY_NAME.Contains(companyName))
+                .Select(x => new
+                {
+                    CompanyName = x.COMPANY_NAME,
+                    Module = "Sales / Lead Module",
+                    Status = x.STATE, // Clean or Blocked
+                    HandledBy = x.CREATED_BY
+                })
+                .Take(5) // Limit top 5 matchings
+                .ToListAsync();
 
-        //        using var stream = new MemoryStream();
-        //        await file.CopyToAsync(stream);
-        //        using var workbook = new XLWorkbook(stream);
-        //        var worksheet = workbook.Worksheet(1);
-        //        var lastRow = worksheet.LastRowUsed().RowNumber();
+            foreach (var record in salesRecords)
+            {
+                searchResults.Add(record);
+            }
 
-        //        for (int row = 2; row <= lastRow; row++)
-        //        {
-        //            var companyName = worksheet.Cell(row, 1).GetString().Trim().ToUpper();
-        //            var contactPerson = worksheet.Cell(row, 2).GetString().Trim().ToUpper();
-        //            var customerNumber1 = worksheet.Cell(row, 3).GetString().Trim();
-        //            var customerEmail = worksheet.Cell(row, 4).GetString().Trim().ToLowerInvariant();
-        //            var category = worksheet.Cell(row, 11).GetString().Trim().ToUpper();
-        //            var emailDomain = customerEmail.Contains('@') ? customerEmail.Split('@').Last().Trim().ToLower() : "";
+            // 2. Check in Core Customer Master Table
+            var customerRecords = await _context.Customers
+                .Where(x => x.COMPANY_NAME.Contains(companyName))
+                .Select(x => new
+                {
+                    CompanyName = x.COMPANY_NAME,
+                    Module = "Customer Module",
+                    Status = "Active Customer"
+                })
+                .Take(5)
+                .ToListAsync();
 
-        //            bool isCommonDomain = commonDomains.Contains(emailDomain);
+            foreach (var record in customerRecords)
+            {
+                searchResults.Add(record);
+            }
 
-        //            var masterMatch = await _context.Customers.FirstOrDefaultAsync(x =>
-        //        (!string.IsNullOrWhiteSpace(customerEmail) && x.CUSTOMER_EMAIL.ToLower() == customerEmail.ToLower())
-        //        ||
-        //        (!isCommonDomain && !string.IsNullOrWhiteSpace(emailDomain) && x.CUSTOMER_EMAIL.ToLower().EndsWith("@" + emailDomain.ToLower()))
-        //        ||
-        //        (!string.IsNullOrWhiteSpace(companyName) && x.COMPANY_NAME.ToUpper() == companyName.ToUpper())
-        //    );
-
-        //            if (masterMatch != null)
-        //            {
-        //                invalidRecords.Add(new InvalidCustomerRecord
-        //                {
-        //                    RowNumber = row,
-        //                    CompanyName = companyName,
-        //                    CustomerEmail = customerEmail,
-        //                    CustomerNumber = customerNumber1,
-        //                    ErrorMessage = "Customer already exists in master table."
-        //                });
-
-        //                continue;
-        //            }
-
-        //            if (string.IsNullOrWhiteSpace(companyName) || string.IsNullOrWhiteSpace(category)) continue;
-                   
-                    
-        //            string blockedReason = "";
-        //            string blockedByName = "";
-
-        //            // --- UNIVERSITY LOGIC ---
-        //            if (category == "UNIVERSITY")
-        //            {
-        //                var match = await _context.CleanProspects.FirstOrDefaultAsync(x =>
-        //                            (x.CUSTOMER_EMAIL == customerEmail ||
-        //                            (x.CONTACT_PERSON == contactPerson && x.CUSTOMER_EMAIL == customerEmail)) &&
-        //                            x.CREATED_BY != username);
-
-        //                if (match != null)
-        //                {
-        //                    blockedReason = "University: Exact Email or Contact+Email Match";
-        //                    blockedByName = match.CREATED_BY;
-        //                }
-        //            }
-        //            // --- CORPORATE / LAW FIRMS / INDIVIDUAL LOGIC ---
-        //            else
-        //            {
-        //                // A. Exact Email Match OR Domain Match
-        //                // Same user can add again, other users will be blocked
-        //                if (!isCommonDomain && !string.IsNullOrWhiteSpace(customerEmail))
-        //                {
-        //                    var exactEmailMatch = await _context.CleanProspects
-        //                        .FirstOrDefaultAsync(x =>
-        //                            x.CUSTOMER_EMAIL == customerEmail &&
-        //                            x.CREATED_BY != username);
-
-        //                    if (exactEmailMatch != null)
-        //                    {
-        //                        blockedReason = "Email Match";
-        //                        blockedByName = exactEmailMatch.CREATED_BY;
-        //                    }
-        //                    else
-        //                    {
-        //                        var domainMatch = await _context.CleanProspects
-        //                            .FirstOrDefaultAsync(x =>
-        //                                !string.IsNullOrEmpty(x.CUSTOMER_EMAIL) &&
-        //                                x.CUSTOMER_EMAIL.ToLower().EndsWith("@" + emailDomain) &&
-        //                                x.CREATED_BY != username);
-
-        //                        if (domainMatch != null)
-        //                        {
-        //                            blockedReason = "Domain Match";
-        //                            blockedByName = domainMatch.CREATED_BY;
-        //                        }
-        //                    }
-        //                }
-
-        //                // B. Phone Number Match
-        //                if (string.IsNullOrEmpty(blockedReason) && !string.IsNullOrWhiteSpace(customerNumber1))
-        //                {
-        //                    var match = await _context.CleanProspects.FirstOrDefaultAsync(x =>
-        //                        x.CUSTOMER_CONTACT_NUMBER1 == customerNumber1 &&
-        //                        x.CREATED_BY != username);
-
-        //                    if (match != null)
-        //                    {
-        //                        blockedReason = "Phone Number Match";
-        //                        blockedByName = match.CREATED_BY;
-        //                    }
-        //                }
-
-        //                // C. 50% Company + 100% Contact Match
-        //                if (string.IsNullOrEmpty(blockedReason) && !string.IsNullOrWhiteSpace(contactPerson))
-        //                {
-        //                    string partialComp = companyName.Length > 4 ? companyName.Substring(0, companyName.Length / 2) : companyName;
-
-        //                    var match = await _context.CleanProspects.FirstOrDefaultAsync(x =>
-        //                                x.CONTACT_PERSON == contactPerson &&
-        //                                x.COMPANY_NAME.Contains(partialComp) &&
-        //                                x.CREATED_BY != username);
-
-        //                    if (match != null)
-        //                    {
-        //                        blockedReason = "50% Company + 100% Contact Match";
-        //                        blockedByName = match.CREATED_BY;
-        //                    }
-        //                }
-
-        //                // D. 100% Company Name Match
-        //                if (string.IsNullOrEmpty(blockedReason))
-        //                {
-        //                    var match = await _context.CleanProspects.FirstOrDefaultAsync(x =>
-        //                        x.COMPANY_NAME == companyName &&
-        //                        x.CREATED_BY != username);
-
-        //                    if (match != null)
-        //                    {
-        //                        blockedReason = "100% Company Name Match";
-        //                        blockedByName = match.CREATED_BY;
-        //                    }
-        //                }
-        //            }
-
-        //            // --- RESULT HANDLING ---
-        //            if (!string.IsNullOrEmpty(blockedReason))
-        //            {
-        //                blockedCustomers.Add(new ProspectCustomerBlocked
-        //                {
-        //                    COMPANY_NAME = companyName,
-        //                    CONTACT_PERSON = contactPerson,
-        //                    CUSTOMER_EMAIL = customerEmail,
-        //                    CATEGORY = category,
-        //                    CREATED_BY = username,
-        //                    CREATED_ON = DateTime.UtcNow,
-        //                    BLOCKED_BY = blockedByName,
-        //                    BLOCK_REASON = blockedReason
-        //                });
-        //            }
-        //            else
-        //            {
-        //                cleanCustomers.Add(new ProspectCustomerClean
-        //                {
-        //                    COMPANY_NAME = companyName,
-        //                    CONTACT_PERSON = contactPerson,
-        //                    CUSTOMER_CONTACT_NUMBER1 = customerNumber1,
-        //                    CUSTOMER_EMAIL = customerEmail,
-        //                    CATEGORY = category,
-        //                    CREATED_BY = username,
-        //                    CREATED_ON = DateTime.UtcNow
-        //                });
-        //            }
-        //        }
-
-        //        if (cleanCustomers.Any()) _context.CleanProspects.AddRange(cleanCustomers);
-        //        if (blockedCustomers.Any()) _context.BlockedProspects.AddRange(blockedCustomers);
-        //        await _context.SaveChangesAsync();
-
-        //        return View("UploadResults", new UploadResultViewModel
-        //        {
-        //            BlockedCustomers = blockedCustomers,
-        //            CleanCustomers = cleanCustomers,
-        //            invalidCustomerRecords = invalidRecords
-        //        });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return View("ViewRecords", new UploadResultViewModel());
-        //    }
-        //}
+            return Json(new { success = true, results = searchResults });
+        }
 
 
         public async Task<IActionResult> UploadSalesData(IFormFile file, string selectedCategory)
