@@ -370,6 +370,7 @@ namespace SalesDataProject.Controllers
             try
             {
                 var username = HttpContext.Session.GetString("Username");
+
                 if (string.IsNullOrEmpty(username))
                 {
                     TempData["Message"] = "Session Expired, Please Login again";
@@ -379,23 +380,32 @@ namespace SalesDataProject.Controllers
 
                 ValidationResultViewModel result = new ValidationResultViewModel();
 
-                if (file != null && file.Length > 0)
+                bool isUploadRequest = file != null && file.Length > 0;
+
+                if (isUploadRequest)
                 {
                     var allTitles = await _context.Titles.ToListAsync();
 
-                    // DB lookup by PaperId
-                    var titleDict = allTitles.ToDictionary(t => t.PaperId);
+                    // DB lookup by PaperId + InvoiceNumber combo
+                    var titleDict = allTitles
+                        .Where(t =>
+                            !string.IsNullOrWhiteSpace(t.PaperId) &&
+                            !string.IsNullOrWhiteSpace(t.InvoiceNumber))
+                        .GroupBy(t => MakeComboKey(t.PaperId, t.InvoiceNumber), StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-                    // Existing title set from DB
+                    // Existing titles from DB
                     var titleSet = new HashSet<string>(
-                        allTitles.Select(t =>
-                            CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+                        allTitles
+                            .Select(t => CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
                                 ? t.UpdatedReferenceTitle
                                 : t.ReferenceTitle))
+                            .Where(x => !string.IsNullOrWhiteSpace(x)),
+                        StringComparer.OrdinalIgnoreCase
                     );
 
-                    // Track duplicate PaperId inside uploaded Excel
-                    var uploadedPaperIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    // Track duplicate combo inside uploaded Excel
+                    var uploadedComboSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
@@ -404,54 +414,95 @@ namespace SalesDataProject.Controllers
 
                         for (int row = 2; row <= rowCount; row++)
                         {
-                            var paperId = worksheet.Cells[row, 1].Text?.Trim();
-                            var updatedTitle = worksheet.Cells[row, 2].Text?.Trim();
+                            // Modified Excel expected columns:
+                            // 1 = InvoiceNumber, 2 = PaperId, 3 = UpdatedTitle
+                            var invoiceNumber = worksheet.Cells[row, 1].Text?.Trim();
+                            var paperId = worksheet.Cells[row, 2].Text?.Trim();
+                            var updatedTitle = worksheet.Cells[row, 3].Text?.Trim();
 
-                            if (string.IsNullOrWhiteSpace(paperId) || string.IsNullOrWhiteSpace(updatedTitle))
+                            if (string.IsNullOrWhiteSpace(invoiceNumber) &&
+                                string.IsNullOrWhiteSpace(paperId) &&
+                                string.IsNullOrWhiteSpace(updatedTitle))
+                            {
                                 continue;
+                            }
 
+                            var tv = new TitleValidationViewModel
+                            {
+                                RowNumber = row,
+                                InvoiceNumber = invoiceNumber,
+                                PaperId = paperId,
+                                UpdatedTitle = updatedTitle,
+                                UpdatedTitleBy = username
+                            };
+
+                            if (string.IsNullOrWhiteSpace(invoiceNumber))
+                            {
+                                tv.Status = "Invoice Number Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(paperId))
+                            {
+                                tv.Status = "PaperId Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            if (string.IsNullOrWhiteSpace(updatedTitle))
+                            {
+                                tv.Status = "Updated Title Missing";
+                                result.DuplicateTitlesInExcel.Add(tv);
+                                continue;
+                            }
+
+                            string comboKey = MakeComboKey(paperId, invoiceNumber);
                             string cleanTitle = CleanTitle(updatedTitle);
 
-                            // 1. Duplicate PaperId in uploaded Excel
-                            if (!uploadedPaperIds.Add(paperId))
+                            // 1. Duplicate PaperId + InvoiceNumber combo in uploaded Excel
+                            if (!uploadedComboSet.Add(comboKey))
                             {
-                                result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
-                                {
-                                    RowNumber = row,
-                                    PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
-                                    Status = "Duplicate PaperId in Excel"
-                                });
+                                tv.Status = "Duplicate PaperId & Invoice Number in Excel";
+                                result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
 
-                            // 2. PaperId must exist in DB
-                            if (!titleDict.TryGetValue(paperId, out var existingRecord))
+                            // 2. PaperId + InvoiceNumber combo must exist in DB
+                            if (!titleDict.TryGetValue(comboKey, out var existingRecord))
                             {
-                                result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
-                                {
-                                    RowNumber = row,
-                                    PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
-                                    Status = "PaperId not found"
-                                });
+                                tv.Status = "PaperId and Invoice Number combination not found";
+                                result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
 
-                            // 3. Duplicate title check (DB + runtime)
+                            // Current record ka old title remove karo,
+                            // warna same title dobara upload karne par khud se duplicate maan lega.
+                            string oldCleanTitle = CleanTitle(!string.IsNullOrWhiteSpace(existingRecord.UpdatedReferenceTitle)
+                                ? existingRecord.UpdatedReferenceTitle
+                                : existingRecord.ReferenceTitle);
+
+                            if (!string.IsNullOrWhiteSpace(oldCleanTitle))
+                            {
+                                titleSet.Remove(oldCleanTitle);
+                            }
+
+                            // 3. Duplicate title check DB + runtime
                             if (titleSet.Contains(cleanTitle))
                             {
-                                result.DuplicateTitlesInExcel.Add(new TitleValidationViewModel
+                                tv.Status = "Duplicate Title";
+                                result.DuplicateTitlesInExcel.Add(tv);
+
+                                // Agar duplicate mila to old title wapas set me add kar do
+                                if (!string.IsNullOrWhiteSpace(oldCleanTitle))
                                 {
-                                    RowNumber = row,
-                                    PaperId = paperId,
-                                    UpdatedTitle = updatedTitle,
-                                    Status = "Duplicate Title"
-                                });
+                                    titleSet.Add(oldCleanTitle);
+                                }
+
                                 continue;
                             }
 
-                            // Update
+                            // Update existing DB record
                             existingRecord.UpdatedTitle = updatedTitle;
                             existingRecord.UpdatedReferenceTitle = cleanTitle;
                             existingRecord.UpdatedTitleBy = username;
@@ -459,21 +510,16 @@ namespace SalesDataProject.Controllers
                             // Prevent duplicate title in same upload
                             titleSet.Add(cleanTitle);
 
-                            result.CleanTitles.Add(new TitleValidationViewModel
-                            {
-                                RowNumber = row,
-                                PaperId = paperId,
-                                UpdatedTitle = updatedTitle,
-                                UpdatedTitleBy = username,
-                                Status = "PASS"
-                            });
+                            tv.Status = "PASS";
+                            result.CleanTitles.Add(tv);
                         }
                     }
 
                     if (result.CleanTitles.Any())
                     {
                         await _context.SaveChangesAsync();
-                        TempData["Message"] = "Titles Updated Successfully";
+
+                        TempData["Message"] = $"Titles Updated Successfully. Updated: {result.CleanTitles.Count}, Failed: {result.DuplicateTitlesInExcel.Count}";
                         TempData["MessageType"] = "Success";
                     }
                     else
@@ -504,10 +550,13 @@ namespace SalesDataProject.Controllers
                 {
                     CleanTitles = result.CleanTitles.Skip(skip).Take(pageSize).ToList(),
                     DuplicateTitlesInExcel = result.DuplicateTitlesInExcel.Skip(skip).Take(pageSize).ToList(),
-                    BlockedTitles = new List<TitleValidationViewModel>()
+                    BlockedTitles = result.BlockedTitles?.Skip(skip).Take(pageSize).ToList() ?? new List<TitleValidationViewModel>()
                 };
 
-                int maxRows = Math.Max(result.CleanTitles.Count, result.DuplicateTitlesInExcel.Count);
+                int maxRows = Math.Max(
+                    result.CleanTitles.Count,
+                    Math.Max(result.DuplicateTitlesInExcel.Count, result.BlockedTitles?.Count ?? 0)
+                );
 
                 ViewBag.TotalPages = (int)Math.Ceiling((double)maxRows / pageSize);
                 ViewBag.CurrentPage = page;
@@ -525,6 +574,11 @@ namespace SalesDataProject.Controllers
                 TempData["MessageType"] = "Error";
                 return View("Index", new ValidationResultViewModel());
             }
+        }
+
+        private string MakeComboKey(string paperId, string invoiceNumber)
+        {
+            return $"{paperId?.Trim()}_{invoiceNumber?.Trim()}";
         }
 
         [HttpGet]
@@ -597,7 +651,6 @@ namespace SalesDataProject.Controllers
         }
 
 
-
         [HttpGet]
         public IActionResult DownloadTitleTemplate()
         {
@@ -608,15 +661,15 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("ModifiedTitles");
 
                     // Define the headers
-                    worksheet.Cell(1, 1).Value = "Paper Id (Required)";
-                    worksheet.Cell(1, 2).Value = "Updated Title (Required)";
-                    
+                    worksheet.Cell(1, 1).Value = "Invoice Number (Required)";
+                    worksheet.Cell(1, 2).Value = "Paper Id (Required)";
+                    worksheet.Cell(1, 3).Value = "Updated Title (Required)";
 
-                    // Apply style to header rows
-                    var headerRange = worksheet.Range("A1:B1");
+                    // Apply style to header row
+                    var headerRange = worksheet.Range("A1:C1");
                     headerRange.Style.Font.Bold = true;
                     headerRange.Style.Font.FontColor = XLColor.Red;
-                    headerRange.Style.Fill.BackgroundColor = XLColor.LightYellow; // Light background for visibility
+                    headerRange.Style.Fill.BackgroundColor = XLColor.LightYellow;
                     headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
                     // Apply black border to header row
@@ -625,25 +678,40 @@ namespace SalesDataProject.Controllers
                     headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
                     headerRange.Style.Border.InsideBorderColor = XLColor.Black;
 
-                    // Example row (second row)
-                    worksheet.Cell(2, 1).Value = "P1234";
-                    worksheet.Cell(2, 2).Value = "Updated Title";
-
+                    // Example row
+                    worksheet.Cell(2, 1).Value = "INV001";
+                    worksheet.Cell(2, 2).Value = "P1234";
+                    worksheet.Cell(2, 3).Value = "Updated Title";
 
                     // Apply style to example row
-                    var exampleRow = worksheet.Range("A2:E2");
+                    var exampleRow = worksheet.Range("A2:C2");
                     exampleRow.Style.Font.FontColor = XLColor.Gray;
                     exampleRow.Style.Font.Italic = true;
 
-                    // Set custom column widths (give space to look neat)
-                    worksheet.Column(1).Width = 25; // Invoice No
-                    worksheet.Column(2).Width = 30; // Code Ref
+                    // Apply borders to example row
+                    exampleRow.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    exampleRow.Style.Border.OutsideBorderColor = XLColor.LightGray;
+                    exampleRow.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                    exampleRow.Style.Border.InsideBorderColor = XLColor.LightGray;
+
+                    // Set column widths
+                    worksheet.Column(1).Width = 30; // Invoice Number
+                    worksheet.Column(2).Width = 25; // Paper Id
+                    worksheet.Column(3).Width = 60; // Updated Title
+
+                    // Optional: freeze header row
+                    worksheet.SheetView.FreezeRows(1);
 
                     using (var stream = new MemoryStream())
                     {
                         workbook.SaveAs(stream);
                         var content = stream.ToArray();
-                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "UpdateTitles.xlsx");
+
+                        return File(
+                            content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "UpdateTitles.xlsx"
+                        );
                     }
                 }
             }
