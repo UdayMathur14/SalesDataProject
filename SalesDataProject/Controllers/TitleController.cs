@@ -661,7 +661,7 @@ namespace SalesDataProject.Controllers
                     var worksheet = workbook.Worksheets.Add("ModifiedTitles");
 
                     // Define the headers
-                    worksheet.Cell(1, 1).Value = "Invoice Number (Required)";
+                    worksheet.Cell(1, 1).Value = "Lot No (Required)";
                     worksheet.Cell(1, 2).Value = "Paper Id (Required)";
                     worksheet.Cell(1, 3).Value = "Updated Title (Required)";
 
