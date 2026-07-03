@@ -142,23 +142,40 @@ namespace SalesDataProject.Controllers
 
                     var allTitles = await _context.Titles.ToListAsync();
 
-                    // 🔥 FAST LOOKUPS
-                    var titleSet = new HashSet<string>(
-                        allTitles.Select(t =>
-                            CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
+                    // Title duplicate lookup with existing DB record details
+                    var titleLookup = allTitles
+                        .Select(t => new
+                        {
+                            CleanedTitle = CleanTitle(!string.IsNullOrWhiteSpace(t.UpdatedReferenceTitle)
                                 ? t.UpdatedReferenceTitle
-                                : t.ReferenceTitle))
-                    );
+                                : t.ReferenceTitle),
+                            TitleRecord = t
+                        })
+                        .Where(x => !string.IsNullOrWhiteSpace(x.CleanedTitle))
+                        .GroupBy(x => x.CleanedTitle, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.First().TitleRecord,
+                            StringComparer.OrdinalIgnoreCase
+                        );
 
-                    // 🌟 CHANGED: Ab hum PaperId aur InvoiceNumber dono ka combination store kar rahe hain separate validation ke liye
-                    var paperIdInvoiceSet = new HashSet<string>(
-                        allTitles.Select(t => $"{t.PaperId?.Trim()}_{t.InvoiceNumber?.Trim()}")
-                    );
+                    // PaperId + Invoice/LotNo duplicate lookup with existing DB record details
+                    var paperIdInvoiceLookup = allTitles
+                        .Where(t => !string.IsNullOrWhiteSpace(t.PaperId) && !string.IsNullOrWhiteSpace(t.InvoiceNumber))
+                        .Select(t => new
+                        {
+                            Combo = $"{t.PaperId!.Trim()}_{t.InvoiceNumber!.Trim()}",
+                            TitleRecord = t
+                        })
+                        .GroupBy(x => x.Combo, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.First().TitleRecord,
+                            StringComparer.OrdinalIgnoreCase
+                        );
 
-                    var titlesInExcel = new HashSet<string>();
-                    var paperIdInExcel = new HashSet<string>();
-                    // 🌟 CHANGED: Excel ke andar duplicate combination check karne ke liye track rakhna
-                    var paperIdInvoiceInExcel = new HashSet<string>();
+                    var titlesInExcel = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var paperIdInvoiceInExcel = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                     using (var package = new ExcelPackage(file.OpenReadStream()))
                     {
@@ -191,8 +208,7 @@ namespace SalesDataProject.Controllers
                                 ReferenceTitle = cleanTitle
                             };
 
-                            // 🔴 VALIDATIONS
-
+                            // Required validations
                             if (string.IsNullOrWhiteSpace(yearTitle))
                             {
                                 tv.Status = "Year Missing";
@@ -228,17 +244,9 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
+                            string currentCombo = $"{paperId.Trim()}_{invoiceNumber.Trim()}";
 
-                            // 🔴 CHANGED: PAPER ID + INVOICE NUMBER DUPLICATE (DB Check)
-                            string currentCombo = $"{paperId}_{invoiceNumber}";
-                            if (paperIdInvoiceSet.Contains(currentCombo))
-                            {
-                                tv.Status = "PaperId and Invoice Number combination already exists in DB";
-                                result.BlockedTitles.Add(tv); // DB duplicate h to Blocked list me daal dia jaisa aapne bola
-                                continue;
-                            }
-
-                            // 🔴 TITLE DUPLICATE IN EXCEL
+                            // Duplicate title inside uploaded Excel
                             if (titlesInExcel.Contains(cleanTitle))
                             {
                                 tv.Status = "Duplicate title in Excel";
@@ -246,38 +254,46 @@ namespace SalesDataProject.Controllers
                                 continue;
                             }
 
-                            // 🔴 CHANGED: COMBINATION DUPLICATE IN EXCEL
+                            // Duplicate PaperId + Invoice/LotNo inside uploaded Excel
                             if (paperIdInvoiceInExcel.Contains(currentCombo))
                             {
-                                tv.Status = "Duplicate PaperId & Invoice Number in Excel";
+                                tv.Status = "Duplicate PaperId & Lot Number in Excel";
                                 result.DuplicateTitlesInExcel.Add(tv);
                                 continue;
                             }
 
-                            // 🔴 TITLE DUPLICATE IN DB
-                            if (titleSet.Contains(cleanTitle))
+                            // Duplicate PaperId + Invoice/LotNo in DB
+                            if (paperIdInvoiceLookup.TryGetValue(currentCombo, out var existingComboTitle))
                             {
-                                tv.Status = "Duplicate title in DB";
+                                tv.Status = "PaperId and Lot Number combination already exists in DB";
+                                SetBlockedDetails(tv, existingComboTitle);
                                 result.BlockedTitles.Add(tv);
                                 continue;
                             }
 
-                            // ✅ CLEAN
+                            // Duplicate title in DB
+                            if (titleLookup.TryGetValue(cleanTitle, out var existingTitle))
+                            {
+                                tv.Status = "Duplicate title in DB";
+                                SetBlockedDetails(tv, existingTitle);
+                                result.BlockedTitles.Add(tv);
+                                continue;
+                            }
+
+                            // Clean record
                             tv.Status = "Clean";
                             result.CleanTitles.Add(tv);
 
-                            // 🔥 UPDATE RUNTIME SETS
+                            // Runtime Excel trackers
                             titlesInExcel.Add(cleanTitle);
-                            titleSet.Add(cleanTitle);
                             paperIdInvoiceInExcel.Add(currentCombo);
-                            paperIdInvoiceSet.Add(currentCombo);
                         }
                     }
 
-                    // ✅ SAVE
+                    // Save clean titles
                     if (!testMode && result.CleanTitles.Any())
                     {
-                        var entities = result.CleanTitles.Select(tv => new TitleValidationViewModel // Note: Agar aapka DB context Title domain model leta hai to yahan Title entity mapping check kar lena.
+                        var entities = result.CleanTitles.Select(tv => new TitleValidationViewModel
                         {
                             Title = tv.Title,
                             InvoiceNumber = tv.InvoiceNumber,
@@ -293,7 +309,9 @@ namespace SalesDataProject.Controllers
                         _context.Titles.AddRange(entities);
                         await _context.SaveChangesAsync();
 
-                        TempData["Message"] = $"Total: {result.CleanTitles.Count + result.DuplicateTitlesInExcel.Count + result.BlockedTitles.Count}, Saved: {result.CleanTitles.Count}, Failed: {result.DuplicateTitlesInExcel.Count + result.BlockedTitles.Count}";
+                        TempData["Message"] =
+                            $"Total: {result.CleanTitles.Count + result.DuplicateTitlesInExcel.Count + result.BlockedTitles.Count}, Saved: {result.CleanTitles.Count}, Failed: {result.DuplicateTitlesInExcel.Count + result.BlockedTitles.Count}";
+
                         TempData["MessageType"] = "Success";
                     }
                     else
@@ -302,18 +320,23 @@ namespace SalesDataProject.Controllers
                         TempData["MessageType"] = "Info";
                     }
 
-                    var settings = new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
+                    var settings = new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    };
+
                     HttpContext.Session.SetString("UploadResult", JsonConvert.SerializeObject(result, settings));
                 }
                 else
                 {
                     var sessionData = HttpContext.Session.GetString("UploadResult");
-                    if (string.IsNullOrEmpty(sessionData)) return RedirectToAction("Index");
+                    if (string.IsNullOrEmpty(sessionData))
+                        return RedirectToAction("Index");
 
-                    result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData);
+                    result = JsonConvert.DeserializeObject<ValidationResultViewModel>(sessionData) ?? new ValidationResultViewModel();
                 }
 
-                // PAGINATION
+                // Pagination
                 int skip = (page - 1) * pageSize;
 
                 ValidationResultViewModel pagedResult;
@@ -362,6 +385,15 @@ namespace SalesDataProject.Controllers
                 TempData["MessageType"] = "Error";
                 return View("Index", new ValidationResultViewModel());
             }
+        }
+
+        private static void SetBlockedDetails(TitleValidationViewModel tv, TitleValidationViewModel existingTitle)
+        {
+            tv.BlockedId = existingTitle.Id;
+            tv.BlockedByPaperId = existingTitle.PaperId;
+            tv.BlockedByInvoiceNo = existingTitle.InvoiceNumber;
+            tv.BlockedCodeRef = existingTitle.CodeReference;
+            tv.BlockedByTitle = existingTitle.Title;
         }
 
         [HttpPost]

@@ -97,9 +97,11 @@
  <th style="width:140px;">CodeRef</th>
  <th style="min-width:350px; width:25%;">Title</th>
  <th style="width:130px;">FinancialYear</th>
- <th style="width:130px;">BlockedByRow</th>
- <th style="width:150px;">BlockInvoiceNo</th>
- <th style="width:140px;">BlockCodeRef</th>
+                                    <th style="width:130px;">Blocked DB Id</th>
+                                    <th style="width:150px;">Blocked Paper Id</th>
+                                    <th style="width:150px;">Blocked Lot No</th>
+                                    <th style="width:140px;">Blocked CodeRef</th>
+                                    <th style="min-width:300px;">Blocked Existing Title</th>
  }
 
  <th style="min-width:400px; width:30%;">Modified Title</th>
@@ -127,9 +129,11 @@
  @title.Title
  </td>
  <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
- <td>-</td>
- <td>@(title.BlockedByInvoiceNo ?? "-")</td>
- <td>@(title.BlockedCodeRef ?? "-")</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
  }
 
  <td class="text-start" style="min-width:400px; white-space: normal; word-break: break-word;">
@@ -161,9 +165,13 @@
  @title.Title
  </td>
  <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
- <td>@title.BlockedId</td>
- <td>@(title.BlockedByInvoiceNo ?? "-")</td>
- <td>@(title.BlockedCodeRef ?? "-")</td>
+                                        <td>@(title.BlockedId?.ToString() ?? "-")</td>
+                                        <td>@(title.BlockedByPaperId ?? "-")</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                        <td class="text-start" style="min-width:300px; white-space: normal; word-break: break-word;">
+                                            @(title.BlockedByTitle ?? "-")
+                                        </td>
  }
 
  <td class="text-start" style="min-width:400px; white-space: normal; word-break: break-word;">
@@ -195,9 +203,13 @@
  @title.Title
  </td>
  <td style="white-space: nowrap;">@(title.TitleYear ?? "-")</td>
- <td>@title.BlockedId</td>
- <td>@(title.BlockedByInvoiceNo ?? "-")</td>
- <td>@(title.BlockedCodeRef ?? "-")</td>
+                                        <td>@(title.BlockedId?.ToString() ?? "-")</td>
+                                        <td>@(title.BlockedByPaperId ?? "-")</td>
+                                        <td>@(title.BlockedByInvoiceNo ?? "-")</td>
+                                        <td>@(title.BlockedCodeRef ?? "-")</td>
+                                        <td class="text-start" style="min-width:300px; white-space: normal; word-break: break-word;">
+                                            @(title.BlockedByTitle ?? "-")
+                                        </td>
  }
 
  <td class="text-start" style="min-width:400px; white-space: normal; word-break: break-word;">

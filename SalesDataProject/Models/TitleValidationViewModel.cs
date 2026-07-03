@@ -6,29 +6,39 @@ namespace SalesDataProject.Models
     [Table("TBL_TITLES")]
     public class TitleValidationViewModel
     {
-        [Key] // This makes it the primary key
-        public int Id { get; set; } // Add a unique identifier
-        public int RowNumber { get; set; } // Row number in the file
-        public string? CodeReference  { get; set; }
+        [Key]
+        public int Id { get; set; }
+
+        public int RowNumber { get; set; }
+
+        public string? CodeReference { get; set; }
         public string? InvoiceNumber { get; set; }
         public string? PaperId { get; set; }
         public string? Title { get; set; }
         public string? UpdatedTitle { get; set; }
         public string? CREATED_BY { get; set; }
-        public DateOnly CREATED_ON { get; set; } 
-        public string? Status { get; set; } // "Blocked" or "Clean"
-        public string? ReferenceTitle { get; set; } // "Blocked" or "Clean"
-        public string? UpdatedReferenceTitle { get; set; } // "Blocked" or "Clean"
-        public string? UpdatedTitleBy { get; set; } // "Blocked" or "Clean"
+        public DateOnly CREATED_ON { get; set; }
+        public string? Status { get; set; }
+        public string? ReferenceTitle { get; set; }
+        public string? UpdatedReferenceTitle { get; set; }
+        public string? UpdatedTitleBy { get; set; }
+        public string? TitleYear { get; set; }
+
+        // Existing blocked details
         [NotMapped]
         public int? BlockedId { get; set; }
-        public string? TitleYear { get; set; }
-        [NotMapped]
 
+        [NotMapped]
         public string? BlockedByInvoiceNo { get; set; }
-        [NotMapped]
 
+        [NotMapped]
         public string? BlockedCodeRef { get; set; }
 
+        // New fields for showing duplicate based on existing DB record
+        [NotMapped]
+        public string? BlockedByPaperId { get; set; }
+
+        [NotMapped]
+        public string? BlockedByTitle { get; set; }
     }
 }
