@@ -1,0 +1,18 @@
+:host { display: block; min-height: 100vh; background: #f4f7fb; color: #172033; font-family: Inter, system-ui, sans-serif; }
+.shell { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0; }
+.hero { display: flex; justify-content: space-between; gap: 24px; align-items: center; padding: 32px; border-radius: 28px; color: white; background: linear-gradient(135deg, #172033, #2854c5 58%, #00a6a6); box-shadow: 0 24px 60px rgba(23, 32, 51, .22); }
+.eyebrow { margin: 0 0 8px; text-transform: uppercase; letter-spacing: .18em; font-weight: 700; opacity: .75; }
+h1, h2 { margin: 0; } h1 { font-size: clamp(2rem, 5vw, 4rem); } h2 { font-size: 1.25rem; }
+.subtitle { max-width: 700px; font-size: 1.1rem; opacity: .88; }
+.hero-actions, .upload-controls, .section-heading, .filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.card { margin-top: 22px; padding: 24px; border-radius: 24px; background: white; box-shadow: 0 18px 45px rgba(23, 32, 51, .08); }
+.upload-card, .section-heading { justify-content: space-between; }
+.toast { padding: 14px 18px; border-radius: 16px; background: #e9f8f1; color: #0d6848; font-weight: 700; }
+button { border: 0; border-radius: 999px; padding: 12px 18px; background: #2854c5; color: white; font-weight: 800; cursor: pointer; }
+button:disabled { opacity: .55; cursor: not-allowed; }.secondary { background: #eef2ff; color: #2854c5; }.danger { background: #e44848; }
+input { border: 1px solid #d9e1ef; border-radius: 14px; padding: 12px 14px; min-width: 150px; }
+.toggle { padding: 10px 14px; border-radius: 999px; background: #f4f7fb; font-weight: 700; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 22px; }
+.stats article { padding: 22px; border-radius: 22px; background: white; box-shadow: 0 18px 45px rgba(23, 32, 51, .08); }.stats span { display: block; font-size: 2rem; font-weight: 900; }.stats small { color: #64748b; font-weight: 700; }
+.filters { margin: 22px 0; }.table-wrap { overflow-x: auto; border: 1px solid #edf1f7; border-radius: 18px; } table { width: 100%; border-collapse: collapse; min-width: 900px; } th, td { padding: 14px; text-align: left; border-bottom: 1px solid #edf1f7; } th { background: #f8fbff; color: #5b6680; font-size: .8rem; text-transform: uppercase; } .title-cell { font-weight: 800; }.badge { padding: 6px 10px; border-radius: 999px; background: #e9f8f1; color: #0d6848; font-weight: 800; }.empty { text-align: center; color: #64748b; }
+@media (max-width: 760px) { .hero, .upload-card, .section-heading { align-items: stretch; flex-direction: column; } .stats { grid-template-columns: 1fr; } }
