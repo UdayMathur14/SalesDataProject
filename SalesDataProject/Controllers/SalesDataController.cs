@@ -327,6 +327,12 @@ namespace SalesDataProject.Controllers
                 var blockedCustomers = new List<ProspectCustomerBlocked>();
                 var invalidRecords = new List<InvalidCustomerRecord>();
 
+
+                var validCategories = new[]
+                {
+            "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "LAW FIRM", "INDIVIDUAL","MSME"
+        };
+
                 // 1. Common Domains
                 var commonDomains = await _context.CommonDomains
                                                     .Select(x => x.DomainName.ToLower().Trim())
@@ -368,6 +374,18 @@ namespace SalesDataProject.Controllers
                             ErrorMessage = "Customer already exists in master table."
                         });
 
+                        continue;
+                    }
+                    if (!validCategories.Contains(category))
+                    {
+                        invalidRecords.Add(new InvalidCustomerRecord
+                        {
+                            RowNumber = row,
+                            CompanyName = companyName,
+                            CustomerEmail = customerEmail,
+                            CustomerNumber = customerNumber1,
+                            ErrorMessage = "Invalid category."
+                        });
                         continue;
                     }
 
@@ -548,7 +566,7 @@ namespace SalesDataProject.Controllers
 
                 var validCategories = new[]
                 {
-            "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "LAW FIRM", "INDIVIDUAL"
+            "CORPORATE", "LAWFIRM", "UNIVERSITY", "PCT", "LAW FIRM", "INDIVIDUAL","MSME"
         };
 
                 // Common domains loaded once
